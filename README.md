@@ -6,7 +6,7 @@
 [![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/aftership/email-verifier)
 [![Coverage Status](https://coveralls.io/repos/github/AfterShip/email-verifier/badge.svg?branch=master&t=VTgVfL)](https://coveralls.io/github/AfterShip/email-verifier?branch=master)
 [![Go Report](https://goreportcard.com/badge/github.com/aftership/email-verifier)](https://goreportcard.com/report/github.com/aftership/email-verifier)
-[![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://github.com/AfterShip/email-verifier/blob/master/LICENSE)
+[![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://github.com/AfterShip/email-verifier/blob/main/LICENSE)
 
 ## Features
 
@@ -160,8 +160,8 @@ This means that the server does not allow real-time verification of an email rig
 
 ## Contributing
 
-For details on contributing to this repository, see the [contributing guide](https://github.com/AfterShip/email-verifier/blob/master/CONTRIBUTING.md).
+For details on contributing to this repository, see the [contributing guide](https://github.com/AfterShip/email-verifier/blob/main/CONTRIBUTING.md).
 
 ## License
 
-This package is licensed under MIT license. See [LICENSE](https://github.com/AfterShip/email-verifier/blob/master/LICENSE) for details.
+This package is licensed under MIT license. See [LICENSE](https://github.com/AfterShip/email-verifier/blob/main/LICENSE) for details.

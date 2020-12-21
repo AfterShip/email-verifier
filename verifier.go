@@ -65,7 +65,7 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 	ret.RoleAccount = v.IsRoleAccount(syntax.Username)
 	ret.Disposable = v.IsDisposable(syntax.Domain)
 
-	// If domain is disposable, do not check mx and smtp. Because domain probably doesn't exist.
+	// If the domain name is disposable, mx and smtp are not checked.
 	if ret.Disposable {
 		return &ret, nil
 	}
@@ -117,13 +117,13 @@ func (v *Verifier) DisableAutoUpdateDisposable() *Verifier {
 
 }
 
-// FromEmail set the emails to use in the `MAIL FROM:` smtp command
+// FromEmail sets the emails to use in the `MAIL FROM:` smtp command
 func (v *Verifier) FromEmail(email string) *Verifier {
 	v.fromEmail = email
 	return v
 }
 
-// HelloName set the name to use in the `EHLO:` SMTP command
+// HelloName sets the name to use in the `EHLO:` SMTP command
 func (v *Verifier) HelloName(domain string) *Verifier {
 	v.helloName = domain
 	return v

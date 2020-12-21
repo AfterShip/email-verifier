@@ -3,13 +3,13 @@ name: CI Actions  # don't edit while the badge was depend on this
 on:
   push:
     branches:
-      - master
+      - main
     tags:
       - v*
 
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   lint-build-test:
