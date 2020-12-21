@@ -41,7 +41,7 @@ func (e *LookupError) Error() string {
 }
 
 // ParseSMTPError receives an MX Servers response message
-// and generates the cooresponding MX error
+// and generates the corresponding MX error
 func ParseSMTPError(err error) *LookupError {
 	errStr := err.Error()
 
