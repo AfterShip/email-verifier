@@ -4,7 +4,7 @@
 
 [![Build Status](https://github.com/AfterShip/email-verifier/workflows/CI%20Actions/badge.svg)](https://github.com/AfterShip/email-verifier/actions)
 [![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/AfterShip/email-verifier)
-[![Coverage Status](https://coveralls.io/repos/github/AfterShip/email-verifier/badge.svg?branch=master&t=VTgVfL)](https://coveralls.io/github/AfterShip/email-verifier?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/AfterShip/email-verifier/badge.svg?t=VTgVfL)](https://coveralls.io/github/AfterShip/email-verifier)
 [![Go Report Card](https://goreportcard.com/badge/github.com/AfterShip/email-verifier)](https://goreportcard.com/report/github.com/AfterShip/email-verifier)
 [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://github.com/AfterShip/email-verifier/blob/main/LICENSE)
 
