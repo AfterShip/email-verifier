@@ -3,9 +3,9 @@
 ✉️ A Go library for email verification without sending any emails.
 
 [![Build Status](https://github.com/AfterShip/email-verifier/workflows/CI%20Actions/badge.svg)](https://github.com/AfterShip/email-verifier/actions)
-[![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/aftership/email-verifier)
+[![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/AfterShip/email-verifier)
 [![Coverage Status](https://coveralls.io/repos/github/AfterShip/email-verifier/badge.svg?branch=master&t=VTgVfL)](https://coveralls.io/github/AfterShip/email-verifier?branch=master)
-[![Go Report](https://goreportcard.com/badge/github.com/aftership/email-verifier)](https://goreportcard.com/report/github.com/aftership/email-verifier)
+[![Go Report Card](https://goreportcard.com/badge/github.com/AfterShip/email-verifier)](https://goreportcard.com/report/github.com/AfterShip/email-verifier)
 [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://github.com/AfterShip/email-verifier/blob/main/LICENSE)
 
 ## Features
@@ -28,7 +28,7 @@ go get -u github.com/AfterShip/email-verifier
 
 ### Basic usage
 
-Use `Verify` method to verify an email addres with different dimensions
+Use `Verify` method to verify an email address with different dimensions
 
 ```go
 package main
@@ -81,7 +81,7 @@ func main() {
 }
 ```
 
-> Note: because most of the ISPs block outgoing SMTP requests through port 25 to prevent email spamming, the module will not perform SMTP checking by default. You can initialize the verifier with  `EnableSMTPCheck()`  to enable such capability if the port 25 is usable.
+> Note: because most of the ISPs block outgoing SMTP requests through port 25 to prevent email spamming, the module will not perform SMTP checking by default. You can initialize the verifier with  `EnableSMTPCheck()`  to enable such capability if port 25 is usable.
 
 ### Misc Validation
 
@@ -101,7 +101,7 @@ func main() {
 }
 ```
 
-> Note: It is possible to automatically updating the disposable domains daily by initializing verifier with `EnableAutoUpdateDisposable()`
+> Note: It is possible to automatically update the disposable domains daily by initializing verifier with `EnableAutoUpdateDisposable()`
 
 For more detailed documentation, please check on godoc.org 👉 [email-verifier](https://godoc.org/github.com/aftership/email-verifier)
 
@@ -131,13 +131,13 @@ For more detailed documentation, please check on godoc.org 👉 [email-verifier]
 | Free API                            |                              🔜                               |                       ❌                       |                        ❌                        |                         ❌                         |
 | Language                            |                              Go                              |                      Go                       |                      Rust                       |                       Node                        |
 | Active maintain                     |                              ✅                               |                       ❌                       |                        ✅                        |                         ✅                         |
-| High Performance                   |                              ✅                               |                       ❌                       |                        ✅                        |                         ✅                         |
+| High Performance                    |                              ✅                               |                       ❌                       |                        ✅                        |                         ✅                         |
 
 
 
 ## FAQ
 
-#### The library hangs/takes a long time after 30 seconds when perform email verification lookup via SMTP
+#### The library hangs/takes a long time after 30 seconds when performing email verification lookup via SMTP
 
 Most ISPs block outgoing SMTP requests through port 25 to prevent email spamming. `email-verifier` needs to have this port open to make a connection to the email's SMTP server. With the port being blocked, it is not possible to perform such checking, and it will instead hang until timeout error. Unfortunately, there is no easy workaround for this issue.
 
