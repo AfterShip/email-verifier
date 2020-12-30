@@ -103,7 +103,7 @@ func main() {
 
 > Note: It is possible to automatically update the disposable domains daily by initializing verifier with `EnableAutoUpdateDisposable()`
 
-For more detailed documentation, please check on godoc.org 👉 [email-verifier](https://godoc.org/github.com/aftership/email-verifier)
+For more detailed documentation, please check on godoc.org 👉 [email-verifier](https://godoc.org/github.com/Aftership/email-verifier)
 
 ## Similar Libraries Comparison
 

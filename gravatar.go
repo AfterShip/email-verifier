@@ -13,7 +13,7 @@ type Gravatar struct {
 	GravatarUrl string // gravatar url
 }
 
-// CheckMX will return the Gravatar records for the given email.
+// CheckGravatar will return the Gravatar records for the given email.
 func (v *Verifier) CheckGravatar(email string) (*Gravatar, error) {
 	emailMd5 := md5V(strings.ToLower(strings.TrimSpace(email)))
 	gravatarUrl := gravatarBaseUrl + emailMd5
@@ -22,6 +22,7 @@ func (v *Verifier) CheckGravatar(email string) (*Gravatar, error) {
 		fmt.Println(err)
 		return nil, err
 	}
+
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	// check body
