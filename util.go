@@ -1,6 +1,8 @@
 package emailverifier
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"reflect"
 	"strings"
 
@@ -43,4 +45,11 @@ func callJobFuncWithParams(jobFunc interface{}, params []interface{}) []reflect.
 		in[k] = reflect.ValueOf(param)
 	}
 	return f.Call(in)
+}
+
+// md5V use md5 to encode string
+func md5V(str string) string {
+	h := md5.New()
+	h.Write([]byte(str))
+	return hex.EncodeToString(h.Sum(nil))
 }

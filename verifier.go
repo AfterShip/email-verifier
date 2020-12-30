@@ -24,14 +24,15 @@ type Verifier struct {
 
 // Result is the result of Email Verification
 type Result struct {
-	Email        string  `json:"email"`          // passed email address
-	Disposable   bool    `json:"disposable"`     // is this a DEA (disposable email address)
-	Reachable    string  `json:"reachable"`      // an enumeration to describe whether the recipient address is real
-	RoleAccount  bool    `json:"role_account"`   // is account a role-based account
-	Free         bool    `json:"free"`           // is domain a free email domain
-	Syntax       *Syntax `json:"syntax"`         // details about the email address syntax
-	HasMxRecords bool    `json:"has_mx_records"` // whether or not MX-Records for the domain
-	SMTP         *SMTP   `json:"smtp"`           // details about the SMTP response of the email
+	Email        string    `json:"email"`          // passed email address
+	Disposable   bool      `json:"disposable"`     // is this a DEA (disposable email address)
+	Reachable    string    `json:"reachable"`      // an enumeration to describe whether the recipient address is real
+	RoleAccount  bool      `json:"role_account"`   // is account a role-based account
+	Free         bool      `json:"free"`           // is domain a free email domain
+	Syntax       *Syntax   `json:"syntax"`         // details about the email address syntax
+	HasMxRecords bool      `json:"has_mx_records"` // whether or not MX-Records for the domain
+	SMTP         *SMTP     `json:"smtp"`           // details about the SMTP response of the email
+	Gravatar     *Gravatar `json:"gravatar"`       // whether or not have gravatar for the email
 }
 
 // NewVerifier creates a new email verifier
@@ -83,6 +84,11 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 	ret.SMTP = smtp
 	ret.Reachable = v.calculateReachable(smtp)
 
+	gravatar, err := v.CheckGravatar(email)
+	if err != nil {
+		return &ret, err
+	}
+	ret.Gravatar = gravatar
 	return &ret, nil
 }
 
