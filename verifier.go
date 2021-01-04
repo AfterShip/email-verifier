@@ -16,10 +16,11 @@ var (
 
 // Verifier is an email verifier. Create one by calling NewVerifier
 type Verifier struct {
-	smtpCheckEnabled bool      // SMTP check enabled or disabled (disabled by default)
-	fromEmail        string    // name to use in the `EHLO:` SMTP command, defaults to "user@example.org"
-	helloName        string    // email to use in the `MAIL FROM:` SMTP command. defaults to `localhost`
-	schedule         *schedule // schedule represents a job schedule
+	smtpCheckEnabled     bool      // SMTP check enabled or disabled (disabled by default)
+	gravatarCheckEnabled bool      // gravatar check enabled or disabled (disabled by default)
+	fromEmail            string    // name to use in the `EHLO:` SMTP command, defaults to "user@example.org"
+	helloName            string    // email to use in the `MAIL FROM:` SMTP command. defaults to `localhost`
+	schedule             *schedule // schedule represents a job schedule
 }
 
 // Result is the result of Email Verification
@@ -84,12 +85,28 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 	ret.SMTP = smtp
 	ret.Reachable = v.calculateReachable(smtp)
 
-	gravatar, err := v.CheckGravatar(email)
-	if err != nil {
-		return &ret, err
+	if v.gravatarCheckEnabled {
+		gravatar, err := v.CheckGravatar(email)
+		if err != nil {
+			return &ret, err
+		}
+		ret.Gravatar = gravatar
 	}
-	ret.Gravatar = gravatar
+
 	return &ret, nil
+}
+
+// EnableGravatarCheck enables check gravatar,
+// we don't check gravatar by default
+func (v *Verifier) EnableGravatarCheck() *Verifier {
+	v.gravatarCheckEnabled = true
+	return v
+}
+
+// DisableGravatarCheck disables check gravatar,
+func (v *Verifier) DisableGravatarCheck() *Verifier {
+	v.gravatarCheckEnabled = false
+	return v
 }
 
 // EnableSMTPCheck enables check email by smtp,

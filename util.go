@@ -47,8 +47,8 @@ func callJobFuncWithParams(jobFunc interface{}, params []interface{}) []reflect.
 	return f.Call(in)
 }
 
-// md5V use md5 to encode string
-func md5V(str string) string {
+// getMD5Hash use md5 to encode string
+func getMD5Hash(str string) string {
 	h := md5.New()
 	h.Write([]byte(str))
 	return hex.EncodeToString(h.Sum(nil))
