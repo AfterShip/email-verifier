@@ -23,6 +23,9 @@ func (v *Verifier) CheckGravatar(email string) (*Gravatar, error) {
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
 	// check body
 	if getMD5Hash(string(body)) == gravatarDefaultMd5 || resp.StatusCode != 200 {
 		return &Gravatar{
