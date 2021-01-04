@@ -14,7 +14,10 @@ type Gravatar struct {
 
 // CheckGravatar will return the Gravatar records for the given email.
 func (v *Verifier) CheckGravatar(email string) (*Gravatar, error) {
-	emailMd5 := getMD5Hash(strings.ToLower(strings.TrimSpace(email)))
+	err, emailMd5 := getMD5Hash(strings.ToLower(strings.TrimSpace(email)))
+	if err != nil {
+		return nil, err
+	}
 	gravatarUrl := gravatarBaseUrl + emailMd5
 	resp, err := http.Get(gravatarUrl)
 	if err != nil {
@@ -27,7 +30,11 @@ func (v *Verifier) CheckGravatar(email string) (*Gravatar, error) {
 		return nil, err
 	}
 	// check body
-	if getMD5Hash(string(body)) == gravatarDefaultMd5 || resp.StatusCode != 200 {
+	err, md5Body := getMD5Hash(string(body))
+	if err != nil {
+		return nil, err
+	}
+	if md5Body == gravatarDefaultMd5 || resp.StatusCode != 200 {
 		return &Gravatar{
 			HasGravatar: false,
 			GravatarUrl: "",
