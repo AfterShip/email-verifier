@@ -233,7 +233,6 @@ issues:
         - gocyclo
         - errcheck
         - dupl
-        - gosec
 
     # Exclude some staticcheck messages
     - linters:
