@@ -1,9 +1,11 @@
 package emailverifier
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // Gravatar is detail about the Gravatar
@@ -14,17 +16,27 @@ type Gravatar struct {
 
 // CheckGravatar will return the Gravatar records for the given email.
 func (v *Verifier) CheckGravatar(email string) (*Gravatar, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	err, emailMd5 := getMD5Hash(strings.ToLower(strings.TrimSpace(email)))
 	if err != nil {
 		return nil, err
 	}
 	gravatarUrl := gravatarBaseUrl + emailMd5
-	resp, err := http.Get(gravatarUrl)
+	cli := &http.Client{}
+	req, err := http.NewRequestWithContext(ctx, "GET", gravatarUrl, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := cli.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
