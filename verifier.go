@@ -3,15 +3,9 @@ package emailverifier
 import (
 	"bufio"
 	"fmt"
-	"os"
-	"path/filepath"
-	"runtime"
 	"time"
-)
 
-var (
-	_, b, _, _ = runtime.Caller(0)
-	basePath   = filepath.Dir(b)
+	"github.com/markbates/pkger"
 )
 
 // Verifier is an email verifier. Create one by calling NewVerifier
@@ -158,7 +152,7 @@ func loadFreeDomains() {
 		return
 	}
 
-	freeDomainFile, err := os.Open(basePath + freeDomainDataPath)
+	freeDomainFile, err := pkger.Open(freeDomainDataPath)
 	if err != nil {
 		panic(fmt.Sprintf("open free domains' data file fail: %v ", err))
 	}
@@ -183,7 +177,7 @@ func loadDisposableDomains() {
 		return
 	}
 
-	disposableDomainFile, err := os.Open(basePath + disposableDomainDataPath)
+	disposableDomainFile, err := pkger.Open(disposableDomainDataPath)
 	if err != nil {
 		panic(fmt.Sprintf("open disposable domains' data file fail: %v ", err))
 	}
@@ -208,7 +202,7 @@ func loadRoleAccounts() {
 		return
 	}
 
-	roleAccountFile, err := os.Open(basePath + roleAccountDataPath)
+	roleAccountFile, err := pkger.Open(roleAccountDataPath)
 	if err != nil {
 		panic(fmt.Sprintf("open role accounts' data file fail: %v ", err))
 	}
