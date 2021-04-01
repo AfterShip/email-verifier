@@ -1,11 +1,7 @@
 package emailverifier
 
 import (
-	"bufio"
-	"fmt"
 	"time"
-
-	"github.com/markbates/pkger"
 )
 
 // Verifier is an email verifier. Create one by calling NewVerifier
@@ -30,12 +26,15 @@ type Result struct {
 	Gravatar     *Gravatar `json:"gravatar"`       // whether or not have gravatar for the email
 }
 
+// init loads disposable_domain meta data to disposableSyncDomains which are safe for concurrent use
+func init() {
+	for d := range disposableDomains {
+		disposableSyncDomains.Store(d, struct{}{})
+	}
+}
+
 // NewVerifier creates a new email verifier
 func NewVerifier() *Verifier {
-	loadDisposableDomains()
-	loadFreeDomains()
-	loadRoleAccounts()
-
 	return &Verifier{
 		fromEmail: defaultFromEmail,
 		helloName: defaultHelloName,
@@ -144,81 +143,6 @@ func (v *Verifier) FromEmail(email string) *Verifier {
 func (v *Verifier) HelloName(domain string) *Verifier {
 	v.helloName = domain
 	return v
-}
-
-// loadFreeDomains loads free_domain data
-func loadFreeDomains() {
-	if len(freeDomains) > 0 {
-		return
-	}
-
-	freeDomainFile, err := pkger.Open(freeDomainDataPath)
-	if err != nil {
-		panic(fmt.Sprintf("open free domains' data file fail: %v ", err))
-	}
-
-	scanner := bufio.NewScanner(freeDomainFile)
-	scanner.Split(bufio.ScanLines)
-
-	freeDomains = make(map[string]bool)
-	for scanner.Scan() {
-		freeDomains[scanner.Text()] = true
-	}
-
-	err = freeDomainFile.Close()
-	if err != nil {
-		panic(fmt.Sprintf("close free domains' data file fail: %v ", err))
-	}
-}
-
-// loadDisposableDomains loads disposable_domain data
-func loadDisposableDomains() {
-	if disposableDomainsLoaded {
-		return
-	}
-
-	disposableDomainFile, err := pkger.Open(disposableDomainDataPath)
-	if err != nil {
-		panic(fmt.Sprintf("open disposable domains' data file fail: %v ", err))
-	}
-
-	scanner := bufio.NewScanner(disposableDomainFile)
-	scanner.Split(bufio.ScanLines)
-
-	for scanner.Scan() {
-		disposableDomains.Store(scanner.Text(), struct{}{})
-	}
-
-	err = disposableDomainFile.Close()
-	if err != nil {
-		panic(fmt.Sprintf("close disposable domains' data file fail: %v ", err))
-	}
-	disposableDomainsLoaded = true
-}
-
-// loadRoleAccounts loads role_account data
-func loadRoleAccounts() {
-	if len(roleAccounts) > 0 {
-		return
-	}
-
-	roleAccountFile, err := pkger.Open(roleAccountDataPath)
-	if err != nil {
-		panic(fmt.Sprintf("open role accounts' data file fail: %v ", err))
-	}
-
-	scanner := bufio.NewScanner(roleAccountFile)
-	scanner.Split(bufio.ScanLines)
-
-	roleAccounts = make(map[string]bool)
-	for scanner.Scan() {
-		roleAccounts[scanner.Text()] = true
-	}
-
-	err = roleAccountFile.Close()
-	if err != nil {
-		panic(fmt.Sprintf("close role accounts' data file fail: %v ", err))
-	}
 }
 
 func (v *Verifier) calculateReachable(s *SMTP) string {

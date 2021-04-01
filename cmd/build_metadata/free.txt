@@ -1,3 +1,7 @@
+.ddns.org
+.findhere.com
+.freeservers.com
+.zzn.com
 1033edge.com
 11mail.com
 123.com
