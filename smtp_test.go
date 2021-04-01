@@ -14,7 +14,7 @@ func TestCheckSMTPOK_HostExists(t *testing.T) {
 	expected := SMTP{
 		HostExists: true,
 		FullInbox:  false,
-		CatchAll:   false,
+		CatchAll:   true,
 		Disabled:   false,
 	}
 	assert.NoError(t, err)
@@ -43,7 +43,7 @@ func TestCheckSMTPOK_UpdateFromEmail(t *testing.T) {
 	expected := SMTP{
 		HostExists:  true,
 		FullInbox:   false,
-		CatchAll:    false,
+		CatchAll:    true,
 		Deliverable: false,
 		Disabled:    false,
 	}
@@ -59,7 +59,7 @@ func TestCheckSMTPOK_UpdateHelloName(t *testing.T) {
 	expected := SMTP{
 		HostExists:  true,
 		FullInbox:   false,
-		CatchAll:    false,
+		CatchAll:    true,
 		Deliverable: false,
 		Disabled:    false,
 	}
@@ -75,7 +75,7 @@ func TestCheckSMTPOK_WithNoExistUsername(t *testing.T) {
 	expected := SMTP{
 		HostExists: true,
 		FullInbox:  false,
-		CatchAll:   false,
+		CatchAll:   true,
 		Disabled:   false,
 	}
 	assert.NoError(t, err)
@@ -122,14 +122,6 @@ func TestDialSMTPFailed_NoPortIsConfigured(t *testing.T) {
 	assert.Nil(t, ret)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "missing port"))
-}
-
-func TestDialSMTPFailed_ConnRefused(t *testing.T) {
-	disposableDomain := "zzzz1717.com:25"
-	ret, err := dialSMTP(disposableDomain)
-	assert.Nil(t, ret)
-	assert.Error(t, err)
-	assert.True(t, strings.Contains(err.Error(), "connection refused"))
 }
 
 func TestDialSMTPFailed_NoSuchHost(t *testing.T) {

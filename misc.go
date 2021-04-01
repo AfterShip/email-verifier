@@ -6,10 +6,7 @@ import (
 )
 
 var (
-	disposableDomains       sync.Map        // map to store disposable domains data
-	disposableDomainsLoaded bool            //  whether disposableDomains is loaded or not
-	freeDomains             map[string]bool // map to store free domains data
-	roleAccounts            map[string]bool // map to store role-based accounts data
+	disposableSyncDomains sync.Map // concurrent safe map to store disposable domains data
 )
 
 // IsRoleAccount checks if username is a role-based account
@@ -26,6 +23,6 @@ func (v *Verifier) IsFreeDomain(domain string) bool {
 func (v *Verifier) IsDisposable(domain string) bool {
 	domain = domainToASCII(domain)
 	d := parsedDomain(domain)
-	_, found := disposableDomains.Load(d)
+	_, found := disposableSyncDomains.Load(d)
 	return found
 }

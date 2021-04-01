@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# description: for updating misc databases, including custom free domains and disposable domains.
+# description: for updating meta databases, including custom free domains and disposable domains.
 
 set -e
 export LC_ALL=C
@@ -36,4 +36,4 @@ cat $new ./free.txt \
     | comm -23 - ./disposable.txt > $tmp
 mv $tmp ./free.txt
 
-echo 'Complete!'
+echo 'Complete Updating meta databases!'
