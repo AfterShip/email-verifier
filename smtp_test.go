@@ -124,14 +124,6 @@ func TestDialSMTPFailed_NoPortIsConfigured(t *testing.T) {
 	assert.True(t, strings.Contains(err.Error(), "missing port"))
 }
 
-func TestDialSMTPFailed_ConnRefused(t *testing.T) {
-	disposableDomain := "zzzz1717.com:25"
-	ret, err := dialSMTP(disposableDomain)
-	assert.Nil(t, ret)
-	assert.Error(t, err)
-	assert.True(t, strings.Contains(err.Error(), "connection refused"))
-}
-
 func TestDialSMTPFailed_NoSuchHost(t *testing.T) {
 	disposableDomain := "zzzzyyyyaaa123.com:25"
 	ret, err := dialSMTP(disposableDomain)
