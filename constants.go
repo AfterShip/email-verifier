@@ -7,10 +7,6 @@ const (
 	defaultFromEmail = "user@example.org"
 	defaultHelloName = "localhost"
 
-	disposableDomainDataPath = "/data/disposable.txt"
-	freeDomainDataPath       = "/data/free.txt"
-	roleAccountDataPath      = "/data/role.txt"
-
 	smtpTimeout = 30 * time.Second
 	smtpPort    = ":25"
 
