@@ -21,7 +21,8 @@ type SMTP struct {
 
 // CheckSMTP performs an email verification on the passed domain via SMTP
 //  - the domain is the passed email domain
-//  - username is used to check the deliverability of specific email address, if server is catch-all server, username will not be checked
+//  - username is used to check the deliverability of specific email address,
+// if server is catch-all server, username will not be checked
 func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 	if !v.smtpCheckEnabled {
 		return nil, nil
