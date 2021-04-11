@@ -8,7 +8,7 @@ import (
 
 func TestStringsSimilaritystr1Longer(t *testing.T) {
 	s1, s2 := "Automizely", "AfterShip"
-	assert.Greater(t, stringsSimilarity(s1, s2, 3), 0.5)
+	assert.Greater(t, stringsSimilarity(s1, s2, 3), float32(0.5))
 }
 
 func TestStringsSimilaritystr2Longer(t *testing.T) {
