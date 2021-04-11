@@ -11,7 +11,7 @@ var (
 )
 
 // SuggestDomain checks if domain has a typo and suggests a similar correct domain from metadata,
-// and returns a suggestion
+// returns a suggestion
 func (v *Verifier) SuggestDomain(domain string) string {
 	if domain == "" {
 		return ""

@@ -1,39 +1,5 @@
 package emailverifier
 
-// suggestionDomains are domains to check misspelled domains
-var suggestionDomains = map[string]bool{
-	"msn.com":         true,
-	"bellsouth.net":   true,
-	"telus.net":       true,
-	"comcast.net":     true,
-	"optusnet.com.au": true,
-	"earthlink.net":   true,
-	"qq.com":          true,
-	"sky.com":         true,
-	"icloud.com":      true,
-	"mac.com":         true,
-	"sympatico.ca":    true,
-	"googlemail.com":  true,
-	"att.net":         true,
-	"xtra.co.nz":      true,
-	"web.de":          true,
-	"cox.net":         true,
-	"gmail.com":       true,
-	"ymail.com":       true,
-	"aim.com":         true,
-	"rogers.com":      true,
-	"verizon.net":     true,
-	"rocketmail.com":  true,
-	"google.com":      true,
-	"optonline.net":   true,
-	"sbcglobal.net":   true,
-	"aol.com":         true,
-	"me.com":          true,
-	"btinternet.com":  true,
-	"charter.net":     true,
-	"shaw.ca":         true,
-}
-
 // suggestionSecondLevelDomains are second level domains to check misspelled domains
 var suggestionSecondLevelDomains = map[string]bool{
 	"yahoo":   true,
