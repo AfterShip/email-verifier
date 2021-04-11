@@ -72,3 +72,82 @@ func TestCallJobFuncWithWrongFunc(t *testing.T) {
 	ret := callJobFuncWithParams(f, nil)
 	assert.Nil(t, ret)
 }
+
+func TestSplitDomainNoSLD(t *testing.T) {
+	domain := "com"
+	sld, tld := splitDomain(domain)
+	assert.Equal(t, sld, "")
+	assert.Equal(t, tld, domain)
+}
+
+func TestSplitDomainOK(t *testing.T) {
+	domain := "aftership.com"
+	sld, tld := splitDomain(domain)
+	assert.Equal(t, sld, "aftership")
+	assert.Equal(t, tld, "com")
+}
+
+func TestSplitDomainNilString(t *testing.T) {
+	domain := ""
+	sld, tld := splitDomain(domain)
+	assert.Equal(t, sld, "")
+	assert.Equal(t, tld, "")
+}
+
+func TestSplitDomainSubDomain(t *testing.T) {
+	domain := "develop.aftership.com"
+	sld, tld := splitDomain(domain)
+	assert.Equal(t, sld, "aftership")
+	assert.Equal(t, tld, "com")
+}
+
+func TestEqualOK(t *testing.T) {
+	s := "aftership"
+
+	a := make([]rune, len(s))
+	b := make([]rune, len(s))
+	for i, v := range s {
+		a[i] = v
+		b[i] = v
+	}
+	assert.True(t, equal(a, b))
+
+}
+
+func TestEqualNotOK1(t *testing.T) {
+	s := "aftership"
+
+	a := make([]rune, len(s))
+	b := make([]rune, len(s))
+	for i, v := range s {
+		a[i] = v
+	}
+	assert.False(t, equal(a, b))
+}
+
+func TestEqualNotOK2(t *testing.T) {
+	s1 := "aftership"
+	s2 := "AfterShip"
+
+	a := make([]rune, len(s1))
+	b := make([]rune, len(s2))
+	for i, v := range s1 {
+		a[i] = v
+	}
+
+	for i, v := range s2 {
+		b[i] = v
+	}
+	assert.False(t, equal(a, b))
+
+}
+
+func TestMinOK(t *testing.T) {
+	a, b := 10, 9
+	assert.Equal(t, b, min(a, b))
+}
+
+func TestMinNotOK(t *testing.T) {
+	a, b := 10, 9
+	assert.NotEqual(t, a, min(a, b))
+}

@@ -7,6 +7,7 @@ import (
 // Verifier is an email verifier. Create one by calling NewVerifier
 type Verifier struct {
 	smtpCheckEnabled     bool      // SMTP check enabled or disabled (disabled by default)
+	domainSuggestEnabled bool      // whether suggest a most similar correct domain or not (disabled by default)
 	gravatarCheckEnabled bool      // gravatar check enabled or disabled (disabled by default)
 	fromEmail            string    // name to use in the `EHLO:` SMTP command, defaults to "user@example.org"
 	helloName            string    // email to use in the `MAIL FROM:` SMTP command. defaults to `localhost`
@@ -24,6 +25,7 @@ type Result struct {
 	HasMxRecords bool      `json:"has_mx_records"` // whether or not MX-Records for the domain
 	SMTP         *SMTP     `json:"smtp"`           // details about the SMTP response of the email
 	Gravatar     *Gravatar `json:"gravatar"`       // whether or not have gravatar for the email
+	Suggestion   string    `json:"suggestion"`     // domain suggestion when domain is misspelled
 }
 
 // init loads disposable_domain meta data to disposableSyncDomains which are safe for concurrent use
@@ -86,6 +88,10 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 		ret.Gravatar = gravatar
 	}
 
+	if v.domainSuggestEnabled {
+		ret.Suggestion = v.SuggestDomain(syntax.Domain)
+	}
+
 	return &ret, nil
 }
 
@@ -113,6 +119,18 @@ func (v *Verifier) EnableSMTPCheck() *Verifier {
 // DisableSMTPCheck disables check email by smtp
 func (v *Verifier) DisableSMTPCheck() *Verifier {
 	v.smtpCheckEnabled = false
+	return v
+}
+
+// EnableDomainSuggest will suggest a most similar correct domain when domain misspelled
+func (v *Verifier) EnableDomainSuggest() *Verifier {
+	v.domainSuggestEnabled = true
+	return v
+}
+
+// DisableDomainSuggest will not suggest anything
+func (v *Verifier) DisableDomainSuggest() *Verifier {
+	v.domainSuggestEnabled = false
 	return v
 }
 

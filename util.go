@@ -19,6 +19,16 @@ func parsedDomain(domain string) string {
 	return lowercaseDomain
 }
 
+// splitDomain splits domain and returns sld and tld
+func splitDomain(domain string) (string, string) {
+	parts := strings.Split(domain, ".")
+	n := len(parts)
+	if len(parts) >= 2 {
+		return parts[n-2], parts[n-1]
+	}
+	return "", parts[0]
+}
+
 // domainToASCII converts any internationalized domain names to ASCII
 // reference: https://en.wikipedia.org/wiki/Punycode
 func domainToASCII(domain string) string {
@@ -56,4 +66,25 @@ func getMD5Hash(str string) (error, string) {
 		return err, ""
 	}
 	return nil, hex.EncodeToString(h.Sum(nil))
+}
+
+// equal compare two rune arrays and return if they are equals or not
+func equal(a, b []rune) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// min return the smallest integer among the two in parameters
+func min(a int, b int) int {
+	if b < a {
+		return b
+	}
+	return a
 }

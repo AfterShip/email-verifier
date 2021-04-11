@@ -284,3 +284,40 @@ func TestStopCurrentScheduleOK(t *testing.T) {
 	verifier.EnableAutoUpdateDisposable()
 	verifier.stopCurrentSchedule()
 }
+
+func TestCheckEmail_EnableDomainSuggest(t *testing.T) {
+	var (
+		// trueVal  = true
+		username = "email_username"
+		domain   = "homail.com"
+		address  = username + "@" + domain
+		email    = address
+	)
+
+	ret, err := verifier.Verify(email)
+
+	assert.NoError(t, err)
+	assert.Equal(t, ret.Suggestion, "hotmail.com")
+}
+
+func TestCheckEmail_DisabledDomainSuggest(t *testing.T) {
+	defer func() {
+		verifier.EnableDomainSuggest()
+	}()
+
+	var (
+		// trueVal  = true
+		username = "email_username"
+		domain   = "homail.com"
+		address  = username + "@" + domain
+		email    = address
+	)
+
+	verifier.
+		DisableSMTPCheck().
+		DisableDomainSuggest()
+	ret, err := verifier.Verify(email)
+
+	assert.NoError(t, err)
+	assert.NotEqual(t, ret.Suggestion, "hotmail.com")
+}
