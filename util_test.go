@@ -72,3 +72,31 @@ func TestCallJobFuncWithWrongFunc(t *testing.T) {
 	ret := callJobFuncWithParams(f, nil)
 	assert.Nil(t, ret)
 }
+
+func TestSplitDomainNoSLD(t *testing.T) {
+	domain := "com"
+	sld, tld := splitDomain(domain)
+	assert.Equal(t, sld, "")
+	assert.Equal(t, tld, domain)
+}
+
+func TestSplitDomainOK(t *testing.T) {
+	domain := "aftership.com"
+	sld, tld := splitDomain(domain)
+	assert.Equal(t, sld, "aftership")
+	assert.Equal(t, tld, "com")
+}
+
+func TestSplitDomainNilString(t *testing.T) {
+	domain := ""
+	sld, tld := splitDomain(domain)
+	assert.Equal(t, sld, "")
+	assert.Equal(t, tld, "")
+}
+
+func TestSplitDomainSubDomain(t *testing.T) {
+	domain := "develop.aftership.com"
+	sld, tld := splitDomain(domain)
+	assert.Equal(t, sld, "aftership")
+	assert.Equal(t, tld, "com")
+}

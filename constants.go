@@ -18,7 +18,10 @@ const (
 
 	disposableDataURL = "https://raw.githubusercontent.com/disposable/disposable-email-domains/master/domains.json"
 
-	gravatarBaseUrl = "https://www.gravatar.com/avatar/"
-
+	gravatarBaseUrl    = "https://www.gravatar.com/avatar/"
 	gravatarDefaultMd5 = "d5fe5cbcc31cff5f8ac010db72eb000c"
+
+	domainThreshold      float32 = 0.82
+	secondLevelThreshold float32 = 0.82
+	topLevelThreshold    float32 = 0.6
 )
