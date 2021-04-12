@@ -2,12 +2,8 @@ package emailverifier
 
 import (
 	"strings"
-)
 
-var (
-	domainThreshold      float32 = 0.82
-	secondLevelThreshold float32 = 0.82
-	topLevelThreshold    float32 = 0.6
+	"github.com/hbollon/go-edlib"
 )
 
 // SuggestDomain checks if domain has a typo and suggests a similar correct domain from metadata,
@@ -74,7 +70,7 @@ func findClosestDomain(domain string, domains map[string]bool, threshold float32
 			return domain
 		}
 
-		dist := stringsSimilarity(domain, d, levenshteinDistance(domain, d))
+		dist, _ := edlib.StringsSimilarity(domain, d, edlib.Levenshtein)
 		if dist > maxDist {
 			maxDist = dist
 			closestDomain = d
@@ -86,13 +82,4 @@ func findClosestDomain(domain string, domains map[string]bool, threshold float32
 	}
 
 	return ""
-}
-
-// stringsSimilarity returns a similarity index [0..1] between two strings based on given edit distance algorithm in parameter.
-func stringsSimilarity(str1 string, str2 string, distance int) float32 {
-	// Compare strings length and make a matching percentage between them
-	if len(str1) >= len(str2) {
-		return float32(len(str1)-distance) / float32(len(str1))
-	}
-	return float32(len(str2)-distance) / float32(len(str2))
 }

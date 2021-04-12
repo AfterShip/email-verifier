@@ -6,16 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStringsSimilaritystr1Longer(t *testing.T) {
-	s1, s2 := "Automizely", "AfterShip"
-	assert.Greater(t, stringsSimilarity(s1, s2, 3), float32(0.5))
-}
-
-func TestStringsSimilaritystr2Longer(t *testing.T) {
-	s2, s1 := "Automizely", "AfterShip"
-	assert.Less(t, stringsSimilarity(s1, s2, 3), float32(0.8))
-}
-
 func TestSuggestDomainOK_HitExactDomain(t *testing.T) {
 	domain := "gmail.com"
 
