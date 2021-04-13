@@ -130,6 +130,28 @@ func main() {
 
 > Note: It is possible to automatically update the disposable domains daily by initializing verifier with `EnableAutoUpdateDisposable()`
 
+### Suggestions for domain typo
+
+Will check for typos in an email domain in addition to evaluating its validity. 
+If we detect a possible typo, you will find a non-empty "suggestion" field in the validation result containing what we believe to be the correct domain.
+Also, you can use the `SuggestDomain()` method alone to check the domain for possible misspellings
+
+```go
+func main() {
+    domain := "gmai.com"
+    suggestion := verifier.SuggestDomain(domain) 
+    // suggestion should be `gmail.com`
+    if suggestion != "" {
+        fmt.Printf("domain %s is misspelled, right domain is %s. \n", domain, suggestion)
+        return 
+    }
+    fmt.Printf("domain %s has no possible misspellings. \n", domain)
+}
+
+```
+
+> Note: When using the `Verify()` method, domain typo checking is not enabled by default, you can enable it in a verifier with `EnableDomainSuggest()`
+ 
 For more detailed documentation, please check on godoc.org 👉 [email-verifier](https://godoc.org/github.com/AfterShip/email-verifier)
 
 ## Similar Libraries Comparison
@@ -150,7 +172,7 @@ For more detailed documentation, please check on godoc.org 👉 [email-verifier]
 | Host exists                         |                              ✅                               |                       ✅                       |                        ✅                        |                         ❌                         |
 | Catch-all                           |                              ✅                               |                       ✅                       |                        ✅                        |                         ❌                         |
 | Gravatar                            |                              ✅                               |       ✅, but not available in free lib        |                        ❌                        |                         ❌                         |
-| Typo check                          |                              🔜                               |       ✅, but not available in free lib        |                        ❌                        |                         ❌                         |
+| Typo check                          |                              ✅                              |       ✅, but not available in free lib        |                        ❌                        |                         ❌                         |
 | Honeyport dection                   |                              🔜                               |                       ❌                       |                        ❌                        |                         ❌                         |
 | Bounce email check                  |                              🔜                               |                       ❌                       |                        ❌                        |                         ❌                         |
 | **Tech**                            |                              〰️                              |                      〰️                       |                       〰️                        |                        〰️                         |
@@ -182,6 +204,7 @@ This means that the server does not allow real-time verification of an email rig
 
 - [trumail](https://github.com/trumail/trumail)
 - [check-if-email-exists](https://github.com/amaurymartiny/check-if-email-exists)
+- [mailcheck](https://github.com/mailcheck/mailcheck)
 - disposable domains from [disposable/disposable](https://github.com/disposable/disposable)
 - free provider data from [willwhite/freemail](https://github.com/willwhite/freemail)
 
