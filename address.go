@@ -15,18 +15,18 @@ type Syntax struct {
 }
 
 // ParseAddress attempts to parse an email address and return it in the form of an Syntax
-func (v *Verifier) ParseAddress(email string) *Syntax {
+func (v *Verifier) ParseAddress(email string) Syntax {
 
 	isAddressValid := IsAddressValid(email)
 	if !isAddressValid {
-		return &Syntax{Valid: false}
+		return Syntax{Valid: false}
 	}
 
 	index := strings.LastIndex(email, "@")
 	username := email[:index]
 	domain := strings.ToLower(email[index+1:])
 
-	return &Syntax{
+	return Syntax{
 		Username: username,
 		Domain:   domain,
 		Valid:    isAddressValid,

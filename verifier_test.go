@@ -18,7 +18,7 @@ func TestCheckEmailOK_SMTPHostNotExists(t *testing.T) {
 	ret, err := verifier.Verify(email)
 	expected := Result{
 		Email: email,
-		Syntax: &Syntax{
+		Syntax: Syntax{
 			Username: username,
 			Domain:   domain,
 			Valid:    true,
@@ -46,7 +46,7 @@ func TestCheckEmailOK_SMTPHostExists_NotCatchAll(t *testing.T) {
 	ret, err := verifier.Verify(email)
 	expected := Result{
 		Email: email,
-		Syntax: &Syntax{
+		Syntax: Syntax{
 			Username: username,
 			Domain:   domain,
 			Valid:    true,
@@ -80,7 +80,7 @@ func TestCheckEmailOK_SMTPHostExists_CatchAll(t *testing.T) {
 	ret, err := verifier.Verify(email)
 	expected := Result{
 		Email: email,
-		Syntax: &Syntax{
+		Syntax: Syntax{
 			Username: username,
 			Domain:   domain,
 			Valid:    true,
@@ -114,7 +114,7 @@ func TestCheckEmailOK_SMTPHostExists_FreeDomain(t *testing.T) {
 	ret, err := verifier.Verify(email)
 	expected := Result{
 		Email: email,
-		Syntax: &Syntax{
+		Syntax: Syntax{
 			Username: username,
 			Domain:   domain,
 			Valid:    true,
@@ -148,7 +148,7 @@ func TestCheckEmail_ErrorSyntax(t *testing.T) {
 	ret, err := verifier.Verify(email)
 	expected := Result{
 		Email: email,
-		Syntax: &Syntax{
+		Syntax: Syntax{
 			Username: username,
 			Domain:   "",
 			Valid:    false,
@@ -176,7 +176,7 @@ func TestCheckEmail_Disposable(t *testing.T) {
 	ret, err := verifier.Verify(email)
 	expected := Result{
 		Email: email,
-		Syntax: &Syntax{
+		Syntax: Syntax{
 			Username: username,
 			Domain:   domain,
 			Valid:    true,
@@ -204,7 +204,7 @@ func TestCheckEmail_RoleAccount(t *testing.T) {
 	ret, err := verifier.Verify(email)
 	expected := Result{
 		Email: email,
-		Syntax: &Syntax{
+		Syntax: Syntax{
 			Username: username,
 			Domain:   domain,
 			Valid:    true,
@@ -239,7 +239,7 @@ func TestCheckEmail_DisabledSMTPCheck(t *testing.T) {
 	ret, err := verifier.Verify(email)
 	expected := Result{
 		Email: email,
-		Syntax: &Syntax{
+		Syntax: Syntax{
 			Username: username,
 			Domain:   domain,
 			Valid:    true,
