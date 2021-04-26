@@ -21,7 +21,7 @@ type Result struct {
 	Reachable    string    `json:"reachable"`      // an enumeration to describe whether the recipient address is real
 	RoleAccount  bool      `json:"role_account"`   // is account a role-based account
 	Free         bool      `json:"free"`           // is domain a free email domain
-	Syntax       *Syntax   `json:"syntax"`         // details about the email address syntax
+	Syntax       Syntax    `json:"syntax"`         // details about the email address syntax
 	HasMxRecords bool      `json:"has_mx_records"` // whether or not MX-Records for the domain
 	SMTP         *SMTP     `json:"smtp"`           // details about the SMTP response of the email
 	Gravatar     *Gravatar `json:"gravatar"`       // whether or not have gravatar for the email
