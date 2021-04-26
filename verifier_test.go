@@ -294,8 +294,7 @@ func TestCheckEmail_EnableDomainSuggest(t *testing.T) {
 		email    = address
 	)
 
-	ret, err := verifier.Verify(email)
+	ret, _ := verifier.Verify(email)
 
-	assert.Error(t, err)
 	assert.Equal(t, ret.Suggestion, "")
 }

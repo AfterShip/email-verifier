@@ -16,7 +16,7 @@ func TestCheckGravatarOK(t *testing.T) {
 }
 
 func TestCheckGravatarFailed(t *testing.T) {
-	email := "Myemailaddress@example.com"
+	email := "MyemailaddressHasNoGravatar@example.com"
 
 	gravatar, err := verifier.CheckGravatar(email)
 	assert.NoError(t, err)
