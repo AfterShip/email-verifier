@@ -27,7 +27,8 @@ func GetEmailVerification(w http.ResponseWriter, r *http.Request, ps httprouter.
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	_, _ = fmt.Fprint(w, "email validation result: ", string(b))
+
+	_, _ = fmt.Fprint(w, string(b))
 
 }
 
