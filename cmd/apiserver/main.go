@@ -22,13 +22,13 @@ func GetEmailVerification(w http.ResponseWriter, r *http.Request, ps httprouter.
 		return
 	}
 
-	b, err := json.Marshal(ret)
+	bytes, err := json.Marshal(ret)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	_, _ = fmt.Fprint(w, string(b))
+	_, _ = fmt.Fprint(w, string(bytes))
 
 }
 
