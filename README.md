@@ -156,9 +156,11 @@ For more detailed documentation, please check on godoc.org 👉 [email-verifier]
 
 ## API 
 
-We provide a simple **self-hosted** [API server](https://github.com/AfterShip/email-verifier/tree/main/cmd/apiserver).
+We provide a simple **self-hosted** [API server](https://github.com/AfterShip/email-verifier/tree/main/cmd/apiserver) script for reference.
 
-Using the API is very simple. All that's needed to verify an email address is to send a GET request using the below URL.
+The API interface is very simple. All you need to do is to send a GET request with the following URL.
+
+The `email` parameter would be the target email you want to verify.
 
 `https://{your_host}/v1/{email}/verification`
 
