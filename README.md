@@ -154,6 +154,14 @@ func main() {
  
 For more detailed documentation, please check on godoc.org 👉 [email-verifier](https://godoc.org/github.com/AfterShip/email-verifier)
 
+## API 
+
+We provide a simple **self-hosted** [API server](https://github.com/AfterShip/email-verifier/tree/main/cmd/apiserver).
+
+Using the API is very simple. All that's needed to verify an email address is to send a GET request using the below URL.
+
+`https://{your_host}/v1/{email}/verification`
+
 ## Similar Libraries Comparison
 
 |                                     | [email-verifier](https://github.com/AfterShip/email-verifier) | [trumail](https://github.com/trumail/trumail) | [check-if-email-exists](https://reacher.email/) | [freemail](https://github.com/willwhite/freemail) |
@@ -176,8 +184,8 @@ For more detailed documentation, please check on godoc.org 👉 [email-verifier]
 | Honeyport dection                   |                              🔜                               |                       ❌                       |                        ❌                        |                         ❌                         |
 | Bounce email check                  |                              🔜                               |                       ❌                       |                        ❌                        |                         ❌                         |
 | **Tech**                            |                              〰️                              |                      〰️                       |                       〰️                        |                        〰️                         |
-| Provide API                         |                              🔜                               |                       ✅                       |                        ✅                        |                         ❌                         |
-| Free API                            |                              🔜                               |                       ❌                       |                        ❌                        |                         ❌                         |
+| Provide API                         |                              ✅                               |                       ✅                       |                        ✅                        |                         ❌                         |
+| Free API                            |                              ✅                               |                       ❌                       |                        ❌                        |                         ❌                         |
 | Language                            |                              Go                              |                      Go                       |                      Rust                       |                       JavaScript                        |
 | Active maintain                     |                              ✅                               |                       ❌                       |                        ✅                        |                         ✅                         |
 | High Performance                    |                              ✅                               |                       ❌                       |                        ✅                        |                         ✅                         |
