@@ -2,11 +2,11 @@
 
 v1.1.0
 ----------
-* BREAKING CHANGE: provide a simple API server
-* Bugfix: gravatar images may not exist
 * Performance optimization:
     * reduce Result struct size from 96 to 80
     * `ParseAddress()` return `Syntax` instead of reference, for reducing GC pressure and improve memory locality.
+* Provide a simple API server
+* Bugfix: gravatar images may not exist
 
 v1.0.3
 ----------
