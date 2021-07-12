@@ -60,5 +60,10 @@ func updateDisposableDomains(source string) error {
 	for _, d := range domains {
 		disposableSyncDomains.Store(d, struct{}{})
 	}
+
+	// add additionalDisposableDomains again
+	for d := range additionalDisposableDomains {
+		disposableSyncDomains.Store(d, struct{}{})
+	}
 	return nil
 }
