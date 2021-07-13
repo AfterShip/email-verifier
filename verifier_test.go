@@ -192,6 +192,36 @@ func TestCheckEmail_Disposable(t *testing.T) {
 	assert.Equal(t, &expected, ret)
 }
 
+
+func TestCheckEmail_Disposable_override(t *testing.T) {
+	var (
+		username = "exampleuser"
+		domain   = "iamdisposableemail.test"
+		address  = username + "@" + domain
+		email    = address
+	)
+
+	verifier := NewVerifier().EnableSMTPCheck().AddDisposableDomains([]string{"iamdisposableemail.test"})
+	ret, err := verifier.Verify(email)
+	expected := Result{
+		Email: email,
+		Syntax: Syntax{
+			Username: username,
+			Domain:   domain,
+			Valid:    true,
+		},
+		HasMxRecords: false,
+		Reachable:    reachableUnknown,
+		Disposable:   true,
+		RoleAccount:  false,
+		Free:         false,
+		SMTP:         nil,
+	}
+	assert.Nil(t, err)
+	assert.Equal(t, &expected, ret)
+}
+
+
 func TestCheckEmail_RoleAccount(t *testing.T) {
 	var (
 		// trueVal  = true

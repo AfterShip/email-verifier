@@ -28,6 +28,9 @@ type Result struct {
 	HasMxRecords bool      `json:"has_mx_records"` // whether or not MX-Records for the domain
 }
 
+// additional list of disposable domains set via users of this library
+var additionalDisposableDomains map[string]bool = map[string]bool{}
+
 // init loads disposable_domain meta data to disposableSyncDomains which are safe for concurrent use
 func init() {
 	for d := range disposableDomains {
@@ -41,7 +44,6 @@ func NewVerifier() *Verifier {
 		fromEmail: defaultFromEmail,
 		helloName: defaultHelloName,
 	}
-
 }
 
 // Verify performs address, misc, mx and smtp checks
@@ -93,6 +95,15 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 	}
 
 	return &ret, nil
+}
+
+// AddDisposableDomains adds additional domains as disposable domains.
+func (v *Verifier) AddDisposableDomains(domains []string) *Verifier {
+	for _, d := range domains {
+		additionalDisposableDomains[d] = true
+		disposableSyncDomains.Store(d, struct{}{})
+	}
+	return v
 }
 
 // EnableGravatarCheck enables check gravatar,
