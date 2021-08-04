@@ -205,7 +205,7 @@ This means that the server does not allow real-time verification of an email rig
 - [trumail](https://github.com/trumail/trumail)
 - [check-if-email-exists](https://github.com/amaurymartiny/check-if-email-exists)
 - [mailcheck](https://github.com/mailcheck/mailcheck)
-- disposable domains from [disposable/disposable](https://github.com/disposable/disposable)
+- disposable domains from [ivolo/disposable-email-domains](https://github.com/ivolo/disposable-email-domains)
 - free provider data from [willwhite/freemail](https://github.com/willwhite/freemail)
 
 ## Contributing
