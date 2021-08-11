@@ -1,5 +1,12 @@
 ## Change log
 
+v1.2.0
+----------
+* Support adding custom disposable email domains https://github.com/AfterShip/email-verifier/pull/31
+* Fix a wrong reference in README https://github.com/AfterShip/email-verifier/pull/36
+* Update dependent metadata  https://github.com/AfterShip/email-verifier/pull/38 https://github.com/AfterShip/email-verifier/pull/35
+* Update Dependencies
+
 v1.1.0
 ----------
 * Performance optimization:
