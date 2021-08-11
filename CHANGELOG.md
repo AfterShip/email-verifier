@@ -1,5 +1,12 @@
 ## Change log
 
+v1.2.0
+----------
+* Support adding custom disposable email domains 
+* Fix a wrong reference in README 
+* Update dependent metadata  
+* Update Dependencies
+
 v1.1.0
 ----------
 * Performance optimization:
