@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/hbollon/go-edlib v1.3.3
+	github.com/hbollon/go-edlib v1.3.4
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/stretchr/testify v1.7.0
