@@ -11,4 +11,5 @@ require (
 	golang.org/x/net v0.0.0-20201207224615-747e23833adb
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/h2non/gock.v1 v1.1.2
+	h12.io/socks v1.0.3
 )

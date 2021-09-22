@@ -8,6 +8,8 @@ import (
 	"net/smtp"
 	"sync"
 	"time"
+
+	"h12.io/socks"
 )
 
 // SMTP stores all information for SMTP verification lookup
@@ -31,7 +33,7 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 	var ret SMTP
 
 	// Dial any SMTP server that will accept a connection
-	client, err := newSMTPClient(domain)
+	client, err := newSMTPClient(domain, v.proxyURI)
 	if err != nil {
 		return &ret, ParseSMTPError(err)
 	}
@@ -91,7 +93,7 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 }
 
 // newSMTPClient generates a new available SMTP client
-func newSMTPClient(domain string) (*smtp.Client, error) {
+func newSMTPClient(domain, proxyURI string) (*smtp.Client, error) {
 	domain = domainToASCII(domain)
 	mxRecords, err := net.LookupMX(domain)
 	if err != nil {
@@ -115,7 +117,7 @@ func newSMTPClient(domain string) (*smtp.Client, error) {
 		addr := r.Host + smtpPort
 
 		go func() {
-			c, err := dialSMTP(addr)
+			c, err := dialSMTP(addr, proxyURI)
 			if err != nil {
 				if !done {
 					ch <- err
@@ -156,15 +158,29 @@ func newSMTPClient(domain string) (*smtp.Client, error) {
 }
 
 // dialSMTP is a timeout wrapper for smtp.Dial. It attempts to dial an
-// SMTP server and fails with a timeout if timeout is reached while
+// SMTP server (socks5 proxy supported) and fails with a timeout if timeout is reached while
 // attempting to establish a new connection
-func dialSMTP(addr string) (*smtp.Client, error) {
+func dialSMTP(addr, proxyURI string) (*smtp.Client, error) {
 	// Channel holding the new smtp.Client or error
 	ch := make(chan interface{}, 1)
 
 	// Dial the new smtp connection
 	go func() {
-		client, err := smtp.Dial(addr)
+		var conn net.Conn
+		var err error
+
+		if proxyURI != "" {
+			conn, err = establishProxyConnection(addr, proxyURI)
+		} else {
+			conn, err = establishConnection(addr)
+		}
+		if err != nil {
+			ch <- err
+			return
+		}
+
+		host, _, _ := net.SplitHostPort(addr)
+		client, err := smtp.NewClient(conn, host)
 		if err != nil {
 			ch <- err
 			return
@@ -197,4 +213,15 @@ func GenerateRandomEmail(domain string) string {
 	}
 	return fmt.Sprintf("%s@%s", string(r), domain)
 
+}
+
+// establishConnection connects to the address on the named network address.
+func establishConnection(addr string) (net.Conn, error) {
+	return net.Dial("tcp", addr)
+}
+
+// establishProxyConnection connects to the address on the named network address
+// via proxy protocol
+func establishProxyConnection(addr, proxyURI string) (net.Conn, error) {
+	return socks.Dial(proxyURI)("tcp", addr)
 }
