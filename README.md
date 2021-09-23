@@ -105,7 +105,37 @@ func main() {
 }
 ```
 
-> Note: because most of the ISPs block outgoing SMTP requests through port 25 to prevent email spamming, the module will not perform SMTP checking by default. You can initialize the verifier with  `EnableSMTPCheck()`  to enable such capability if port 25 is usable.
+> Note: because most of the ISPs block outgoing SMTP requests through port 25 to prevent email spamming, the module will not perform SMTP checking by default. You can initialize the verifier with  `EnableSMTPCheck()`  to enable such capability if port 25 is usable, 
+> or use a socks proxy to connect over SMTP
+
+### Use a SOCKS5 proxy to verify email 
+
+Support setting a SOCKS5 proxy to verify the email, proxyURI should be in the format: `socks5://user:password@127.0.0.1:1080?timeout=5s`
+
+The protocol could be socks5, socks4 and socks4a.
+
+```go
+var (
+    verifier = emailverifier.
+        NewVerifier().
+        EnableSMTPCheck().
+    	Proxy("socks5://user:password@127.0.0.1:1080?timeout=5s")
+)
+
+func main() {
+
+    domain := "domain.org"
+    username := "username"
+    ret, err := verifier.CheckSMTP(domain, username)
+    if err != nil {
+        fmt.Println("check smtp failed: ", err)
+        return
+    }
+
+    fmt.Println("smtp validation result: ", ret)
+
+}
+```
 
 ### Misc Validation
 
@@ -183,6 +213,7 @@ The `email` parameter would be the target email you want to verify.
 | Catch-all                           |                              ✅                               |                       ✅                       |                        ✅                        |                         ❌                         |
 | Gravatar                            |                              ✅                               |       ✅, but not available in free lib        |                        ❌                        |                         ❌                         |
 | Typo check                          |                              ✅                              |       ✅, but not available in free lib        |                        ❌                        |                         ❌                         |
+| Use proxy to connect over SMTP      |                              ✅                              |                        ❌                       |                        ✅                        |                         ❌                         |
 | Honeyport dection                   |                              🔜                               |                       ❌                       |                        ❌                        |                         ❌                         |
 | Bounce email check                  |                              🔜                               |                       ❌                       |                        ❌                        |                         ❌                         |
 | **Tech**                            |                              〰️                              |                      〰️                       |                       〰️                        |                        〰️                         |
