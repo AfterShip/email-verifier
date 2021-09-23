@@ -13,10 +13,7 @@ type Verifier struct {
 	helloName            string    // email to use in the `MAIL FROM:` SMTP command. defaults to `localhost`
 	schedule             *schedule // schedule represents a job schedule
 
-	// use a SOCKS5 proxy to verify the email,
-	// proxyURI should be in the format: "socks5://user:password@127.0.0.1:1080?timeout=5s".
-	// The protocol could be socks5, socks4 and socks4a.
-	proxyURI string
+	proxyURI string // use a SOCKS5 proxy to verify the email,
 }
 
 // Result is the result of Email Verification
@@ -179,6 +176,9 @@ func (v *Verifier) HelloName(domain string) *Verifier {
 	return v
 }
 
+// Proxy sets a SOCKS5 proxy to verify the email,
+// proxyURI should be in the format: "socks5://user:password@127.0.0.1:1080?timeout=5s".
+// The protocol could be socks5, socks4 and socks4a.
 func (v *Verifier) Proxy(proxyURI string) *Verifier {
 	v.proxyURI = proxyURI
 	return v
