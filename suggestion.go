@@ -41,12 +41,12 @@ func (v *Verifier) SuggestDomain(domain string) string {
 
 	if closestSecondLevelDomain != "" && closestSecondLevelDomain != sld {
 		localTypo = true
-		closestDomain = strings.ReplaceAll(closestDomain, sld, closestSecondLevelDomain)
+		closestDomain = strings.Replace(closestDomain, sld, closestSecondLevelDomain, -1)
 
 	}
 	if closestTopLevelDomain != "" && closestTopLevelDomain != tld && sld != "" {
 		localTypo = true
-		closestDomain = strings.ReplaceAll(closestDomain, tld, closestTopLevelDomain)
+		closestDomain = strings.Replace(closestDomain, tld, closestTopLevelDomain, -1)
 	}
 
 	if localTypo {

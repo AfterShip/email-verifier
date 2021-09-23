@@ -17,16 +17,19 @@ type Verifier struct {
 // Result is the result of Email Verification
 type Result struct {
 	Email        string    `json:"email"`          // passed email address
-	Disposable   bool      `json:"disposable"`     // is this a DEA (disposable email address)
 	Reachable    string    `json:"reachable"`      // an enumeration to describe whether the recipient address is real
-	RoleAccount  bool      `json:"role_account"`   // is account a role-based account
-	Free         bool      `json:"free"`           // is domain a free email domain
-	Syntax       *Syntax   `json:"syntax"`         // details about the email address syntax
-	HasMxRecords bool      `json:"has_mx_records"` // whether or not MX-Records for the domain
+	Syntax       Syntax    `json:"syntax"`         // details about the email address syntax
 	SMTP         *SMTP     `json:"smtp"`           // details about the SMTP response of the email
 	Gravatar     *Gravatar `json:"gravatar"`       // whether or not have gravatar for the email
 	Suggestion   string    `json:"suggestion"`     // domain suggestion when domain is misspelled
+	Disposable   bool      `json:"disposable"`     // is this a DEA (disposable email address)
+	RoleAccount  bool      `json:"role_account"`   // is account a role-based account
+	Free         bool      `json:"free"`           // is domain a free email domain
+	HasMxRecords bool      `json:"has_mx_records"` // whether or not MX-Records for the domain
 }
+
+// additional list of disposable domains set via users of this library
+var additionalDisposableDomains map[string]bool = map[string]bool{}
 
 // init loads disposable_domain meta data to disposableSyncDomains which are safe for concurrent use
 func init() {
@@ -41,7 +44,6 @@ func NewVerifier() *Verifier {
 		fromEmail: defaultFromEmail,
 		helloName: defaultHelloName,
 	}
-
 }
 
 // Verify performs address, misc, mx and smtp checks
@@ -93,6 +95,15 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 	}
 
 	return &ret, nil
+}
+
+// AddDisposableDomains adds additional domains as disposable domains.
+func (v *Verifier) AddDisposableDomains(domains []string) *Verifier {
+	for _, d := range domains {
+		additionalDisposableDomains[d] = true
+		disposableSyncDomains.Store(d, struct{}{})
+	}
+	return v
 }
 
 // EnableGravatarCheck enables check gravatar,
