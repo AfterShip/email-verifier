@@ -1,5 +1,10 @@
 ## Change log
 
+v1.3.0
+----------
+* Support setting SOCKS5 proxy to perform `CheckSMTP()`
+* Make pkg compatible with earlier versions of Go
+
 v1.2.0
 ----------
 * Support adding custom disposable email domains 
