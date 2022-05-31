@@ -23,12 +23,11 @@ func (v *Verifier) CheckGravatar(email string) (*Gravatar, error) {
 		return nil, err
 	}
 	gravatarUrl := gravatarBaseUrl + emailMd5 + "?d=404"
-	cli := &http.Client{}
-	req, err := http.NewRequestWithContext(ctx, "GET", gravatarUrl, nil)
+	req, err := http.NewRequest("GET", gravatarUrl, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := cli.Do(req)
+	resp, err := http.DefaultClient.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, err
 	}
