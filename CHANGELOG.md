@@ -1,5 +1,11 @@
 ## Change log
 
+v1.3.1
+----------
+* Fix a bug: `IsDisposable()` matches the complete email domain
+* Update dependent metadata
+* Update Dependencies
+
 v1.3.0
 ----------
 * Support setting SOCKS5 proxy to perform `CheckSMTP()`
