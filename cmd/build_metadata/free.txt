@@ -152,7 +152,6 @@
 7mail7.com
 806.flu.cc
 8127ep.com
-8191.at
 88.am
 8848.net
 888.luk2.com
@@ -1082,7 +1081,6 @@ dazedandconfused.com
 dbzmail.com
 dca.net
 ddcrew.com
-ddnsfree.com
 de-a.org
 de-fake.instafly.cf
 de.sytes.net
@@ -1228,7 +1226,6 @@ dyceroprojects.com
 dygo.com
 dynamitemail.com
 dyndns.org
-dynu.net
 dz-geek.org
 dz17.net
 e-apollo.lv
@@ -1568,7 +1565,6 @@ forum.dk
 four.fackme.gq
 foxja.com
 foxmail.com
-fr.nf
 fraekkert.dk
 francanet.com.br
 francemel.fr
@@ -2498,7 +2494,6 @@ koreamail.com
 kormail.xyz
 kostenlosemailadresse.de
 kozmail.com
-kozow.com
 kpnmail.nl
 krim.ws
 krongthip.com
@@ -4048,7 +4043,6 @@ mail4u.info
 mail4you.usa.cc
 mail5.drama.tw
 mail6.dk
-mail666.ru
 mail72.com
 mail8.dk
 mailabconline.com
@@ -4560,7 +4554,6 @@ nospammail.net
 nostrajewellery.xyz
 notif.me
 notrnailinator.com
-now.im
 noway.pw
 noways.ddns.net
 nqav95zj0p.kro.kr
@@ -5003,7 +4996,6 @@ pw.r4.dns-cloud.net
 q.com
 q314.net
 qatarmail.com
-qc.to
 qibl.at
 qip.ru
 qipmail.net
@@ -5912,7 +5904,6 @@ uikd.com
 uk.flu.cc
 uk.igg.biz
 uk.nut.cc
-uk.to
 uk2.net
 uk2k.com
 uk2net.com
@@ -5932,7 +5923,6 @@ ultrapostman.com
 ummah.org
 umpire.com
 unbounded.com
-undo.it
 unforgettable.com
 ungdom.dk
 uni.de
@@ -6473,7 +6463,6 @@ zasve.info
 zavio.nl
 zcities.com
 zdnetmail.com
-ze.cx
 ze.tc
 zeeks.com
 zeepost.nl
