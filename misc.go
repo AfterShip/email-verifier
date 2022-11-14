@@ -22,7 +22,6 @@ func (v *Verifier) IsFreeDomain(domain string) bool {
 // IsDisposable checks if domain is a disposable domain
 func (v *Verifier) IsDisposable(domain string) bool {
 	domain = domainToASCII(domain)
-	d := parsedDomain(domain)
-	_, found := disposableSyncDomains.Load(d)
+	_, found := disposableSyncDomains.Load(domain)
 	return found
 }

@@ -7,34 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseDomainOK(t *testing.T) {
-	domain := "yahoo.com.is"
-	ret := parsedDomain(domain)
-	expected := "com.is"
-	assert.Equal(t, expected, ret)
-}
-
-func TestParseDomainWithUpperCase(t *testing.T) {
-	domain := "YaHoO.cOm"
-	ret := parsedDomain(domain)
-	expected := "yahoo.com"
-	assert.Equal(t, expected, ret)
-}
-
-func TestParseDomainOK_MakeSense(t *testing.T) {
-	domain := "t.example.yahoo.com"
-	ret := parsedDomain(domain)
-	expected := "yahoo.com"
-	assert.Equal(t, expected, ret)
-}
-
-func TestParseDomain_emptyString(t *testing.T) {
-	domain := ""
-	ret := parsedDomain(domain)
-	expected := ""
-	assert.Equal(t, expected, ret)
-}
-
 func TestDomainToASCII(t *testing.T) {
 	domain := "testingΣ✪✯☭➳卐.org"
 	ret := domainToASCII(domain)
