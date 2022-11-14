@@ -9,16 +9,6 @@ import (
 	"golang.org/x/net/idna"
 )
 
-// parsedDomain parses and returns second level domain
-func parsedDomain(domain string) string {
-	lowercaseDomain := strings.ToLower(domain)
-	parts := strings.Split(lowercaseDomain, ".")
-	if len(parts) >= 2 {
-		return parts[len(parts)-2] + "." + parts[len(parts)-1]
-	}
-	return lowercaseDomain
-}
-
 // splitDomain splits domain and returns sld and tld
 func splitDomain(domain string) (string, string) {
 	parts := strings.Split(domain, ".")
