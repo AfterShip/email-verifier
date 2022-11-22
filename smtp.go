@@ -6,10 +6,11 @@ import (
 	"math/rand"
 	"net"
 	"net/smtp"
+	"net/url"
 	"sync"
 	"time"
 
-	"h12.io/socks"
+	"golang.org/x/net/proxy"
 )
 
 // SMTP stores all information for SMTP verification lookup
@@ -223,5 +224,13 @@ func establishConnection(addr string) (net.Conn, error) {
 // establishProxyConnection connects to the address on the named network address
 // via proxy protocol
 func establishProxyConnection(addr, proxyURI string) (net.Conn, error) {
-	return socks.Dial(proxyURI)("tcp", addr)
+	u, err := url.Parse(proxyURI)
+	if err != nil {
+		return nil, err
+	}
+	dialer, err := proxy.FromURL(u, nil)
+	if err != nil {
+		return nil, err
+	}
+	return dialer.Dial("tcp", addr)
 }
