@@ -1,5 +1,9 @@
 ## Change log
 
+v1.3.2
+----------
+* Uses x/net/proxy to fix issue when using SOCKS5
+
 v1.3.1
 ----------
 * Fix a bug: `IsDisposable()` matches the complete email domain
