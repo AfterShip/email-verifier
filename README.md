@@ -105,7 +105,7 @@ func main() {
 }
 ```
 
-> Note: use `verifier.DisableCatchAllCheck()` disable catchAll check
+> Note: use `verifier.DisableCatchAllCheck()` to disable catchAll check
 
 > Note: because most of the ISPs block outgoing SMTP requests through port 25 to prevent email spamming, the module will not perform SMTP checking by default. You can initialize the verifier with  `EnableSMTPCheck()`  to enable such capability if port 25 is usable, 
 > or use a socks proxy to connect over SMTP
