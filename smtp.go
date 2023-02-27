@@ -23,8 +23,9 @@ type SMTP struct {
 }
 
 // CheckSMTP performs an email verification on the passed domain via SMTP
-//  - the domain is the passed email domain
-//  - username is used to check the deliverability of specific email address,
+//   - the domain is the passed email domain
+//   - username is used to check the deliverability of specific email address,
+//
 // if server is catch-all server, username will not be checked
 func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 	if !v.smtpCheckEnabled {
@@ -58,30 +59,38 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 	// Default sets catch-all to true
 	ret.CatchAll = true
 
-	// Checks the deliver ability of a randomly generated address in
-	// order to verify the existence of a catch-all and etc.
-	randomEmail := GenerateRandomEmail(domain)
-	if err := client.Rcpt(randomEmail); err != nil {
-		if e := ParseSMTPError(err); e != nil {
-			switch e.Message {
-			case ErrFullInbox:
-				ret.FullInbox = true
-			case ErrNotAllowed:
-				ret.Disabled = true
-			// If The client typically receives a `550 5.1.1` code as a reply to RCPT TO command,
-			// In most cases, this is because the recipient address does not exist.
-			case ErrServerUnavailable:
-				ret.CatchAll = false
-			default:
+	if v.catchAllCheckEnabled {
+		// Checks the deliver ability of a randomly generated address in
+		// order to verify the existence of a catch-all and etc.
+		randomEmail := GenerateRandomEmail(domain)
+		if err := client.Rcpt(randomEmail); err != nil {
+			if e := ParseSMTPError(err); e != nil {
+				switch e.Message {
+				case ErrFullInbox:
+					ret.FullInbox = true
+				case ErrNotAllowed:
+					ret.Disabled = true
+				// If The client typically receives a `550 5.1.1` code as a reply to RCPT TO command,
+				// In most cases, this is because the recipient address does not exist.
+				case ErrServerUnavailable:
+					ret.CatchAll = false
+				default:
+
+				}
 
 			}
+		}
 
+		// If the email server is a catch-all email server,
+		// no need to calibrate deliverable on a specific user
+		if ret.CatchAll {
+			return &ret, nil
 		}
 	}
 
-	// If the email server is a catch-all email server or no username provided,
+	// If no username provided,
 	// no need to calibrate deliverable on a specific user
-	if ret.CatchAll || username == "" {
+	if username == "" {
 		return &ret, nil
 	}
 
