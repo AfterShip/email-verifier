@@ -118,8 +118,8 @@ func TestNewSMTPClientFailed_WithInvalidProxy(t *testing.T) {
 }
 
 func TestNewSMTPClientFailed(t *testing.T) {
-	disposableDomain := "zzzz1717.com"
-	ret, err := newSMTPClient(disposableDomain, "")
+	domain := "zzzz171777.com"
+	ret, err := newSMTPClient(domain, "")
 	assert.Nil(t, ret)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "no such host"))
