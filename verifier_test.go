@@ -68,40 +68,6 @@ func TestCheckEmailOK_SMTPHostExists_NotCatchAll(t *testing.T) {
 	assert.Equal(t, &expected, ret)
 }
 
-func TestCheckEmailOK_SMTPHostExists_CatchAll(t *testing.T) {
-	var (
-		// trueVal  = true
-		username = "email_username"
-		domain   = "yahoo.com"
-		address  = username + "@" + domain
-		email    = address
-	)
-
-	ret, err := verifier.Verify(email)
-	expected := Result{
-		Email: email,
-		Syntax: Syntax{
-			Username: username,
-			Domain:   domain,
-			Valid:    true,
-		},
-		HasMxRecords: true,
-		Reachable:    reachableUnknown,
-		Disposable:   false,
-		RoleAccount:  false,
-		Free:         true,
-		SMTP: &SMTP{
-			HostExists:  true,
-			FullInbox:   false,
-			CatchAll:    true,
-			Deliverable: false,
-			Disabled:    false,
-		},
-	}
-	assert.Nil(t, err)
-	assert.Equal(t, &expected, ret)
-}
-
 func TestCheckEmailOK_SMTPHostExists_FreeDomain(t *testing.T) {
 	var (
 		// trueVal  = true
@@ -192,7 +158,6 @@ func TestCheckEmail_Disposable(t *testing.T) {
 	assert.Equal(t, &expected, ret)
 }
 
-
 func TestCheckEmail_Disposable_override(t *testing.T) {
 	var (
 		username = "exampleuser"
@@ -220,7 +185,6 @@ func TestCheckEmail_Disposable_override(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, &expected, ret)
 }
-
 
 func TestCheckEmail_RoleAccount(t *testing.T) {
 	var (

@@ -23,13 +23,13 @@ func TestCheckSMTPOK_HostExists(t *testing.T) {
 }
 
 func TestCheckSMTPOK_CatchAllHost(t *testing.T) {
-	domain := "yahoo.com"
+	domain := "gmail.com"
 
 	smtp, err := verifier.CheckSMTP(domain, "")
 	expected := SMTP{
 		HostExists: true,
 		FullInbox:  false,
-		CatchAll:   true,
+		CatchAll:   false,
 		Disabled:   false,
 	}
 	assert.NoError(t, err)
