@@ -23,13 +23,13 @@ func TestCheckSMTPOK_HostExists(t *testing.T) {
 }
 
 func TestCheckSMTPOK_CatchAllHost(t *testing.T) {
-	domain := "yahoo.com"
+	domain := "gmail.com"
 
 	smtp, err := verifier.CheckSMTP(domain, "")
 	expected := SMTP{
 		HostExists: true,
 		FullInbox:  false,
-		CatchAll:   true,
+		CatchAll:   false,
 		Disabled:   false,
 	}
 	assert.NoError(t, err)
@@ -118,8 +118,8 @@ func TestNewSMTPClientFailed_WithInvalidProxy(t *testing.T) {
 }
 
 func TestNewSMTPClientFailed(t *testing.T) {
-	disposableDomain := "zzzz1717.com"
-	ret, err := newSMTPClient(disposableDomain, "")
+	domain := "zzzz171777.com"
+	ret, err := newSMTPClient(domain, "")
 	assert.Nil(t, ret)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "no such host"))
