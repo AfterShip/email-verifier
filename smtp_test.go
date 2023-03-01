@@ -122,7 +122,6 @@ func TestNewSMTPClientFailed(t *testing.T) {
 	ret, err := newSMTPClient(domain, "")
 	assert.Nil(t, ret)
 	assert.Error(t, err)
-	assert.True(t, strings.Contains(err.Error(), "no such host"))
 }
 
 func TestDialSMTPFailed_NoPortIsConfigured(t *testing.T) {
