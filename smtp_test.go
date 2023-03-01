@@ -103,14 +103,14 @@ func TestCheckSMTPOK_HostNotExists(t *testing.T) {
 }
 
 func TestNewSMTPClientOK(t *testing.T) {
-	domain := "yahoo.com"
+	domain := "gmail.com"
 	ret, err := newSMTPClient(domain, "")
 	assert.NotNil(t, ret)
 	assert.Nil(t, err)
 }
 
 func TestNewSMTPClientFailed_WithInvalidProxy(t *testing.T) {
-	domain := "yahoo.com"
+	domain := "gmail.com"
 	proxyURI := "socks5://user:password@127.0.0.1:1080?timeout=5s"
 	ret, err := newSMTPClient(domain, proxyURI)
 	assert.Nil(t, ret)
