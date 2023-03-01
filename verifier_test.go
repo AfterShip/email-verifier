@@ -72,7 +72,7 @@ func TestCheckEmailOK_SMTPHostExists_FreeDomain(t *testing.T) {
 	var (
 		// trueVal  = true
 		username = "email_username"
-		domain   = "yahoo.com"
+		domain   = "gmail.com"
 		address  = username + "@" + domain
 		email    = address
 	)
@@ -86,14 +86,14 @@ func TestCheckEmailOK_SMTPHostExists_FreeDomain(t *testing.T) {
 			Valid:    true,
 		},
 		HasMxRecords: true,
-		Reachable:    reachableUnknown,
+		Reachable:    reachableNo,
 		Disposable:   false,
 		RoleAccount:  false,
 		Free:         true,
 		SMTP: &SMTP{
 			HostExists:  true,
 			FullInbox:   false,
-			CatchAll:    true,
+			CatchAll:    false,
 			Deliverable: false,
 			Disabled:    false,
 		},
