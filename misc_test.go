@@ -9,7 +9,7 @@ import (
 var verifier = NewVerifier().EnableSMTPCheck()
 
 func TestIsFreeDomain_True(t *testing.T) {
-	domain := "yahoo.com"
+	domain := "gmail.com"
 
 	isFreeDomain := verifier.IsFreeDomain(domain)
 	assert.True(t, isFreeDomain)
