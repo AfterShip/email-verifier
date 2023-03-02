@@ -36,6 +36,35 @@ func TestCheckSMTPOK_CatchAllHost(t *testing.T) {
 	assert.Equal(t, &expected, smtp)
 }
 
+func TestCheckSMTPOK_NoCatchAllHost(t *testing.T) {
+	domain := "gmail.com"
+
+	smtp, err := verifier.CheckSMTP(domain, "")
+	expected := SMTP{
+		HostExists: true,
+		FullInbox:  false,
+		CatchAll:   false,
+		Disabled:   false,
+	}
+	assert.NoError(t, err)
+	assert.Equal(t, &expected, smtp)
+}
+
+func TestCheckSMTPOK_NoCatchAllHostCatchAllCheckDisabled(t *testing.T) {
+	domain := "gmail.com"
+
+	var verifier = NewVerifier().EnableSMTPCheck().DisableCatchAllCheck()
+	smtp, err := verifier.CheckSMTP(domain, "")
+	expected := SMTP{
+		HostExists: true,
+		FullInbox:  false,
+		CatchAll:   true,
+		Disabled:   false,
+	}
+	assert.NoError(t, err)
+	assert.Equal(t, &expected, smtp)
+}
+
 func TestCheckSMTPOK_UpdateFromEmail(t *testing.T) {
 	domain := "github.com"
 	verifier.FromEmail("from@email.top")

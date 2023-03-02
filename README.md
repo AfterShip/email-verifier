@@ -11,7 +11,7 @@
 ## Features
 
 - Email Address Validation: validates if a string contains a valid email.
-- Email Verification Lookup via SMTP: performs an email verification on the passed email
+- Email Verification Lookup via SMTP: performs an email verification on the passed email (catchAll detection enabled by default)
 - MX Validation: checks the DNS MX records for the given domain name
 - Misc Validation: including Free email provider check, Role account validation, Disposable emails address (DEA) validation
 - Email Reachability: checks how confident in sending an email to the address
@@ -103,6 +103,15 @@ func main() {
     fmt.Println("smtp validation result: ", ret)
 
 }
+```
+
+If you want to disable catchAll checking, use the `DisableCatchAllCheck()` switch (in effect only when SMTP verification is enabled).
+
+```go
+ verifier = emailverifier.
+        NewVerifier().
+        EnableSMTPCheck().
+        DisableCatchAllCheck()
 ```
 
 > Note: because most of the ISPs block outgoing SMTP requests through port 25 to prevent email spamming, the module will not perform SMTP checking by default. You can initialize the verifier with  `EnableSMTPCheck()`  to enable such capability if port 25 is usable, 

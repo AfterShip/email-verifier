@@ -7,6 +7,7 @@ import (
 // Verifier is an email verifier. Create one by calling NewVerifier
 type Verifier struct {
 	smtpCheckEnabled     bool      // SMTP check enabled or disabled (disabled by default)
+	catchAllCheckEnabled bool      // SMTP catchAll check enabled or disabled (enabled by default)
 	domainSuggestEnabled bool      // whether suggest a most similar correct domain or not (disabled by default)
 	gravatarCheckEnabled bool      // gravatar check enabled or disabled (disabled by default)
 	fromEmail            string    // name to use in the `EHLO:` SMTP command, defaults to "user@example.org"
@@ -43,8 +44,9 @@ func init() {
 // NewVerifier creates a new email verifier
 func NewVerifier() *Verifier {
 	return &Verifier{
-		fromEmail: defaultFromEmail,
-		helloName: defaultHelloName,
+		fromEmail:            defaultFromEmail,
+		helloName:            defaultHelloName,
+		catchAllCheckEnabled: true,
 	}
 }
 
@@ -132,6 +134,20 @@ func (v *Verifier) EnableSMTPCheck() *Verifier {
 // DisableSMTPCheck disables check email by smtp
 func (v *Verifier) DisableSMTPCheck() *Verifier {
 	v.smtpCheckEnabled = false
+	return v
+}
+
+// EnableCatchAllCheck enables catchAll check by smtp
+// for most ISPs block outgoing catchAll requests through port 25, to prevent spam,
+// we don't check catchAll by default
+func (v *Verifier) EnableCatchAllCheck() *Verifier {
+	v.catchAllCheckEnabled = true
+	return v
+}
+
+// DisableCatchAllCheck disables catchAll check by smtp
+func (v *Verifier) DisableCatchAllCheck() *Verifier {
+	v.catchAllCheckEnabled = false
 	return v
 }
 
