@@ -105,7 +105,7 @@ func main() {
 }
 ```
 
-If you wish to disable the catchAll check, use the `DisableCatchAllCheck()` switch (it is in effect only if the SMTP check is enabled) e.g.
+If you want to disable catchAll checking, use the `DisableCatchAllCheck()` switch (in effect only when SMTP verification is enabled).
 
 ```go
  verifier = emailverifier.
