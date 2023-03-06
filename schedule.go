@@ -24,12 +24,17 @@ func newSchedule(period time.Duration, jobFunc interface{}, params ...interface{
 }
 
 // start triggers the schedule job
-func (s *schedule) start() {
+func (s *schedule) start(updateAtOnce bool) {
 	if s.running {
 		return
 	}
 
 	s.running = true
+
+	if updateAtOnce {
+		callJobFuncWithParams(s.jobFunc, s.jobParams)
+	}
+
 	go func() {
 		for {
 			select {

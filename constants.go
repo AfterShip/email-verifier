@@ -16,7 +16,7 @@ const (
 
 	alphanumeric = "abcdefghijklmnopqrstuvwxyz0123456789"
 
-	disposableDataURL = "https://raw.githubusercontent.com/disposable/disposable-email-domains/master/domains.json"
+	defaultDisposableDataURL = "https://raw.githubusercontent.com/disposable/disposable-email-domains/master/domains.json"
 
 	gravatarBaseUrl    = "https://www.gravatar.com/avatar/"
 	gravatarDefaultMd5 = "d5fe5cbcc31cff5f8ac010db72eb000c"

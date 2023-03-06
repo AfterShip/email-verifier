@@ -164,12 +164,17 @@ func (v *Verifier) DisableDomainSuggest() *Verifier {
 }
 
 // EnableAutoUpdateDisposable enables update disposable domains automatically
-func (v *Verifier) EnableAutoUpdateDisposable() *Verifier {
+func (v *Verifier) EnableAutoUpdateDisposable(updateAtOnce bool, period time.Duration, disposableDataURL *string) *Verifier {
 	v.stopCurrentSchedule()
 
+	if disposableDataURL == nil || *disposableDataURL == "" {
+		defaultUrl := defaultDisposableDataURL
+		disposableDataURL = &defaultUrl
+	}
+
 	// update disposable domains records daily
-	v.schedule = newSchedule(24*time.Hour, updateDisposableDomains, disposableDataURL)
-	v.schedule.start()
+	v.schedule = newSchedule(period, updateDisposableDomains, *disposableDataURL)
+	v.schedule.start(updateAtOnce)
 	return v
 }
 
