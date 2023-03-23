@@ -1,5 +1,12 @@
 ## Change log
 
+v1.3.3
+----------
+* Making catchAll detection optional [#76](https://github.com/AfterShip/email-verifier/pull/76)
+* When the user enables `EnableAutoUpdateDisposable()`, the disposable domains configuration is updated once by default.
+* Update test cases
+* Update Dependencies
+
 v1.3.2
 ----------
 * Uses x/net/proxy to fix issue when using SOCKS5
