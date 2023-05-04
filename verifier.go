@@ -1,20 +1,21 @@
 package emailverifier
 
 import (
+	"net/http"
 	"time"
 )
 
 // Verifier is an email verifier. Create one by calling NewVerifier
 type Verifier struct {
-	smtpCheckEnabled     bool      // SMTP check enabled or disabled (disabled by default)
-	catchAllCheckEnabled bool      // SMTP catchAll check enabled or disabled (enabled by default)
-	domainSuggestEnabled bool      // whether suggest a most similar correct domain or not (disabled by default)
-	gravatarCheckEnabled bool      // gravatar check enabled or disabled (disabled by default)
-	fromEmail            string    // name to use in the `EHLO:` SMTP command, defaults to "user@example.org"
-	helloName            string    // email to use in the `MAIL FROM:` SMTP command. defaults to `localhost`
-	schedule             *schedule // schedule represents a job schedule
-
-	proxyURI string // use a SOCKS5 proxy to verify the email,
+	smtpCheckEnabled     bool              // SMTP check enabled or disabled (disabled by default)
+	catchAllCheckEnabled bool              // SMTP catchAll check enabled or disabled (enabled by default)
+	domainSuggestEnabled bool              // whether suggest a most similar correct domain or not (disabled by default)
+	gravatarCheckEnabled bool              // gravatar check enabled or disabled (disabled by default)
+	fromEmail            string            // name to use in the `EHLO:` SMTP command, defaults to "user@example.org"
+	helloName            string            // email to use in the `MAIL FROM:` SMTP command. defaults to `localhost`
+	schedule             *schedule         // schedule represents a job schedule
+	proxyURI             string            // use a SOCKS5 proxy to verify the email,
+	apiVerifiers         []smtpAPIVerifier // currently support gmail & yahoo, further contributions are welcomed.
 }
 
 // Result is the result of Email Verification
@@ -128,6 +129,22 @@ func (v *Verifier) DisableGravatarCheck() *Verifier {
 // we don't check smtp by default
 func (v *Verifier) EnableSMTPCheck() *Verifier {
 	v.smtpCheckEnabled = true
+	return v
+}
+
+// EnableGmailCheckByAPI Gmail API verifier is activated when EnableSMTPCheck.
+// If client is nil, will use http.DefaultClient.
+// Certain API verifiers require additional input, for instance, Hotmail necessitates the use of a WebDriver.
+// Gmail API verifier only need a http client.
+func (v *Verifier) EnableGmailCheckByAPI(client *http.Client) *Verifier {
+	v.apiVerifiers = append(v.apiVerifiers, newGmailAPIVerifier(client))
+	return v
+}
+
+// EnableYahooCheckByAPI Yahoo API verifier is activated when EnableSMTPCheck.
+// If client is nil, will use http.DefaultClient
+func (v *Verifier) EnableYahooCheckByAPI(client *http.Client) *Verifier {
+	v.apiVerifiers = append(v.apiVerifiers, newYahooAPIVerifier(client))
 	return v
 }
 
