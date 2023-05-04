@@ -43,15 +43,15 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 		return &ret, ParseSMTPError(err)
 	}
 
+	// Defer quit the SMTP connection
+	defer client.Close()
+
 	// Check by api when enabled and host recognized.
 	for _, apiVerifier := range v.apiVerifiers {
 		if apiVerifier.isSupported(strings.ToLower(mx.Host)) {
 			return apiVerifier.check(domain, username)
 		}
 	}
-
-	// Defer quit the SMTP connection
-	defer client.Close()
 
 	// Sets the HELO/EHLO hostname
 	if err = client.Hello(v.helloName); err != nil {
