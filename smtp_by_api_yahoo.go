@@ -4,15 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"regexp"
 	"strings"
 )
 
 const (
-	SIGNUP_PAGE = "https://login.yahoo.com/account/create?specId=yidReg&lang=en-US&src=&done=https%3A%2F%2Fwww.yahoo.com&display=login"
-	SIGNUP_API  = "https://login.yahoo.com/account/module/create?validateField=yid"
+	SIGNUP_PAGE = "https://login.yahoo.com/account/create?specId=yidregsimplified&lang=en-US&src=&done=https%3A%2F%2Fwww.yahoo.com&display=login"
+	SIGNUP_API  = "https://login.yahoo.com/account/module/create?validateField=userId"
 	// USER_AGENT Fake one to use in API requests
 	USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36"
 )
@@ -46,15 +46,19 @@ func (y yahoo) check(domain, username string) (*SMTP, error) {
 	}
 	defer signUpPageResp.Body.Close()
 	acrumb := getAcrumb(cookies)
-	if acrumb == "" {
-		return nil, errors.New("yahoo check by api, no acrumb")
-	}
-	resp, err := y.sendValidateRequest(username, acrumb, cookies)
+	sessionIndex, err := getSessionIndex(signUpPageResp)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-	usernameExists, err := checkUsernameExists(resp)
+	if acrumb == "" {
+		return nil, errors.New("yahoo check by api, no acrumb")
+	}
+	validateResp, err := y.sendValidateRequest(domain, username, acrumb, sessionIndex, cookies)
+	if err != nil {
+		return nil, err
+	}
+	defer validateResp.Body.Close()
+	usernameExists, err := checkUsernameExists(validateResp)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +68,23 @@ func (y yahoo) check(domain, username string) (*SMTP, error) {
 	}, nil
 }
 
+func getSessionIndex(resp *http.Response) (string, error) {
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	re := regexp.MustCompile(`value="([^"]+)" name="sessionIndex"`)
+
+	// 在响应体中查找匹配项
+	match := re.FindSubmatch(respBytes)
+	if len(match) > 1 {
+		return string(match[1]), nil
+	}
+	return "", errors.New("yahoo check by api, no sessionIndex")
+}
+
 func checkUsernameExists(resp *http.Response) (usernameExists bool, err error) {
-	respBytes, err := io.ReadAll(resp.Body)
+	respBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return false, err
 	}
@@ -81,22 +100,26 @@ func checkUsernameExists(resp *http.Response) (usernameExists bool, err error) {
 		return false, err
 	}
 	for _, item := range res.Errors {
-		if item.Name == "yid" && item.Error == "IDENTIFIER_EXISTS" {
+		if item.Name == "userId" && item.Error == "IDENTIFIER_EXISTS" {
 			return true, nil
 		}
 	}
 	return false, nil
 }
 
-func (y yahoo) sendValidateRequest(username string, acrumb string, cookies []*http.Cookie) (*http.Response, error) {
+func (y yahoo) sendValidateRequest(domain, username, acrumb, sessionIndex string, cookies []*http.Cookie) (*http.Response, error) {
 	data, err := json.Marshal(struct {
-		Acrumb string `json:"acrumb"`
-		SpecId string `json:"specId"`
-		Yid    string `json:"yid"`
+		Acrumb       string `json:"acrumb"`
+		SpecId       string `json:"specId"`
+		Yid          string `json:"userId"`
+		SessionIndex string `json:"sessionIndex"`
+		YidDomain    string `json:"yidDomain"`
 	}{
-		Acrumb: acrumb,
-		SpecId: "yidReg",
-		Yid:    username,
+		Acrumb:       acrumb,
+		SpecId:       "yidregsimplified",
+		Yid:          username,
+		SessionIndex: sessionIndex,
+		YidDomain:    domain,
 	})
 	if err != nil {
 		return nil, err
