@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 )
 
 const (
@@ -37,29 +38,26 @@ func (y yahoo) isSupported(host string) bool {
 }
 
 func (y yahoo) check(domain, username string) (*SMTP, error) {
-	signUpPageResp, err := y.toSignUpPage()
+	cookies, signUpPageRespBytes, err := y.toSignUpPage()
 	if err != nil {
 		return nil, err
 	}
-	cookies := signUpPageResp.Cookies()
 	if len(cookies) == 0 {
 		return nil, errors.New("yahoo check by api, no cookies")
 	}
-	defer signUpPageResp.Body.Close()
 	acrumb := getAcrumb(cookies)
-	sessionIndex, err := getSessionIndex(signUpPageResp)
-	if err != nil {
-		return nil, err
-	}
 	if acrumb == "" {
 		return nil, errors.New("yahoo check by api, no acrumb")
 	}
-	validateResp, err := y.sendValidateRequest(domain, username, acrumb, sessionIndex, cookies)
+	sessionIndex := getSessionIndex(signUpPageRespBytes)
+	if sessionIndex == "" {
+		return nil, errors.New("yahoo check by api, no sessionIndex")
+	}
+	validateRespBytes, err := y.sendValidateRequest(domain, username, acrumb, sessionIndex, cookies)
 	if err != nil {
 		return nil, err
 	}
-	defer validateResp.Body.Close()
-	usernameExists, err := checkUsernameExists(validateResp)
+	usernameExists, err := checkUsernameExists(validateRespBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -69,26 +67,18 @@ func (y yahoo) check(domain, username string) (*SMTP, error) {
 	}, nil
 }
 
-func getSessionIndex(resp *http.Response) (string, error) {
-	respBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
+func getSessionIndex(respBytes []byte) string {
 	re := regexp.MustCompile(`value="([^"]+)" name="sessionIndex"`)
 
 	// 在响应体中查找匹配项
 	match := re.FindSubmatch(respBytes)
 	if len(match) > 1 {
-		return string(match[1]), nil
+		return string(match[1])
 	}
-	return "", errors.New("yahoo check by api, no sessionIndex")
+	return ""
 }
 
-func checkUsernameExists(resp *http.Response) (usernameExists bool, err error) {
-	respBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return false, err
-	}
+func checkUsernameExists(respBytes []byte) (usernameExists bool, err error) {
 	type errItem struct {
 		Name  string `json:"name"`
 		Error string `json:"error"`
@@ -108,7 +98,7 @@ func checkUsernameExists(resp *http.Response) (usernameExists bool, err error) {
 	return false, nil
 }
 
-func (y yahoo) sendValidateRequest(domain, username, acrumb, sessionIndex string, cookies []*http.Cookie) (*http.Response, error) {
+func (y yahoo) sendValidateRequest(domain, username, acrumb, sessionIndex string, cookies []*http.Cookie) ([]byte, error) {
 	data, err := json.Marshal(struct {
 		Acrumb       string `json:"acrumb"`
 		SpecId       string `json:"specId"`
@@ -125,7 +115,9 @@ func (y yahoo) sendValidateRequest(domain, username, acrumb, sessionIndex string
 	if err != nil {
 		return nil, err
 	}
-	request, err := http.NewRequest(http.MethodPost, SIGNUP_API, bytes.NewReader(data))
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, SIGNUP_API, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
@@ -134,16 +126,29 @@ func (y yahoo) sendValidateRequest(domain, username, acrumb, sessionIndex string
 	}
 	request.Header.Add("X-Requested-With", "XMLHttpRequest")
 	request.Header.Add("Content-Type", "application/json; charset=UTF-8")
-	return y.client.Do(request)
-}
-
-func (y yahoo) toSignUpPage() (*http.Response, error) {
-	request, err := http.NewRequestWithContext(context.Background(), http.MethodGet, SIGNUP_PAGE, nil)
+	resp, err := y.client.Do(request)
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
+	return ioutil.ReadAll(resp.Body)
+}
+
+func (y yahoo) toSignUpPage() ([]*http.Cookie, []byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, SIGNUP_PAGE, nil)
+	if err != nil {
+		return nil, nil, err
+	}
 	request.Header.Add("User-Agent", USER_AGENT)
-	return y.client.Do(request)
+	resp, err := y.client.Do(request)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer resp.Body.Close()
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	return resp.Cookies(), respBytes, err
 }
 
 func getAcrumb(cookies []*http.Cookie) string {

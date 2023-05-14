@@ -1,9 +1,11 @@
 package emailverifier
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 )
 
 const (
@@ -28,8 +30,14 @@ func (g gmail) isSupported(host string) bool {
 }
 
 func (g gmail) check(domain, username string) (*SMTP, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	email := fmt.Sprintf("%s@%s", username, domain)
-	resp, err := g.client.Get(fmt.Sprintf(glxuPageFormat, email))
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf(glxuPageFormat, email), nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := g.client.Do(request)
 	if err != nil {
 		return &SMTP{}, err
 	}
