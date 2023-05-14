@@ -6,8 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//TODO add tests
-
 func TestGmailCheckByAPI(t *testing.T) {
 	gmailAPIVerifier := newGmailAPIVerifier(nil)
 
