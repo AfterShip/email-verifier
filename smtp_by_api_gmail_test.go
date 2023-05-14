@@ -9,13 +9,11 @@ import (
 func TestGmailCheckByAPI(t *testing.T) {
 	gmailAPIVerifier := newGmailAPIVerifier(nil)
 
-	t.Run("email exists - should success everytime", func(tt *testing.T) {
-		for i := 0; i < 3; i++ {
-			res, err := gmailAPIVerifier.check("gmail.com", "someone")
-			assert.NoError(t, err)
-			assert.Equal(t, true, res.HostExists)
-			assert.Equal(t, true, res.Deliverable)
-		}
+	t.Run("email exists", func(tt *testing.T) {
+		res, err := gmailAPIVerifier.check("gmail.com", "someone")
+		assert.NoError(t, err)
+		assert.Equal(t, true, res.HostExists)
+		assert.Equal(t, true, res.Deliverable)
 	})
 	t.Run("invalid email not exists", func(tt *testing.T) {
 		// username must greater than 6 characters

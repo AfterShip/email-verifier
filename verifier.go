@@ -142,19 +142,19 @@ func (v *Verifier) EnableGmailCheckByAPI(client *http.Client) *Verifier {
 	return v
 }
 
+// EnableYahooCheckByAPI Yahoo API verifier is activated when EnableSMTPCheck.
+// If client is nil, will use http.DefaultClient
+func (v *Verifier) EnableYahooCheckByAPI(client *http.Client) *Verifier {
+	v.apiVerifiers["yahoo"] = newYahooAPIVerifier(client)
+	return v
+}
+
 func (v *Verifier) DisableGmailCheckByAPI() {
 	delete(v.apiVerifiers, "gmail")
 }
 
 func (v *Verifier) DisableYahooCheckByAPI() {
 	delete(v.apiVerifiers, "yahoo")
-}
-
-// EnableYahooCheckByAPI Yahoo API verifier is activated when EnableSMTPCheck.
-// If client is nil, will use http.DefaultClient
-func (v *Verifier) EnableYahooCheckByAPI(client *http.Client) *Verifier {
-	v.apiVerifiers["yahoo"] = newYahooAPIVerifier(client)
-	return v
 }
 
 // DisableSMTPCheck disables check email by smtp
