@@ -33,7 +33,7 @@ func (g gmail) check(domain, username string) (*SMTP, error) {
 	if err != nil {
 		return &SMTP{}, err
 	}
-
+	defer resp.Body.Close()
 	emailExists := len(resp.Cookies()) > 0
 
 	return &SMTP{

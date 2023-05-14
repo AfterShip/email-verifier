@@ -2,6 +2,7 @@ package emailverifier
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -125,6 +126,9 @@ func (y yahoo) sendValidateRequest(domain, username, acrumb, sessionIndex string
 		return nil, err
 	}
 	request, err := http.NewRequest(http.MethodPost, SIGNUP_API, bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
 	for _, c := range cookies {
 		request.AddCookie(c)
 	}
@@ -134,7 +138,7 @@ func (y yahoo) sendValidateRequest(domain, username, acrumb, sessionIndex string
 }
 
 func (y yahoo) toSignUpPage() (*http.Response, error) {
-	request, err := http.NewRequest(http.MethodGet, SIGNUP_PAGE, nil)
+	request, err := http.NewRequestWithContext(context.Background(), http.MethodGet, SIGNUP_PAGE, nil)
 	if err != nil {
 		return nil, err
 	}
