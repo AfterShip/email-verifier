@@ -85,15 +85,15 @@ func TestCheckSMTPOK_ByApi(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		c := c
-		t.Run(c.name, func(tt *testing.T) {
+		test := c
+		t.Run(test.name, func(tt *testing.T) {
 			verifier.EnableGmailCheckByAPI(nil)
 			verifier.EnableYahooCheckByAPI(nil)
 			defer verifier.DisableGmailCheckByAPI()
 			defer verifier.DisableYahooCheckByAPI()
-			smtp, err := verifier.CheckSMTP(c.domain, c.username)
+			smtp, err := verifier.CheckSMTP(test.domain, test.username)
 			assert.NoError(t, err)
-			assert.Equal(t, c.expected, smtp)
+			assert.Equal(t, test.expected, smtp)
 		})
 	}
 }
