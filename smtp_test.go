@@ -85,6 +85,7 @@ func TestCheckSMTPOK_ByApi(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
+		c := c
 		t.Run(c.name, func(tt *testing.T) {
 			verifier.EnableGmailCheckByAPI(nil)
 			verifier.EnableYahooCheckByAPI(nil)
