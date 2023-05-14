@@ -124,7 +124,7 @@ func newSMTPClient(domain, proxyURI string) (*smtp.Client, *net.MX, error) {
 	}
 	// Create a channel for receiving response from
 	ch := make(chan interface{}, 1)
-	var clientMX *net.MX
+	selectedMXCh := make(chan *net.MX, 1)
 
 	// Done indicates if we're still waiting on dial responses
 	var done bool
@@ -151,7 +151,7 @@ func newSMTPClient(domain, proxyURI string) (*smtp.Client, *net.MX, error) {
 			case !done:
 				done = true
 				ch <- c
-				clientMX = mxRecords[index]
+				selectedMXCh <- mxRecords[index]
 			default:
 				c.Close()
 			}
@@ -165,7 +165,7 @@ func newSMTPClient(domain, proxyURI string) (*smtp.Client, *net.MX, error) {
 		res := <-ch
 		switch r := res.(type) {
 		case *smtp.Client:
-			return r, clientMX, nil
+			return r, <-selectedMXCh, nil
 		case error:
 			errs = append(errs, r)
 			if len(errs) == len(mxRecords) {
