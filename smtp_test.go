@@ -27,13 +27,13 @@ func TestCheckSMTPOK_ByApi(t *testing.T) {
 		name     string
 		domain   string
 		username string
-		expected SMTP
+		expected *SMTP
 	}{
 		{
 			name:     "gmail exists",
 			domain:   "gmail.com",
 			username: "someone",
-			expected: SMTP{
+			expected: &SMTP{
 				HostExists:  true,
 				Deliverable: true,
 			},
@@ -42,7 +42,7 @@ func TestCheckSMTPOK_ByApi(t *testing.T) {
 			name:     "gmail no exists",
 			domain:   "gmail.com",
 			username: "hello",
-			expected: SMTP{
+			expected: &SMTP{
 				HostExists:  true,
 				Deliverable: false,
 			},
@@ -51,7 +51,7 @@ func TestCheckSMTPOK_ByApi(t *testing.T) {
 			name:     "yahoo exists",
 			domain:   "yahoo.com",
 			username: "someone",
-			expected: SMTP{
+			expected: &SMTP{
 				HostExists:  true,
 				Deliverable: true,
 			},
@@ -60,7 +60,7 @@ func TestCheckSMTPOK_ByApi(t *testing.T) {
 			name:     "myyahoo exists",
 			domain:   "myyahoo.com",
 			username: "someone",
-			expected: SMTP{
+			expected: &SMTP{
 				HostExists:  true,
 				Deliverable: true,
 			},
@@ -69,7 +69,7 @@ func TestCheckSMTPOK_ByApi(t *testing.T) {
 			name:     "yahoo no exists",
 			domain:   "yahoo.com",
 			username: "123",
-			expected: SMTP{
+			expected: &SMTP{
 				HostExists:  true,
 				Deliverable: false,
 			},
@@ -78,7 +78,7 @@ func TestCheckSMTPOK_ByApi(t *testing.T) {
 			name:     "myyahoo no exists",
 			domain:   "myyahoo.com",
 			username: "123",
-			expected: SMTP{
+			expected: &SMTP{
 				HostExists:  true,
 				Deliverable: false,
 			},
@@ -92,7 +92,7 @@ func TestCheckSMTPOK_ByApi(t *testing.T) {
 			defer verifier.DisableYahooCheckByAPI()
 			smtp, err := verifier.CheckSMTP(c.domain, c.username)
 			assert.NoError(t, err)
-			assert.Equal(t, &c.expected, smtp)
+			assert.Equal(t, c.expected, smtp)
 		})
 	}
 }
