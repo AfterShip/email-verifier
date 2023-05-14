@@ -1,6 +1,7 @@
 package emailverifier
 
 import (
+	"net/http"
 	"strings"
 	"syscall"
 	"testing"
@@ -8,7 +9,93 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//TODO add tests
+func TestCheckSMTPOK_WithClient(t *testing.T) {
+	domain := "gmail.com"
+	verifier.EnableGmailCheckByAPI(http.DefaultClient)
+	defer verifier.DisableGmailCheckByAPI()
+	smtp, err := verifier.CheckSMTP(domain, "someone")
+	expected := SMTP{
+		HostExists:  true,
+		Deliverable: true,
+	}
+	assert.NoError(t, err)
+	assert.Equal(t, &expected, smtp)
+}
+
+func TestCheckSMTPOK_ByApi(t *testing.T) {
+	cases := []struct {
+		name     string
+		domain   string
+		username string
+		expected SMTP
+	}{
+		{
+			name:     "gmail exists",
+			domain:   "gmail.com",
+			username: "someone",
+			expected: SMTP{
+				HostExists:  true,
+				Deliverable: true,
+			},
+		},
+		{
+			name:     "gmail no exists",
+			domain:   "gmail.com",
+			username: "hello",
+			expected: SMTP{
+				HostExists:  true,
+				Deliverable: false,
+			},
+		},
+		{
+			name:     "yahoo exists",
+			domain:   "yahoo.com",
+			username: "someone",
+			expected: SMTP{
+				HostExists:  true,
+				Deliverable: true,
+			},
+		},
+		{
+			name:     "myyahoo exists",
+			domain:   "myyahoo.com",
+			username: "someone",
+			expected: SMTP{
+				HostExists:  true,
+				Deliverable: true,
+			},
+		},
+		{
+			name:     "yahoo no exists",
+			domain:   "yahoo.com",
+			username: "123",
+			expected: SMTP{
+				HostExists:  true,
+				Deliverable: false,
+			},
+		},
+		{
+			name:     "myyahoo no exists",
+			domain:   "myyahoo.com",
+			username: "123",
+			expected: SMTP{
+				HostExists:  true,
+				Deliverable: false,
+			},
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(tt *testing.T) {
+			verifier.EnableGmailCheckByAPI(nil)
+			verifier.EnableYahooCheckByAPI(nil)
+			defer verifier.DisableGmailCheckByAPI()
+			defer verifier.DisableYahooCheckByAPI()
+			smtp, err := verifier.CheckSMTP(c.domain, c.username)
+			assert.NoError(t, err)
+			assert.Equal(t, &c.expected, smtp)
+		})
+	}
+}
 
 func TestCheckSMTPOK_HostExists(t *testing.T) {
 	domain := "github.com"

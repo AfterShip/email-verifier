@@ -69,8 +69,6 @@ func (y yahoo) check(domain, username string) (*SMTP, error) {
 
 func getSessionIndex(respBytes []byte) string {
 	re := regexp.MustCompile(`value="([^"]+)" name="sessionIndex"`)
-
-	// 在响应体中查找匹配项
 	match := re.FindSubmatch(respBytes)
 	if len(match) > 1 {
 		return string(match[1])

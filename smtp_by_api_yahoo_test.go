@@ -7,8 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//TODO add tests
-
 func TestYahooCheckByAPI(t *testing.T) {
 	yahooAPIVerifier := newYahooAPIVerifier(nil)
 	t.Run("email exists", func(tt *testing.T) {
