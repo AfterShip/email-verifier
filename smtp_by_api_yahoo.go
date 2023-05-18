@@ -32,6 +32,20 @@ type yahoo struct {
 	client *http.Client
 }
 
+type yahooValidateReq struct {
+	Domain, Username, Acrumb, SessionIndex string
+	Cookies                                []*http.Cookie
+}
+
+type yahooErrorResp struct {
+	Errors []errItem `json:"errors"`
+}
+
+type errItem struct {
+	Name  string `json:"name"`
+	Error string `json:"error"`
+}
+
 func (y yahoo) isSupported(host string) bool {
 	// FIXME Is this `contains` too lenient?
 	return strings.Contains(host, "yahoo")
@@ -45,22 +59,28 @@ func (y yahoo) check(domain, username string) (*SMTP, error) {
 	if len(cookies) == 0 {
 		return nil, errors.New("yahoo check by api, no cookies")
 	}
+
 	acrumb := getAcrumb(cookies)
 	if acrumb == "" {
 		return nil, errors.New("yahoo check by api, no acrumb")
 	}
+
 	sessionIndex := getSessionIndex(signUpPageRespBytes)
 	if sessionIndex == "" {
 		return nil, errors.New("yahoo check by api, no sessionIndex")
 	}
-	validateRespBytes, err := y.sendValidateRequest(domain, username, acrumb, sessionIndex, cookies)
+
+	yahooErrResp, err := y.sendValidateRequest(yahooValidateReq{
+		Domain:       domain,
+		Username:     username,
+		Acrumb:       acrumb,
+		SessionIndex: sessionIndex,
+		Cookies:      cookies,
+	})
 	if err != nil {
 		return nil, err
 	}
-	usernameExists, err := checkUsernameExists(validateRespBytes)
-	if err != nil {
-		return nil, err
-	}
+	usernameExists := checkUsernameExists(yahooErrResp)
 	return &SMTP{
 		HostExists:  true,
 		Deliverable: usernameExists,
@@ -76,27 +96,17 @@ func getSessionIndex(respBytes []byte) string {
 	return ""
 }
 
-func checkUsernameExists(respBytes []byte) (usernameExists bool, err error) {
-	type errItem struct {
-		Name  string `json:"name"`
-		Error string `json:"error"`
-	}
-	type errResp struct {
-		Errors []errItem `json:"errors"`
-	}
-	var res errResp
-	if err = json.Unmarshal(respBytes, &res); err != nil {
-		return false, err
-	}
-	for _, item := range res.Errors {
+func checkUsernameExists(resp yahooErrorResp) bool {
+	for _, item := range resp.Errors {
 		if item.Name == "userId" && item.Error == "IDENTIFIER_EXISTS" {
-			return true, nil
+			return true
 		}
 	}
-	return false, nil
+	return false
 }
 
-func (y yahoo) sendValidateRequest(domain, username, acrumb, sessionIndex string, cookies []*http.Cookie) ([]byte, error) {
+func (y yahoo) sendValidateRequest(req yahooValidateReq) (yahooErrorResp, error) {
+	var res yahooErrorResp
 	data, err := json.Marshal(struct {
 		Acrumb       string `json:"acrumb"`
 		SpecId       string `json:"specId"`
@@ -104,32 +114,36 @@ func (y yahoo) sendValidateRequest(domain, username, acrumb, sessionIndex string
 		SessionIndex string `json:"sessionIndex"`
 		YidDomain    string `json:"yidDomain"`
 	}{
-		Acrumb:       acrumb,
+		Acrumb:       req.Acrumb,
 		SpecId:       "yidregsimplified",
-		Yid:          username,
-		SessionIndex: sessionIndex,
-		YidDomain:    domain,
+		Yid:          req.Username,
+		SessionIndex: req.SessionIndex,
+		YidDomain:    req.Domain,
 	})
 	if err != nil {
-		return nil, err
+		return res, err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, SIGNUP_API, bytes.NewReader(data))
 	if err != nil {
-		return nil, err
+		return res, err
 	}
-	for _, c := range cookies {
+	for _, c := range req.Cookies {
 		request.AddCookie(c)
 	}
 	request.Header.Add("X-Requested-With", "XMLHttpRequest")
 	request.Header.Add("Content-Type", "application/json; charset=UTF-8")
 	resp, err := y.client.Do(request)
 	if err != nil {
-		return nil, err
+		return res, err
 	}
 	defer resp.Body.Close()
-	return ioutil.ReadAll(resp.Body)
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return res, err
+	}
+	return res, json.Unmarshal(respBytes, &res)
 }
 
 func (y yahoo) toSignUpPage() ([]*http.Cookie, []byte, error) {
