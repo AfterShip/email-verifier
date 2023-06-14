@@ -12,6 +12,8 @@ const (
 	glxuPageFormat = "https://mail.google.com/mail/gxlu?email=%s"
 )
 
+// See the link below to know why we can use this way to check if a gmail exists.
+// https://blog.0day.rocks/abusing-gmail-to-get-previously-unlisted-e-mail-addresses-41544b62b2
 func newGmailAPIVerifier(client *http.Client) smtpAPIVerifier {
 	if client == nil {
 		client = http.DefaultClient

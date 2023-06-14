@@ -134,6 +134,8 @@ func (v *Verifier) EnableSMTPCheck() *Verifier {
 }
 
 // EnableGmailCheckByAPI Gmail API verifier is activated when EnableSMTPCheck.
+// ** Please know ** that this is a tricky way (but stable) to check if a gmail exists.
+// If you use this feature in a production environment, please ensure that you have sufficient backup measures in place, as this method may encounter rate limiting or API issues.
 // If client is nil, will use http.DefaultClient.
 // Certain API verifiers require additional input, for instance, Hotmail necessitates the use of a WebDriver.
 // Gmail API verifier only need a http client.
@@ -143,6 +145,8 @@ func (v *Verifier) EnableGmailCheckByAPI(client *http.Client) *Verifier {
 }
 
 // EnableYahooCheckByAPI Yahoo API verifier is activated when EnableSMTPCheck.
+// ** Please know ** that this is a tricky way (but stable) to check if a yahoo email exists.
+// If you use this feature in a production environment, please ensure that you have sufficient backup measures in place, as this method may encounter rate limiting or API issues.
 // If client is nil, will use http.DefaultClient
 func (v *Verifier) EnableYahooCheckByAPI(client *http.Client) *Verifier {
 	v.apiVerifiers["yahoo"] = newYahooAPIVerifier(client)
