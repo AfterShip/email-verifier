@@ -1,5 +1,10 @@
 package emailverifier
 
+const (
+	GMAIL = "gmail"
+	YAHOO = "yahoo"
+)
+
 type smtpAPIVerifier interface {
 	// isSupported the specific host supports the check by api.
 	isSupported(host string) bool

@@ -1,7 +1,6 @@
 package emailverifier
 
 import (
-	"net/http"
 	"strings"
 	"syscall"
 	"testing"
@@ -9,17 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCheckSMTPOK_WithClient(t *testing.T) {
-	domain := "gmail.com"
-	verifier.EnableGmailCheckByAPI(http.DefaultClient)
-	defer verifier.DisableGmailCheckByAPI()
-	smtp, err := verifier.CheckSMTP(domain, "someone")
-	expected := SMTP{
-		HostExists:  true,
-		Deliverable: true,
-	}
-	assert.NoError(t, err)
-	assert.Equal(t, &expected, smtp)
+func TestCheckSMTPUnSupportedVendor(t *testing.T) {
+	err := verifier.EnableAPIVerifier("unsupported_vendor")
+	assert.Error(t, err)
 }
 
 func TestCheckSMTPOK_ByApi(t *testing.T) {
@@ -84,13 +75,13 @@ func TestCheckSMTPOK_ByApi(t *testing.T) {
 			},
 		},
 	}
+	_ = verifier.EnableAPIVerifier(GMAIL)
+	_ = verifier.EnableAPIVerifier(YAHOO)
+	defer verifier.DisableAPIVerifier(GMAIL)
+	defer verifier.DisableAPIVerifier(YAHOO)
 	for _, c := range cases {
 		test := c
 		t.Run(test.name, func(tt *testing.T) {
-			verifier.EnableGmailCheckByAPI(nil)
-			verifier.EnableYahooCheckByAPI(nil)
-			defer verifier.DisableGmailCheckByAPI()
-			defer verifier.DisableYahooCheckByAPI()
 			smtp, err := verifier.CheckSMTP(test.domain, test.username)
 			assert.NoError(t, err)
 			assert.Equal(t, test.expected, smtp)

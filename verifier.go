@@ -1,6 +1,7 @@
 package emailverifier
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -133,32 +134,23 @@ func (v *Verifier) EnableSMTPCheck() *Verifier {
 	return v
 }
 
-// EnableGmailCheckByAPI Gmail API verifier is activated when EnableSMTPCheck.
-// ** Please know ** that this is a tricky way (but stable) to check if a gmail exists.
-// If you use this feature in a production environment, please ensure that you have sufficient backup measures in place, as this method may encounter rate limiting or API issues.
-// If client is nil, will use http.DefaultClient.
-// Certain API verifiers require additional input, for instance, Hotmail necessitates the use of a WebDriver.
-// Gmail API verifier only need a http client.
-func (v *Verifier) EnableGmailCheckByAPI(client *http.Client) *Verifier {
-	v.apiVerifiers["gmail"] = newGmailAPIVerifier(client)
-	return v
+// EnableAPIVerifier API verifier is activated when EnableAPIVerifier for the target vendor.
+// ** Please know ** that this is a tricky way (but relatively stable) to check if target vendor's email exists.
+// If you use this feature in a production environment, please ensure that you have sufficient backup measures in place, as this may encounter rate limiting or other API issues.
+func (v *Verifier) EnableAPIVerifier(name string) error {
+	switch name {
+	case GMAIL:
+		v.apiVerifiers[GMAIL] = newGmailAPIVerifier(http.DefaultClient)
+	case YAHOO:
+		v.apiVerifiers[YAHOO] = newYahooAPIVerifier(http.DefaultClient)
+	default:
+		return fmt.Errorf("unsupported to enable the API verifier for vendor: %s", name)
+	}
+	return nil
 }
 
-// EnableYahooCheckByAPI Yahoo API verifier is activated when EnableSMTPCheck.
-// ** Please know ** that this is a tricky way (but stable) to check if a yahoo email exists.
-// If you use this feature in a production environment, please ensure that you have sufficient backup measures in place, as this method may encounter rate limiting or API issues.
-// If client is nil, will use http.DefaultClient
-func (v *Verifier) EnableYahooCheckByAPI(client *http.Client) *Verifier {
-	v.apiVerifiers["yahoo"] = newYahooAPIVerifier(client)
-	return v
-}
-
-func (v *Verifier) DisableGmailCheckByAPI() {
-	delete(v.apiVerifiers, "gmail")
-}
-
-func (v *Verifier) DisableYahooCheckByAPI() {
-	delete(v.apiVerifiers, "yahoo")
+func (v *Verifier) DisableAPIVerifier(name string) {
+	delete(v.apiVerifiers, name)
 }
 
 // DisableSMTPCheck disables check email by smtp
