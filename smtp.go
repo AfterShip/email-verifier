@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/smtp"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 
@@ -33,25 +34,34 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 	}
 
 	var ret SMTP
+	var err error
+	email := fmt.Sprintf("%s@%s", username, domain)
 
 	// Dial any SMTP server that will accept a connection
-	client, err := newSMTPClient(domain, v.proxyURI)
+	client, mx, err := newSMTPClient(domain, v.proxyURI)
 	if err != nil {
-		return &ret, ParseSMTPError(err)
-	}
-
-	// Sets the HELO/EHLO hostname
-	if err := client.Hello(v.helloName); err != nil {
-		return &ret, ParseSMTPError(err)
-	}
-
-	// Sets the from email
-	if err := client.Mail(v.fromEmail); err != nil {
 		return &ret, ParseSMTPError(err)
 	}
 
 	// Defer quit the SMTP connection
 	defer client.Close()
+
+	// Check by api when enabled and host recognized.
+	for _, apiVerifier := range v.apiVerifiers {
+		if apiVerifier.isSupported(strings.ToLower(mx.Host)) {
+			return apiVerifier.check(domain, username)
+		}
+	}
+
+	// Sets the HELO/EHLO hostname
+	if err = client.Hello(v.helloName); err != nil {
+		return &ret, ParseSMTPError(err)
+	}
+
+	// Sets the from email
+	if err = client.Mail(v.fromEmail); err != nil {
+		return &ret, ParseSMTPError(err)
+	}
 
 	// Host exists if we've successfully formed a connection
 	ret.HostExists = true
@@ -63,7 +73,7 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 		// Checks the deliver ability of a randomly generated address in
 		// order to verify the existence of a catch-all and etc.
 		randomEmail := GenerateRandomEmail(domain)
-		if err := client.Rcpt(randomEmail); err != nil {
+		if err = client.Rcpt(randomEmail); err != nil {
 			if e := ParseSMTPError(err); e != nil {
 				switch e.Message {
 				case ErrFullInbox:
@@ -94,8 +104,7 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 		return &ret, nil
 	}
 
-	email := fmt.Sprintf("%s@%s", username, domain)
-	if err := client.Rcpt(email); err == nil {
+	if err = client.Rcpt(email); err == nil {
 		ret.Deliverable = true
 	}
 
@@ -103,18 +112,19 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 }
 
 // newSMTPClient generates a new available SMTP client
-func newSMTPClient(domain, proxyURI string) (*smtp.Client, error) {
+func newSMTPClient(domain, proxyURI string) (*smtp.Client, *net.MX, error) {
 	domain = domainToASCII(domain)
 	mxRecords, err := net.LookupMX(domain)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if len(mxRecords) == 0 {
-		return nil, errors.New("No MX records found")
+		return nil, nil, errors.New("No MX records found")
 	}
 	// Create a channel for receiving response from
 	ch := make(chan interface{}, 1)
+	selectedMXCh := make(chan *net.MX, 1)
 
 	// Done indicates if we're still waiting on dial responses
 	var done bool
@@ -123,9 +133,9 @@ func newSMTPClient(domain, proxyURI string) (*smtp.Client, error) {
 	var mutex sync.Mutex
 
 	// Attempt to connect to all SMTP servers concurrently
-	for _, r := range mxRecords {
+	for i, r := range mxRecords {
 		addr := r.Host + smtpPort
-
+		index := i
 		go func() {
 			c, err := dialSMTP(addr, proxyURI)
 			if err != nil {
@@ -141,6 +151,7 @@ func newSMTPClient(domain, proxyURI string) (*smtp.Client, error) {
 			case !done:
 				done = true
 				ch <- c
+				selectedMXCh <- mxRecords[index]
 			default:
 				c.Close()
 			}
@@ -154,14 +165,14 @@ func newSMTPClient(domain, proxyURI string) (*smtp.Client, error) {
 		res := <-ch
 		switch r := res.(type) {
 		case *smtp.Client:
-			return r, nil
+			return r, <-selectedMXCh, nil
 		case error:
 			errs = append(errs, r)
 			if len(errs) == len(mxRecords) {
-				return nil, errs[0]
+				return nil, nil, errs[0]
 			}
 		default:
-			return nil, errors.New("Unexpected response dialing SMTP server")
+			return nil, nil, errors.New("Unexpected response dialing SMTP server")
 		}
 	}
 

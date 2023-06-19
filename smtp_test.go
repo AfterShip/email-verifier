@@ -8,6 +8,87 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCheckSMTPUnSupportedVendor(t *testing.T) {
+	err := verifier.EnableAPIVerifier("unsupported_vendor")
+	assert.Error(t, err)
+}
+
+func TestCheckSMTPOK_ByApi(t *testing.T) {
+	cases := []struct {
+		name     string
+		domain   string
+		username string
+		expected *SMTP
+	}{
+		{
+			name:     "gmail exists",
+			domain:   "gmail.com",
+			username: "someone",
+			expected: &SMTP{
+				HostExists:  true,
+				Deliverable: true,
+			},
+		},
+		{
+			name:     "gmail no exists",
+			domain:   "gmail.com",
+			username: "hello",
+			expected: &SMTP{
+				HostExists:  true,
+				Deliverable: false,
+			},
+		},
+		{
+			name:     "yahoo exists",
+			domain:   "yahoo.com",
+			username: "someone",
+			expected: &SMTP{
+				HostExists:  true,
+				Deliverable: true,
+			},
+		},
+		{
+			name:     "myyahoo exists",
+			domain:   "myyahoo.com",
+			username: "someone",
+			expected: &SMTP{
+				HostExists:  true,
+				Deliverable: true,
+			},
+		},
+		{
+			name:     "yahoo no exists",
+			domain:   "yahoo.com",
+			username: "123",
+			expected: &SMTP{
+				HostExists:  true,
+				Deliverable: false,
+			},
+		},
+		{
+			name:     "myyahoo no exists",
+			domain:   "myyahoo.com",
+			username: "123",
+			expected: &SMTP{
+				HostExists:  true,
+				Deliverable: false,
+			},
+		},
+	}
+	_ = verifier.EnableAPIVerifier(GMAIL)
+	_ = verifier.EnableAPIVerifier(YAHOO)
+	defer verifier.DisableAPIVerifier(GMAIL)
+	defer verifier.DisableAPIVerifier(YAHOO)
+	for _, c := range cases {
+		test := c
+		t.Run(test.name, func(tt *testing.T) {
+			smtp, err := verifier.CheckSMTP(test.domain, test.username)
+			assert.NoError(t, err)
+			assert.Equal(t, test.expected, smtp)
+		})
+	}
+}
+
 func TestCheckSMTPOK_HostExists(t *testing.T) {
 	domain := "github.com"
 
@@ -133,7 +214,7 @@ func TestCheckSMTPOK_HostNotExists(t *testing.T) {
 
 func TestNewSMTPClientOK(t *testing.T) {
 	domain := "gmail.com"
-	ret, err := newSMTPClient(domain, "")
+	ret, _, err := newSMTPClient(domain, "")
 	assert.NotNil(t, ret)
 	assert.Nil(t, err)
 }
@@ -141,14 +222,14 @@ func TestNewSMTPClientOK(t *testing.T) {
 func TestNewSMTPClientFailed_WithInvalidProxy(t *testing.T) {
 	domain := "gmail.com"
 	proxyURI := "socks5://user:password@127.0.0.1:1080?timeout=5s"
-	ret, err := newSMTPClient(domain, proxyURI)
+	ret, _, err := newSMTPClient(domain, proxyURI)
 	assert.Nil(t, ret)
 	assert.Error(t, err, syscall.ECONNREFUSED)
 }
 
 func TestNewSMTPClientFailed(t *testing.T) {
 	domain := "zzzz171777.com"
-	ret, err := newSMTPClient(domain, "")
+	ret, _, err := newSMTPClient(domain, "")
 	assert.Nil(t, ret)
 	assert.Error(t, err)
 }

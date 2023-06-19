@@ -1,20 +1,22 @@
 package emailverifier
 
 import (
+	"fmt"
+	"net/http"
 	"time"
 )
 
 // Verifier is an email verifier. Create one by calling NewVerifier
 type Verifier struct {
-	smtpCheckEnabled     bool      // SMTP check enabled or disabled (disabled by default)
-	catchAllCheckEnabled bool      // SMTP catchAll check enabled or disabled (enabled by default)
-	domainSuggestEnabled bool      // whether suggest a most similar correct domain or not (disabled by default)
-	gravatarCheckEnabled bool      // gravatar check enabled or disabled (disabled by default)
-	fromEmail            string    // name to use in the `EHLO:` SMTP command, defaults to "user@example.org"
-	helloName            string    // email to use in the `MAIL FROM:` SMTP command. defaults to `localhost`
-	schedule             *schedule // schedule represents a job schedule
-
-	proxyURI string // use a SOCKS5 proxy to verify the email,
+	smtpCheckEnabled     bool                       // SMTP check enabled or disabled (disabled by default)
+	catchAllCheckEnabled bool                       // SMTP catchAll check enabled or disabled (enabled by default)
+	domainSuggestEnabled bool                       // whether suggest a most similar correct domain or not (disabled by default)
+	gravatarCheckEnabled bool                       // gravatar check enabled or disabled (disabled by default)
+	fromEmail            string                     // name to use in the `EHLO:` SMTP command, defaults to "user@example.org"
+	helloName            string                     // email to use in the `MAIL FROM:` SMTP command. defaults to `localhost`
+	schedule             *schedule                  // schedule represents a job schedule
+	proxyURI             string                     // use a SOCKS5 proxy to verify the email,
+	apiVerifiers         map[string]smtpAPIVerifier // currently support gmail & yahoo, further contributions are welcomed.
 }
 
 // Result is the result of Email Verification
@@ -47,6 +49,7 @@ func NewVerifier() *Verifier {
 		fromEmail:            defaultFromEmail,
 		helloName:            defaultHelloName,
 		catchAllCheckEnabled: true,
+		apiVerifiers:         map[string]smtpAPIVerifier{},
 	}
 }
 
@@ -129,6 +132,25 @@ func (v *Verifier) DisableGravatarCheck() *Verifier {
 func (v *Verifier) EnableSMTPCheck() *Verifier {
 	v.smtpCheckEnabled = true
 	return v
+}
+
+// EnableAPIVerifier API verifier is activated when EnableAPIVerifier for the target vendor.
+// ** Please know ** that this is a tricky way (but relatively stable) to check if target vendor's email exists.
+// If you use this feature in a production environment, please ensure that you have sufficient backup measures in place, as this may encounter rate limiting or other API issues.
+func (v *Verifier) EnableAPIVerifier(name string) error {
+	switch name {
+	case GMAIL:
+		v.apiVerifiers[GMAIL] = newGmailAPIVerifier(http.DefaultClient)
+	case YAHOO:
+		v.apiVerifiers[YAHOO] = newYahooAPIVerifier(http.DefaultClient)
+	default:
+		return fmt.Errorf("unsupported to enable the API verifier for vendor: %s", name)
+	}
+	return nil
+}
+
+func (v *Verifier) DisableAPIVerifier(name string) {
+	delete(v.apiVerifiers, name)
 }
 
 // DisableSMTPCheck disables check email by smtp
