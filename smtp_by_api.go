@@ -1,7 +1,6 @@
 package emailverifier
 
 const (
-	GMAIL = "gmail"
 	YAHOO = "yahoo"
 )
 

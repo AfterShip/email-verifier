@@ -16,7 +16,7 @@ type Verifier struct {
 	helloName            string                     // email to use in the `MAIL FROM:` SMTP command. defaults to `localhost`
 	schedule             *schedule                  // schedule represents a job schedule
 	proxyURI             string                     // use a SOCKS5 proxy to verify the email,
-	apiVerifiers         map[string]smtpAPIVerifier // currently support gmail & yahoo, further contributions are welcomed.
+	apiVerifiers         map[string]smtpAPIVerifier // currently support yahoo, further contributions are welcomed.
 }
 
 // Result is the result of Email Verification
@@ -139,8 +139,6 @@ func (v *Verifier) EnableSMTPCheck() *Verifier {
 // If you use this feature in a production environment, please ensure that you have sufficient backup measures in place, as this may encounter rate limiting or other API issues.
 func (v *Verifier) EnableAPIVerifier(name string) error {
 	switch name {
-	case GMAIL:
-		v.apiVerifiers[GMAIL] = newGmailAPIVerifier(http.DefaultClient)
 	case YAHOO:
 		v.apiVerifiers[YAHOO] = newYahooAPIVerifier(http.DefaultClient)
 	default:
