@@ -196,6 +196,17 @@ func (v *Verifier) EnableAutoUpdateDisposable() *Verifier {
 	return v
 }
 
+// EnableAutoUpdateDisposableByURL enables update disposable domains automatically and uses given link to json file as source of urls
+func (v *Verifier) EnableAutoUpdateDisposableByURL(source string) *Verifier {
+	v.stopCurrentSchedule()
+	// fetch latest disposable domains before next schedule
+	_ = updateDisposableDomains(source)
+	// update disposable domains records daily
+	v.schedule = newSchedule(24*time.Hour, updateDisposableDomains, source)
+	v.schedule.start()
+	return v
+}
+
 // DisableAutoUpdateDisposable stops previously started schedule job
 func (v *Verifier) DisableAutoUpdateDisposable() *Verifier {
 	v.stopCurrentSchedule()
