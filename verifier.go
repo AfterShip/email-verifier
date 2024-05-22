@@ -9,10 +9,11 @@ import (
 
 // Verifier is an email verifier. Create one by calling NewVerifier
 type Verifier struct {
-	smtpCheckEnabled     bool                       // SMTP check enabled or disabled (disabled by default)
-	catchAllCheckEnabled bool                       // SMTP catchAll check enabled or disabled (enabled by default)
-	domainSuggestEnabled bool                       // whether suggest a most similar correct domain or not (disabled by default)
-	gravatarCheckEnabled bool                       // gravatar check enabled or disabled (disabled by default)
+	VerifyTimeout        time.Duration              // timeout for the verification process, defaults to 2 seconds
+	SmtpCheckEnabled     bool                       // SMTP check enabled or disabled (disabled by default)
+	CatchAllCheckEnabled bool                       // SMTP catchAll check enabled or disabled (enabled by default)
+	DomainSuggestEnabled bool                       // whether suggest a most similar correct domain or not (disabled by default)
+	GravatarCheckEnabled bool                       // gravatar check enabled or disabled (disabled by default)
 	fromEmail            string                     // name to use in the `EHLO:` SMTP command, defaults to "user@example.org"
 	helloName            string                     // email to use in the `MAIL FROM:` SMTP command. defaults to `localhost`
 	schedule             *schedule                  // schedule represents a job schedule
@@ -47,9 +48,10 @@ func init() {
 // NewVerifier creates a new email verifier
 func NewVerifier() *Verifier {
 	return &Verifier{
+		VerifyTimeout:        2 * time.Second,
 		fromEmail:            defaultFromEmail,
 		helloName:            defaultHelloName,
-		catchAllCheckEnabled: true,
+		CatchAllCheckEnabled: true,
 		apiVerifiers:         map[string]smtpAPIVerifier{},
 	}
 }
@@ -76,7 +78,7 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 		return &ret, nil
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), v.VerifyTimeout)
 	defer cancel()
 
 	mxCh := make(chan *Mx)
@@ -113,8 +115,8 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 		return &ret, ctx.Err()
 	}
 
-	if v.gravatarCheckEnabled {
-		ctx, cancel = context.WithTimeout(context.Background(), 2*time.Second)
+	if v.GravatarCheckEnabled {
+		ctx, cancel = context.WithTimeout(context.Background(), v.VerifyTimeout)
 		defer cancel()
 
 		gravatarCh := make(chan *Gravatar)
@@ -139,7 +141,7 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 		}
 	}
 
-	if v.domainSuggestEnabled {
+	if v.DomainSuggestEnabled {
 		ret.Suggestion = v.SuggestDomain(syntax.Domain)
 	}
 
@@ -158,13 +160,13 @@ func (v *Verifier) AddDisposableDomains(domains []string) *Verifier {
 // EnableGravatarCheck enables check gravatar,
 // we don't check gravatar by default
 func (v *Verifier) EnableGravatarCheck() *Verifier {
-	v.gravatarCheckEnabled = true
+	v.GravatarCheckEnabled = true
 	return v
 }
 
 // DisableGravatarCheck disables check gravatar,
 func (v *Verifier) DisableGravatarCheck() *Verifier {
-	v.gravatarCheckEnabled = false
+	v.GravatarCheckEnabled = false
 	return v
 }
 
@@ -172,7 +174,7 @@ func (v *Verifier) DisableGravatarCheck() *Verifier {
 // for most ISPs block outgoing SMTP requests through port 25, to prevent spam,
 // we don't check smtp by default
 func (v *Verifier) EnableSMTPCheck() *Verifier {
-	v.smtpCheckEnabled = true
+	v.SmtpCheckEnabled = true
 	return v
 }
 
@@ -197,7 +199,7 @@ func (v *Verifier) DisableAPIVerifier(name string) {
 
 // DisableSMTPCheck disables check email by smtp
 func (v *Verifier) DisableSMTPCheck() *Verifier {
-	v.smtpCheckEnabled = false
+	v.SmtpCheckEnabled = false
 	return v
 }
 
@@ -205,25 +207,25 @@ func (v *Verifier) DisableSMTPCheck() *Verifier {
 // for most ISPs block outgoing catchAll requests through port 25, to prevent spam,
 // we don't check catchAll by default
 func (v *Verifier) EnableCatchAllCheck() *Verifier {
-	v.catchAllCheckEnabled = true
+	v.CatchAllCheckEnabled = true
 	return v
 }
 
 // DisableCatchAllCheck disables catchAll check by smtp
 func (v *Verifier) DisableCatchAllCheck() *Verifier {
-	v.catchAllCheckEnabled = false
+	v.CatchAllCheckEnabled = false
 	return v
 }
 
 // EnableDomainSuggest will suggest a most similar correct domain when domain misspelled
 func (v *Verifier) EnableDomainSuggest() *Verifier {
-	v.domainSuggestEnabled = true
+	v.DomainSuggestEnabled = true
 	return v
 }
 
 // DisableDomainSuggest will not suggest anything
 func (v *Verifier) DisableDomainSuggest() *Verifier {
-	v.domainSuggestEnabled = false
+	v.DomainSuggestEnabled = false
 	return v
 }
 
@@ -266,7 +268,7 @@ func (v *Verifier) Proxy(proxyURI string) *Verifier {
 }
 
 func (v *Verifier) calculateReachable(s *SMTP) string {
-	if !v.smtpCheckEnabled {
+	if !v.SmtpCheckEnabled {
 		return reachableUnknown
 	}
 	if s.Deliverable {

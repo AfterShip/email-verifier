@@ -29,7 +29,7 @@ type SMTP struct {
 //
 // if server is catch-all server, username will not be checked
 func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
-	if !v.smtpCheckEnabled {
+	if !v.SmtpCheckEnabled {
 		return nil, nil
 	}
 
@@ -69,7 +69,7 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 	// Default sets catch-all to true
 	ret.CatchAll = true
 
-	if v.catchAllCheckEnabled {
+	if v.CatchAllCheckEnabled {
 		// Checks the deliver ability of a randomly generated address in
 		// order to verify the existence of a catch-all and etc.
 		randomEmail := GenerateRandomEmail(domain)
