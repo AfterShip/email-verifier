@@ -1,6 +1,7 @@
 package emailverifier
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -55,7 +56,6 @@ func NewVerifier() *Verifier {
 
 // Verify performs address, misc, mx and smtp checks
 func (v *Verifier) Verify(email string) (*Result, error) {
-
 	ret := Result{
 		Email:     email,
 		Reachable: reachableUnknown,
@@ -76,25 +76,67 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 		return &ret, nil
 	}
 
-	mx, err := v.CheckMX(syntax.Domain)
-	if err != nil {
-		return &ret, err
-	}
-	ret.HasMxRecords = mx.HasMXRecord
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
 
-	smtp, err := v.CheckSMTP(syntax.Domain, syntax.Username)
-	if err != nil {
+	mxCh := make(chan *Mx)
+	smtpCh := make(chan *SMTP)
+	errCh := make(chan error)
+
+	go func() {
+		mx, err := v.CheckMX(syntax.Domain)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		mxCh <- mx
+	}()
+
+	go func() {
+		smtp, err := v.CheckSMTP(syntax.Domain, syntax.Username)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		smtpCh <- smtp
+	}()
+
+	select {
+	case mx := <-mxCh:
+		ret.HasMxRecords = mx.HasMXRecord
+	case smtp := <-smtpCh:
+		ret.SMTP = smtp
+		ret.Reachable = v.calculateReachable(smtp)
+	case err := <-errCh:
 		return &ret, err
+	case <-ctx.Done():
+		return &ret, ctx.Err()
 	}
-	ret.SMTP = smtp
-	ret.Reachable = v.calculateReachable(smtp)
 
 	if v.gravatarCheckEnabled {
-		gravatar, err := v.CheckGravatar(email)
-		if err != nil {
+		ctx, cancel = context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+
+		gravatarCh := make(chan *Gravatar)
+		errCh = make(chan error)
+
+		go func() {
+			gravatar, err := v.CheckGravatar(email)
+			if err != nil {
+				errCh <- err
+				return
+			}
+			gravatarCh <- gravatar
+		}()
+
+		select {
+		case gravatar := <-gravatarCh:
+			ret.Gravatar = gravatar
+		case err := <-errCh:
 			return &ret, err
+		case <-ctx.Done():
+			return &ret, ctx.Err()
 		}
-		ret.Gravatar = gravatar
 	}
 
 	if v.domainSuggestEnabled {
