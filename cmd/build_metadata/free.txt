@@ -116,7 +116,6 @@
 4.fackme.gq
 40.volvo-xc.ml
 40.volvo-xc.tk
-404: not found
 420blaze.it
 42o.org
 444.net
@@ -163,12 +162,10 @@
 900k.es
 9260.dk
 97rock.com
-99.com
 9q.ro
 a.a.fbmail.usa.cc
 a.yertxenor.tk
 a0.igg.biz
-a1.net
 a1.usa.cc
 a2.flu.cc
 aa.da.mail-temp.com
@@ -268,7 +265,6 @@ alhilal.net
 alibaba.com
 alice.it
 aliceadsl.fr
-alicedsl.de
 alive.cz
 aliyun.com
 alldirectbuy.com
@@ -351,7 +347,6 @@ anytimenow.com
 anywhere.pw
 aol.co.uk
 aol.com
-aol.fr
 aol.it
 aon.at
 apagitu.chickenkiller.com
@@ -817,7 +812,6 @@ checknew.pw
 cheerful.com
 chef.net
 chek.com
-chello.at
 chello.nl
 chemist.com
 chequemail.com
@@ -1313,7 +1307,6 @@ email.ro
 email.ru
 email.si
 email.su
-email.tst
 email.ua
 email.women.com
 email2me.net
@@ -1823,14 +1816,12 @@ gmail.gr.com
 gmail.it
 gmail.om
 gmail.ru
-gmail.sk
 gmail.zalvisual.us
 gmailssdf.com
 gmal.com
 gmial.com
 gmx.at
 gmx.ch
-gmx.co.uk
 gmx.com
 gmx.de
 gmx.dns-cloud.net
@@ -2065,10 +2056,8 @@ hotmail.com
 hotmail.com.ar
 hotmail.com.au
 hotmail.com.br
-hotmail.com.hk
 hotmail.com.mx
 hotmail.com.tr
-hotmail.com.tw
 hotmail.de
 hotmail.dk
 hotmail.es
@@ -2079,7 +2068,6 @@ hotmail.it
 hotmail.kg
 hotmail.kz
 hotmail.nl
-hotmail.no
 hotmail.roor
 hotmail.ru
 hotmail.se
@@ -2203,7 +2191,6 @@ in2jesus.com
 iname.com
 inbound.dk
 inbox.com
-inbox.lt
 inbox.lv
 inbox.net
 inbox.ru
@@ -2597,7 +2584,6 @@ live.com
 live.com.ar
 live.com.au
 live.com.mx
-live.com.my
 live.com.pt
 live.com.sg
 live.de
@@ -2751,7 +2737,6 @@ mail.sisna.com
 mail.spaceports.com
 mail.svenz.eu
 mail.theboys.com
-mail.ua
 mail.usa.com
 mail.vasarhely.hu
 mail.vrfarm.com.tw
@@ -4310,7 +4295,6 @@ msk.ru
 msn.cn
 msn.co.uk
 msn.com
-msn.com.au
 msn.nl
 mswork.ru
 mttestdriver.com
@@ -4997,13 +4981,11 @@ q.com
 q314.net
 qatarmail.com
 qibl.at
-qip.ru
 qipmail.net
 qis.net
 qmail.com
 qoika.com
 qprfans.com
-qq.cn
 qq.com
 qq.my
 qrio.com
@@ -5611,7 +5593,6 @@ teenagedirtbag.com
 teens.dk
 tefl.ro
 teknik.dk
-tele2.at
 tele2.nl
 telebot.com
 telebot.net
@@ -5971,7 +5952,6 @@ usit.net
 usma.net
 usmc.net
 uswestmail.net
-utanet.at
 utiket.us
 uu.net
 uyhip.com
@@ -6015,7 +5995,6 @@ vinbazar.com
 violinmakers.co.uk
 vip-mail.tk
 vip.126.com
-vip.163.com
 vip.21cn.com
 vip.citiz.net
 vip.gr
@@ -6303,12 +6282,10 @@ yada-yada.com
 yadavnaresh.com.np
 yaho.com
 yahoo.ae
-yahoo.ar
 yahoo.at
 yahoo.be
 yahoo.ca
 yahoo.ch
-yahoo.cl
 yahoo.cn
 yahoo.co
 yahoo.co.id
@@ -6346,24 +6323,18 @@ yahoo.fi
 yahoo.fr
 yahoo.gr
 yahoo.hu
-yahoo.id
 yahoo.ie
 yahoo.in
 yahoo.it
 yahoo.jp
-yahoo.mx
-yahoo.my
 yahoo.nl
 yahoo.no
 yahoo.om
-yahoo.ph
 yahoo.pl
 yahoo.pt
 yahoo.ro
 yahoo.ru
 yahoo.se
-yahoo.uk
-yahoo.vn
 yahoofs.com
 yalla.com
 yalla.com.lb
