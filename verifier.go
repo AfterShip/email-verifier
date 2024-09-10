@@ -16,7 +16,11 @@ type Verifier struct {
 	helloName            string                     // email to use in the `MAIL FROM:` SMTP command. defaults to `localhost`
 	schedule             *schedule                  // schedule represents a job schedule
 	proxyURI             string                     // use a SOCKS5 proxy to verify the email,
-	apiVerifiers         map[string]smtpAPIVerifier // currently support yahoo, further contributions are welcomed.
+	apiVerifiers         map[string]smtpAPIVerifier // currently support gmail & yahoo, further contributions are welcomed.
+
+	// Timeouts
+	connectTimeout   time.Duration // Timeout for establishing connections
+	operationTimeout time.Duration // Timeout for SMTP operations (e.g., EHLO, MAIL FROM, etc.)
 }
 
 // Result is the result of Email Verification
@@ -50,6 +54,8 @@ func NewVerifier() *Verifier {
 		helloName:            defaultHelloName,
 		catchAllCheckEnabled: true,
 		apiVerifiers:         map[string]smtpAPIVerifier{},
+		connectTimeout:       10 * time.Second,
+		operationTimeout:     10 * time.Second,
 	}
 }
 
@@ -218,6 +224,18 @@ func (v *Verifier) HelloName(domain string) *Verifier {
 // The protocol could be socks5, socks4 and socks4a.
 func (v *Verifier) Proxy(proxyURI string) *Verifier {
 	v.proxyURI = proxyURI
+	return v
+}
+
+// ConnectTimeout sets the timeout for establishing connections.
+func (v *Verifier) ConnectTimeout(timeout time.Duration) *Verifier {
+	v.connectTimeout = timeout
+	return v
+}
+
+// OperationTimeout sets the timeout for SMTP operations (e.g., EHLO, MAIL FROM, etc.).
+func (v *Verifier) OperationTimeout(timeout time.Duration) *Verifier {
+	v.operationTimeout = timeout
 	return v
 }
 

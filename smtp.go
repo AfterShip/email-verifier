@@ -1,6 +1,7 @@
 package emailverifier
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -38,7 +39,7 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 	email := fmt.Sprintf("%s@%s", username, domain)
 
 	// Dial any SMTP server that will accept a connection
-	client, mx, err := newSMTPClient(domain, v.proxyURI)
+	client, mx, err := newSMTPClient(domain, v.proxyURI, v.connectTimeout, v.operationTimeout)
 	if err != nil {
 		return &ret, ParseSMTPError(err)
 	}
@@ -112,7 +113,7 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 }
 
 // newSMTPClient generates a new available SMTP client
-func newSMTPClient(domain, proxyURI string) (*smtp.Client, *net.MX, error) {
+func newSMTPClient(domain, proxyURI string, connectTimeout, operationTimeout time.Duration) (*smtp.Client, *net.MX, error) {
 	domain = domainToASCII(domain)
 	mxRecords, err := net.LookupMX(domain)
 	if err != nil {
@@ -137,7 +138,7 @@ func newSMTPClient(domain, proxyURI string) (*smtp.Client, *net.MX, error) {
 		addr := r.Host + smtpPort
 		index := i
 		go func() {
-			c, err := dialSMTP(addr, proxyURI)
+			c, err := dialSMTP(addr, proxyURI, connectTimeout, operationTimeout)
 			if err != nil {
 				if !done {
 					ch <- err
@@ -181,48 +182,28 @@ func newSMTPClient(domain, proxyURI string) (*smtp.Client, *net.MX, error) {
 // dialSMTP is a timeout wrapper for smtp.Dial. It attempts to dial an
 // SMTP server (socks5 proxy supported) and fails with a timeout if timeout is reached while
 // attempting to establish a new connection
-func dialSMTP(addr, proxyURI string) (*smtp.Client, error) {
-	// Channel holding the new smtp.Client or error
-	ch := make(chan interface{}, 1)
-
+func dialSMTP(addr, proxyURI string, connectTimeout, operationTimeout time.Duration) (*smtp.Client, error) {
 	// Dial the new smtp connection
-	go func() {
-		var conn net.Conn
-		var err error
+	var conn net.Conn
+	var err error
 
-		if proxyURI != "" {
-			conn, err = establishProxyConnection(addr, proxyURI)
-		} else {
-			conn, err = establishConnection(addr)
-		}
-		if err != nil {
-			ch <- err
-			return
-		}
-
-		host, _, _ := net.SplitHostPort(addr)
-		client, err := smtp.NewClient(conn, host)
-		if err != nil {
-			ch <- err
-			return
-		}
-		ch <- client
-	}()
-
-	// Retrieve the smtp client from our client channel or timeout
-	select {
-	case res := <-ch:
-		switch r := res.(type) {
-		case *smtp.Client:
-			return r, nil
-		case error:
-			return nil, r
-		default:
-			return nil, errors.New("Unexpected response dialing SMTP server")
-		}
-	case <-time.After(smtpTimeout):
-		return nil, errors.New("Timeout connecting to mail-exchanger")
+	if proxyURI != "" {
+		conn, err = establishProxyConnection(addr, proxyURI, connectTimeout)
+	} else {
+		conn, err = establishConnection(addr, connectTimeout)
 	}
+	if err != nil {
+		return nil, err
+	}
+
+	// Set specific timeouts for writing and reading
+	err = conn.SetDeadline(time.Now().Add(operationTimeout))
+	if err != nil {
+		return nil, err
+	}
+
+	host, _, _ := net.SplitHostPort(addr)
+	return smtp.NewClient(conn, host)
 }
 
 // GenerateRandomEmail generates a random email address using the domain passed. Used
@@ -237,13 +218,13 @@ func GenerateRandomEmail(domain string) string {
 }
 
 // establishConnection connects to the address on the named network address.
-func establishConnection(addr string) (net.Conn, error) {
-	return net.Dial("tcp", addr)
+func establishConnection(addr string, timeout time.Duration) (net.Conn, error) {
+	return net.DialTimeout("tcp", addr, timeout)
 }
 
 // establishProxyConnection connects to the address on the named network address
 // via proxy protocol
-func establishProxyConnection(addr, proxyURI string) (net.Conn, error) {
+func establishProxyConnection(addr, proxyURI string, timeout time.Duration) (net.Conn, error) {
 	u, err := url.Parse(proxyURI)
 	if err != nil {
 		return nil, err
@@ -252,5 +233,10 @@ func establishProxyConnection(addr, proxyURI string) (net.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	return dialer.Dial("tcp", addr)
+
+	// https://github.com/golang/go/issues/37549#issuecomment-1178745487
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	return dialer.(proxy.ContextDialer).DialContext(ctx, "tcp", addr)
 }
