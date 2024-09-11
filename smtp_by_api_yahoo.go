@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 	"strings"
@@ -142,7 +142,7 @@ func (y yahoo) sendValidateRequest(req yahooValidateReq) (yahooErrorResp, error)
 		return res, err
 	}
 	defer resp.Body.Close()
-	respBytes, err := ioutil.ReadAll(resp.Body)
+	respBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return res, err
 	}
@@ -162,7 +162,7 @@ func (y yahoo) toSignUpPage() ([]*http.Cookie, []byte, error) {
 		return nil, nil, err
 	}
 	defer resp.Body.Close()
-	respBytes, err := ioutil.ReadAll(resp.Body)
+	respBytes, err := io.ReadAll(resp.Body)
 	return resp.Cookies(), respBytes, err
 }
 

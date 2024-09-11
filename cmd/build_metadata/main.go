@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -19,7 +18,7 @@ func writeFile(filePath string, data []byte) {
 	}
 
 	fmt.Printf("Writing new %s\n", filePath)
-	err := ioutil.WriteFile(filePath, data, os.FileMode(0664))
+	err := os.WriteFile(filePath, data, os.FileMode(0664))
 	if err != nil {
 		log.Fatalf("Error writing '%s': %s", filePath, err)
 	}
@@ -115,7 +114,7 @@ func updateMetaData() {
 	if err = cmd.Start(); err != nil {
 		log.Fatalf("error executing update.sh to update meta data: %s", err.Error())
 	}
-	data, err := ioutil.ReadAll(stderr)
+	data, err := io.ReadAll(stderr)
 	if err != nil {
 		log.Fatalf("error reading update.sh result: %s : %s", err.Error(), data)
 	}

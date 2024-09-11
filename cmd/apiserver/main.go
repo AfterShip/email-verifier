@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
+
+	"github.com/julienschmidt/httprouter"
 
 	emailVerifier "github.com/AfterShip/email-verifier"
-	"github.com/julienschmidt/httprouter"
 )
 
 func GetEmailVerification(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -37,5 +39,12 @@ func main() {
 
 	router.GET("/v1/:email/verification", GetEmailVerification)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	server := &http.Server{
+		Addr:         ":8080",
+		Handler:      router,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 30 * time.Second,
+	}
+
+	log.Fatal(server.ListenAndServe())
 }

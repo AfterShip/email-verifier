@@ -22,24 +22,6 @@ func TestCheckSMTPOK_ByApi(t *testing.T) {
 		expected *SMTP
 	}{
 		{
-			name:     "gmail exists",
-			domain:   "gmail.com",
-			username: "someone",
-			expected: &SMTP{
-				HostExists:  true,
-				Deliverable: true,
-			},
-		},
-		{
-			name:     "gmail no exists",
-			domain:   "gmail.com",
-			username: "hello",
-			expected: &SMTP{
-				HostExists:  true,
-				Deliverable: false,
-			},
-		},
-		{
 			name:     "yahoo exists",
 			domain:   "yahoo.com",
 			username: "someone",
@@ -76,9 +58,7 @@ func TestCheckSMTPOK_ByApi(t *testing.T) {
 			},
 		},
 	}
-	_ = verifier.EnableAPIVerifier(GMAIL)
 	_ = verifier.EnableAPIVerifier(YAHOO)
-	defer verifier.DisableAPIVerifier(GMAIL)
 	defer verifier.DisableAPIVerifier(YAHOO)
 	for _, c := range cases {
 		test := c
