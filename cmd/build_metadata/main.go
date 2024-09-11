@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -19,7 +18,7 @@ func writeFile(filePath string, data []byte) {
 	}
 
 	fmt.Printf("Writing new %s\n", filePath)
-	err := ioutil.WriteFile(filePath, data, os.FileMode(0664))
+	err := os.WriteFile(filePath, data, os.FileMode(0664))
 	if err != nil {
 		log.Fatalf("Error writing '%s': %s", filePath, err)
 	}
