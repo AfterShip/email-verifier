@@ -49,7 +49,7 @@ jobs:
           make test
       - name: Install goveralls
         env:
-          GO111MODULE: off
+          GO111MODULE: auto
         run: go get github.com/mattn/goveralls
       - name: Send coverage
         env:
