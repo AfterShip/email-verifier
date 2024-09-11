@@ -16,7 +16,7 @@ jobs:
     name: Lint/Test
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.22.x]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
