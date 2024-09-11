@@ -42,8 +42,8 @@ func main() {
 	server := &http.Server{
 		Addr:         ":8080",
 		Handler:      router,
-		ReadTimeout:  30 * time.Second, // 设置读取超时时间
-		WriteTimeout: 30 * time.Second, // 设置写入超时时间
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 30 * time.Second,
 	}
 
 	log.Fatal(server.ListenAndServe())
