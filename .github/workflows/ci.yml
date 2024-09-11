@@ -16,7 +16,7 @@ jobs:
     name: Lint/Test
     strategy:
       matrix:
-        go-version: [1.17.x]
+        go-version: [1.22.x]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -41,21 +41,12 @@ jobs:
         run: |
           export GOPATH=$HOME/go
           export PATH=$PATH:$GOPATH/bin
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.31.0
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.54.2
           make lint
 
       - name: Run Unit tests
         run: |
           make test
-      - name: Install goveralls
-        env:
-          GO111MODULE: off
-        run: go get github.com/mattn/goveralls
-      - name: Send coverage
-        env:
-          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: goveralls -coverprofile=covprofile -service=github
-
 
 
 

@@ -2,7 +2,7 @@ package emailverifier
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -10,8 +10,8 @@ import (
 
 // Gravatar is detail about the Gravatar
 type Gravatar struct {
-	HasGravatar bool   // whether has gravatar
-	GravatarUrl string // gravatar url
+	HasGravatar bool   `json:"has_gravatar"` // whether has gravatar
+	GravatarUrl string `json:"gravatar_url"` // gravatar url
 }
 
 // CheckGravatar will return the Gravatar records for the given email.
@@ -36,7 +36,7 @@ func (v *Verifier) CheckGravatar(email string) (*Gravatar, error) {
 		_ = resp.Body.Close()
 	}()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

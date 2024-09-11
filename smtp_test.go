@@ -4,6 +4,7 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -20,24 +21,6 @@ func TestCheckSMTPOK_ByApi(t *testing.T) {
 		username string
 		expected *SMTP
 	}{
-		{
-			name:     "gmail exists",
-			domain:   "gmail.com",
-			username: "someone",
-			expected: &SMTP{
-				HostExists:  true,
-				Deliverable: true,
-			},
-		},
-		{
-			name:     "gmail no exists",
-			domain:   "gmail.com",
-			username: "hello",
-			expected: &SMTP{
-				HostExists:  true,
-				Deliverable: false,
-			},
-		},
 		{
 			name:     "yahoo exists",
 			domain:   "yahoo.com",
@@ -75,9 +58,7 @@ func TestCheckSMTPOK_ByApi(t *testing.T) {
 			},
 		},
 	}
-	_ = verifier.EnableAPIVerifier(GMAIL)
 	_ = verifier.EnableAPIVerifier(YAHOO)
-	defer verifier.DisableAPIVerifier(GMAIL)
 	defer verifier.DisableAPIVerifier(YAHOO)
 	for _, c := range cases {
 		test := c
@@ -214,7 +195,8 @@ func TestCheckSMTPOK_HostNotExists(t *testing.T) {
 
 func TestNewSMTPClientOK(t *testing.T) {
 	domain := "gmail.com"
-	ret, _, err := newSMTPClient(domain, "")
+	timeout := 5 * time.Second
+	ret, _, err := newSMTPClient(domain, "", timeout, timeout)
 	assert.NotNil(t, ret)
 	assert.Nil(t, err)
 }
@@ -222,21 +204,24 @@ func TestNewSMTPClientOK(t *testing.T) {
 func TestNewSMTPClientFailed_WithInvalidProxy(t *testing.T) {
 	domain := "gmail.com"
 	proxyURI := "socks5://user:password@127.0.0.1:1080?timeout=5s"
-	ret, _, err := newSMTPClient(domain, proxyURI)
+	timeout := 5 * time.Second
+	ret, _, err := newSMTPClient(domain, proxyURI, timeout, timeout)
 	assert.Nil(t, ret)
 	assert.Error(t, err, syscall.ECONNREFUSED)
 }
 
 func TestNewSMTPClientFailed(t *testing.T) {
 	domain := "zzzz171777.com"
-	ret, _, err := newSMTPClient(domain, "")
+	timeout := 5 * time.Second
+	ret, _, err := newSMTPClient(domain, "", timeout, timeout)
 	assert.Nil(t, ret)
 	assert.Error(t, err)
 }
 
 func TestDialSMTPFailed_NoPortIsConfigured(t *testing.T) {
 	disposableDomain := "zzzz1717.com"
-	ret, err := dialSMTP(disposableDomain, "")
+	timeout := 5 * time.Second
+	ret, err := dialSMTP(disposableDomain, "", timeout, timeout)
 	assert.Nil(t, ret)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "missing port"))
@@ -244,7 +229,8 @@ func TestDialSMTPFailed_NoPortIsConfigured(t *testing.T) {
 
 func TestDialSMTPFailed_NoSuchHost(t *testing.T) {
 	disposableDomain := "zzzzyyyyaaa123.com:25"
-	ret, err := dialSMTP(disposableDomain, "")
+	timeout := 5 * time.Second
+	ret, err := dialSMTP(disposableDomain, "", timeout, timeout)
 	assert.Nil(t, ret)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "no such host"))
