@@ -7,6 +7,7 @@ export LC_ALL=C
 
 new=$(mktemp -t emailverifierXXX)
 
+# 1. update disposable domains meta databases
 curl --silent https://raw.githubusercontent.com/ivolo/disposable-email-domains/master/index.json | jq -r '.[]' > $new
 
 tmp=$(mktemp -t emailverifierXXX)
@@ -19,11 +20,14 @@ cat $new ./disposable.txt \
     | uniq  > $tmp
 mv $tmp ./disposable.txt
 
-sources=$(cat ./sources.txt)
+
+# 2. update free domains meta databases,
+sources=$(cat ./free_domain_sources.txt)
 new=$(mktemp -t emailverifierXXX)
 for source in $sources; do
     echo "$(curl --silent $source)" >> $new
 done;
+
 
 tmp=$(mktemp -t emailverifierXXX)
 cat $new ./free.txt \

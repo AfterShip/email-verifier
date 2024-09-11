@@ -1,4 +1,4 @@
-## Change log
+## [Change log](https://github.com/AfterShip/email-verifier/releases)
 
 v1.4.0
 ----------
