@@ -10,8 +10,8 @@ import (
 
 // Gravatar is detail about the Gravatar
 type Gravatar struct {
-	HasGravatar bool   // whether has gravatar
-	GravatarUrl string // gravatar url
+	HasGravatar bool   `json:"has_gravatar"` // whether has gravatar
+	GravatarUrl string `json:"gravatar_url"` // gravatar url
 }
 
 // CheckGravatar will return the Gravatar records for the given email.

@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
+	"time"
 
 	emailVerifier "github.com/AfterShip/email-verifier"
 	"github.com/julienschmidt/httprouter"
@@ -36,6 +36,14 @@ func main() {
 	router := httprouter.New()
 
 	router.GET("/v1/:email/verification", GetEmailVerification)
+	srv := &http.Server{
+		Addr:         ":8080",
+		Handler:      router,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		panic(err)
+	}
 }
