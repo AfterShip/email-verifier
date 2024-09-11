@@ -1,6 +1,6 @@
 module github.com/AfterShip/email-verifier
 
-go 1.22
+go 1.17
 
 require (
 	github.com/hbollon/go-edlib v1.6.0
