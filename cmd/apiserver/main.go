@@ -46,5 +46,7 @@ func main() {
 		WriteTimeout: 30 * time.Second,
 	}
 
+	fmt.Println("Listening on port 8080...")
+
 	log.Fatal(server.ListenAndServe())
 }
