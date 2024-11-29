@@ -84,6 +84,11 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 
 	mx, err := v.CheckMX(syntax.Domain)
 	if err != nil {
+		errStr := err.Error()
+		if insContains(errStr, "no such host") {
+			ret.Reachable = reachableNo
+			return &ret, newLookupError(ErrNoSuchHost, errStr)
+		}
 		return &ret, err
 	}
 	ret.HasMxRecords = mx.HasMXRecord
