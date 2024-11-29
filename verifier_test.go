@@ -26,11 +26,11 @@ func TestCheckEmailOK_SMTPHostNotExists(t *testing.T) {
 		HasMxRecords: false,
 		Disposable:   false,
 		RoleAccount:  false,
-		Reachable:    reachableUnknown,
+		Reachable:    reachableNo,
 		Free:         false,
 		SMTP:         nil,
 	}
-	assert.Error(t, err, ErrNoSuchHost)
+	assert.ErrorContains(t, err, ErrNoSuchHost)
 	assert.Equal(t, &expected, ret)
 }
 
