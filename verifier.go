@@ -84,7 +84,7 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 		return &ret, nil
 	}
 
-	mx, err := v.CheckMX(syntax.Domain, v.mxCacheEnabled)
+	mx, err := v.CheckMX(syntax.Domain)
 	if err != nil {
 		return &ret, err
 	}

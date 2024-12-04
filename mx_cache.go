@@ -18,8 +18,6 @@ type cacheEntry struct {
 	expiry    time.Time
 }
 
-type GetMXFunc func(domain string) ([]*net.MX, error)
-
 // NewMXCache creates and initializes a new MX cache and starts the cleanup goroutine
 func NewMXCache(ttl time.Duration) *MXCache {
 	cache := &MXCache{
