@@ -6,18 +6,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCheckMxOK(t *testing.T) {
+func TestCheckMxWithCacheOK(t *testing.T) {
 	domain := "github.com"
 
-	mx, err := verifier.CheckMX(domain, false)
+	mx, err := verifier.CheckMX(domain, true)
 	assert.NoError(t, err)
 	assert.True(t, mx.HasMXRecord)
 }
 
-func TestCheckNoMxOK(t *testing.T) {
+func TestCheckNoMxWithCacheOK(t *testing.T) {
 	domain := "githubexists.com"
 
-	mx, err := verifier.CheckMX(domain, false)
+	mx, err := verifier.CheckMX(domain, true)
 	assert.Nil(t, mx)
 	assert.Error(t, err, ErrNoSuchHost)
 }
