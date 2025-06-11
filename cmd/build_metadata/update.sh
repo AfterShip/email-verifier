@@ -8,7 +8,7 @@ export LC_ALL=C
 new=$(mktemp -t emailverifierXXX)
 
 # 1. update disposable domains meta databases
-curl --silent https://raw.githubusercontent.com/ivolo/disposable-email-domains/master/index.json | jq -r '.[]' > $new
+curl --silent https://raw.githubusercontent.com/tompec/disposable-email-domains/main/index.json | jq -r '.[]' > $new
 
 tmp=$(mktemp -t emailverifierXXX)
 cat $new ./disposable.txt \
