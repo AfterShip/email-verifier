@@ -1,7 +1,7 @@
 package emailverifier
 
 import (
-	"crypto/md5"
+	"crypto/md5" //nolint:gosec
 	"encoding/hex"
 	"reflect"
 	"strings"

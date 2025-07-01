@@ -17,8 +17,7 @@ func TestDomainToASCII(t *testing.T) {
 func TestDomainToASCII_NormalDomain(t *testing.T) {
 	domain := "testing.org"
 	ret := domainToASCII(domain)
-	expected := "testing.org"
-	assert.Equal(t, expected, ret)
+	assert.Equal(t, domain, ret)
 }
 
 func TestCallJobFuncWithParams_NoOutput(t *testing.T) {
@@ -48,27 +47,27 @@ func TestCallJobFuncWithWrongFunc(t *testing.T) {
 func TestSplitDomainNoSLD(t *testing.T) {
 	domain := "com"
 	sld, tld := splitDomain(domain)
-	assert.Equal(t, sld, "")
-	assert.Equal(t, tld, domain)
+	assert.Empty(t, sld)
+	assert.Equal(t, domain, tld)
 }
 
 func TestSplitDomainOK(t *testing.T) {
 	domain := "aftership.com"
 	sld, tld := splitDomain(domain)
-	assert.Equal(t, sld, "aftership")
-	assert.Equal(t, tld, "com")
+	assert.Equal(t, "aftership", sld)
+	assert.Equal(t, "com", tld)
 }
 
 func TestSplitDomainNilString(t *testing.T) {
 	domain := ""
 	sld, tld := splitDomain(domain)
-	assert.Equal(t, sld, "")
-	assert.Equal(t, tld, "")
+	assert.Empty(t, sld)
+	assert.Empty(t, tld)
 }
 
 func TestSplitDomainSubDomain(t *testing.T) {
 	domain := "develop.aftership.com"
 	sld, tld := splitDomain(domain)
-	assert.Equal(t, sld, "aftership")
-	assert.Equal(t, tld, "com")
+	assert.Equal(t, "aftership", sld)
+	assert.Equal(t, "com", tld)
 }
