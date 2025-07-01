@@ -22,20 +22,12 @@ jobs:
     steps:
 
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5
         with:
           go-version: ${{matrix.go-version}}
 
       - name: Checkout Code Base
-        uses: actions/checkout@v2
-
-      - name: Restore Go Module Cache
-        uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+        uses: actions/checkout@v4
 
       - name: Make Lint
         run: |
