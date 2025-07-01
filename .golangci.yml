@@ -108,7 +108,7 @@ linters:
       # To specify a set of rules to explicitly exclude.
       # Available rules: https://github.com/securego/gosec#available-rules
       # Default: []
-      excludes:
+      excludes: []
         # - G107 # Url provided to HTTP request as taint input
         # - G404 # Insecure random number source (rand)
         # - G501 # Import blocklist: crypto/md5
