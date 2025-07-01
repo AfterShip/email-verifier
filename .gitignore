@@ -1,3 +1,7 @@
 .idea/
+.vscode/
 vendor/
+
+.golangci.bck.yml
 covprofile
+
