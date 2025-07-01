@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	_SignupPage     = "https://login.yahoo.com/account/create?specId=yidregsimplified&lang=en-US&src=&done=https%3A%2F%2Fwww.yahoo.com&display=login"
-	_SignupEndpoint = "https://login.yahoo.com/account/module/create?validateField=userId"
-	_UserAgent      = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+	signupPage     = "https://login.yahoo.com/account/create?specId=yidregsimplified&lang=en-US&src=&done=https%3A%2F%2Fwww.yahoo.com&display=login"
+	signupEndpoint = "https://login.yahoo.com/account/module/create?validateField=userId"
+	userAgent      = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
 )
 
 // Check yahoo email exists by their login & registration page.
@@ -130,7 +130,7 @@ func (y yahoo) sendValidateRequest(req yahooValidateReq) (yahooErrorResp, error)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, _SignupEndpoint, bytes.NewReader(data))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, signupEndpoint, bytes.NewReader(data))
 	if err != nil {
 		return res, err
 	}
@@ -154,11 +154,11 @@ func (y yahoo) sendValidateRequest(req yahooValidateReq) (yahooErrorResp, error)
 func (y yahoo) toSignUpPage() ([]*http.Cookie, []byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, _SignupPage, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, signupPage, nil)
 	if err != nil {
 		return nil, nil, err
 	}
-	request.Header.Add("User-Agent", _UserAgent)
+	request.Header.Add("User-Agent", userAgent)
 	resp, err := y.client.Do(request)
 	if err != nil {
 		return nil, nil, err
