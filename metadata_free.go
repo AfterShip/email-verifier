@@ -6272,7 +6272,6 @@ var freeDomains = map[string]bool {
 	"xtra.co.nz": true,
 	"xuno.com": true,
 	"xvx.us": true,
-	"xwaretech.com": true,
 	"xx-9.tk": true,
 	"xxx.sytes.net": true,
 	"xzapmail.com": true,
