@@ -38,7 +38,7 @@ func TestNewScheduleOK_FuncWithParams(t *testing.T) {
 	actual := newSchedule(time.Minute, f, 3, 4)
 
 	assert.NotNil(t, actual)
-	assert.Equal(t, actual.jobParams, []interface{}{3, 4})
+	assert.Equal(t, []interface{}{3, 4}, actual.jobParams)
 }
 
 func TestNewScheduleWithWrongFunc(t *testing.T) {

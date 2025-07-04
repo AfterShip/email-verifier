@@ -211,7 +211,7 @@ func dialSMTP(addr, proxyURI string, connectTimeout, operationTimeout time.Durat
 func GenerateRandomEmail(domain string) string {
 	r := make([]byte, 32)
 	for i := 0; i < 32; i++ {
-		r[i] = alphanumeric[rand.Intn(len(alphanumeric))]
+		r[i] = alphanumeric[rand.Intn(len(alphanumeric))] //nolint:gosec
 	}
 	return fmt.Sprintf("%s@%s", string(r), domain)
 

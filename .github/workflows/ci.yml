@@ -14,31 +14,31 @@ on:
 jobs:
   lint-build-test:
     name: Lint/Test
+
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: [1.22.x]
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+        go-version: ['1.22.x']
+
     steps:
+
+      - name: Checkout Code Base
+        uses: actions/checkout@v4
 
       - name: Install Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{matrix.go-version}}
 
-      - name: Checkout Code Base
-        uses: actions/checkout@v4
+      - name: Lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.2.1
+          only-new-issues: true
 
-      - name: Make Lint
-        run: |
-          export GOPATH=$HOME/go
-          export PATH=$PATH:$GOPATH/bin
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.54.2
-          make lint
+      - name: Test
+        run: make test
 
-      - name: Run Unit tests
-        run: |
-          make test
 
 
 
