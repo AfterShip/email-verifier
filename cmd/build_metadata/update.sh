@@ -8,18 +8,7 @@ export LC_ALL=C
 new=$(mktemp -t emailverifierXXX)
 
 # 1. update disposable domains meta databases
-curl --silent https://raw.githubusercontent.com/tompec/disposable-email-domains/main/index.json | jq -r '.[]' > $new
-
-tmp=$(mktemp -t emailverifierXXX)
-cat $new ./disposable.txt \
-    | sed '/^$/d' \
-    | sed '/./,$!d' \
-    | sed -e 's/^ *//' -e 's/ *$//' \
-    | awk '{print tolower($0)}' \
-    | sort \
-    | uniq  > $tmp
-mv $tmp ./disposable.txt
-
+curl --silent https://raw.githubusercontent.com/tompec/disposable-email-domains/main/index.json | jq -r '.[]' > ./disposable.txt
 
 # 2. update free domains meta databases,
 sources=$(cat ./free_domain_sources.txt)
@@ -28,7 +17,7 @@ for source in $sources; do
     echo "$(curl --silent $source)" >> $new
 done;
 
-
+# 3. remove duplicates and sort
 tmp=$(mktemp -t emailverifierXXX)
 cat $new ./free.txt \
     | sed '/^$/d' \
