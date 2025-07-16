@@ -11,6 +11,7 @@ new=$(mktemp -t emailverifierXXX)
 curl --silent https://raw.githubusercontent.com/tompec/disposable-email-domains/main/index.json | jq -r '.[]' > ./disposable.txt
 
 # 2. update free domains meta databases,
+curl --silent https://raw.githubusercontent.com/Kikobeats/free-email-domains/refs/heads/master/domains.json | jq -r '.[]' > ./free.txt
 sources=$(cat ./free_domain_sources.txt)
 new=$(mktemp -t emailverifierXXX)
 for source in $sources; do
