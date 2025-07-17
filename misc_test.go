@@ -2,11 +2,12 @@ package emailverifier
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var verifier = NewVerifier().EnableSMTPCheck()
+var verifier = NewVerifier().EnableSMTPCheck().EnableMXCache(1 * time.Hour)
 
 func TestIsFreeDomain_True(t *testing.T) {
 	domain := "gmail.com"
