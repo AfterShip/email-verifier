@@ -156,6 +156,8 @@ central
 centro
 ceo
 ceos
+cfo
+cfos
 channel-sales
 chat
 chatter
@@ -246,6 +248,8 @@ crm
 cs
 csm
 csteam
+cto
+ctos
 cultura
 culture
 customer
