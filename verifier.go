@@ -12,6 +12,8 @@ type Verifier struct {
 	catchAllCheckEnabled bool                       // SMTP catchAll check enabled or disabled (enabled by default)
 	domainSuggestEnabled bool                       // whether suggest a most similar correct domain or not (disabled by default)
 	gravatarCheckEnabled bool                       // gravatar check enabled or disabled (disabled by default)
+	mxCacheEnabled       bool                       // MX cache enabled or disabled (disabled by default)
+	mxCache              *MXCache                   // MX cache
 	fromEmail            string                     // name to use in the `EHLO:` SMTP command, defaults to "user@example.org"
 	helloName            string                     // email to use in the `MAIL FROM:` SMTP command. defaults to `localhost`
 	schedule             *schedule                  // schedule represents a job schedule
@@ -205,6 +207,19 @@ func (v *Verifier) DisableAutoUpdateDisposable() *Verifier {
 	v.stopCurrentSchedule()
 	return v
 
+}
+
+// EnableMXCache enables cache for MX records
+func (v *Verifier) EnableMXCache(ttl time.Duration) *Verifier {
+	v.mxCache = NewMXCache(ttl)
+	v.mxCacheEnabled = true
+	return v
+}
+
+// DisableMXCache disables cache for MX records
+func (v *Verifier) DisableMXCache() *Verifier {
+	v.mxCacheEnabled = false
+	return v
 }
 
 // FromEmail sets the emails to use in the `MAIL FROM:` smtp command
