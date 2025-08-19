@@ -292,3 +292,29 @@ func TestCheckEmail_EnableDomainSuggest(t *testing.T) {
 
 	assert.Empty(t, ret.Suggestion)
 }
+
+func TestVerify_ValidNonDisposableEmail(t *testing.T) {
+	// Arrange
+	var (
+		username = "validuser"
+		domain   = "non-disposable.com"
+		email    = username + "@" + domain
+	)
+
+	verifier := NewVerifier()
+	result, err := verifier.Verify(email)
+	assert.NoError(t, err)
+
+	expected := &Result{
+		Email:     email,
+		Reachable: reachableUnknown,
+		Syntax: Syntax{
+			Username: username,
+			Domain:   domain,
+			Valid:    true,
+		},
+		Disposable: false,
+	}
+
+	assert.Equal(t, expected, result)
+}
