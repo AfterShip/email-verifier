@@ -1,6 +1,1 @@
-https://gist.githubusercontent.com/Artistan/9662757/raw/free_email_provider_domains.txt
-https://gist.githubusercontent.com/agarstang/0d87cae417f25a0b90f3/raw/free_email_provider_domains.txt
-https://gist.githubusercontent.com/cnsaturn/9919758/raw/3rd_party_email_provider_domains.txt
-https://gist.githubusercontent.com/cyriac/f89634a28f4d441719d8/raw/free_email_provider_domains.txt
-https://gist.githubusercontent.com/hadees/3cc0e2cf97d06e0b8ebb/raw/free_email_provider_domains.txt
-https://gist.githubusercontent.com/jpadilla/8459489/raw/free_email_provider_domains.txt
+https://gist.githubusercontent.com/tbrianjones/5992856/raw/free_email_provider_domains.txt

@@ -290,5 +290,5 @@ func TestCheckEmail_EnableDomainSuggest(t *testing.T) {
 
 	ret, _ := verifier.Verify(email)
 
-	assert.Equal(t, ret.Suggestion, "")
+	assert.Empty(t, ret.Suggestion)
 }

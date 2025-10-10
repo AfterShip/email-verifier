@@ -13,10 +13,9 @@ import (
 )
 
 const (
-	SIGNUP_PAGE = "https://login.yahoo.com/account/create?specId=yidregsimplified&lang=en-US&src=&done=https%3A%2F%2Fwww.yahoo.com&display=login"
-	SIGNUP_API  = "https://login.yahoo.com/account/module/create?validateField=userId"
-	// USER_AGENT Fake one to use in API requests
-	USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36"
+	signupPage     = "https://login.yahoo.com/account/create?specId=yidregsimplified&lang=en-US&src=&done=https%3A%2F%2Fwww.yahoo.com&display=login"
+	signupEndpoint = "https://login.yahoo.com/account/module/create?validateField=userId"
+	userAgent      = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
 )
 
 // Check yahoo email exists by their login & registration page.
@@ -90,18 +89,21 @@ func (y yahoo) check(domain, username string) (*SMTP, error) {
 	}, nil
 }
 
+var sessionIndexPattern = regexp.MustCompile(`value="([^"]+)" name="sessionIndex"`)
+
 func getSessionIndex(respBytes []byte) string {
-	re := regexp.MustCompile(`value="([^"]+)" name="sessionIndex"`)
-	match := re.FindSubmatch(respBytes)
+	match := sessionIndexPattern.FindSubmatch(respBytes)
 	if len(match) > 1 {
 		return string(match[1])
 	}
 	return ""
 }
 
+var usernameExistsErrorPattern = regexp.MustCompile(`ERROR_1[0-9]{2}`)
+
 func checkUsernameExists(resp yahooErrorResp) bool {
 	for _, item := range resp.Errors {
-		if item.Name == "userId" && item.Error == "IDENTIFIER_EXISTS" {
+		if item.Name == "userId" && (item.Error == "IDENTIFIER_EXISTS" || usernameExistsErrorPattern.MatchString(item.Error)) {
 			return true
 		}
 	}
@@ -128,7 +130,7 @@ func (y yahoo) sendValidateRequest(req yahooValidateReq) (yahooErrorResp, error)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, SIGNUP_API, bytes.NewReader(data))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, signupEndpoint, bytes.NewReader(data))
 	if err != nil {
 		return res, err
 	}
@@ -152,11 +154,11 @@ func (y yahoo) sendValidateRequest(req yahooValidateReq) (yahooErrorResp, error)
 func (y yahoo) toSignUpPage() ([]*http.Cookie, []byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, SIGNUP_PAGE, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, signupPage, nil)
 	if err != nil {
 		return nil, nil, err
 	}
-	request.Header.Add("User-Agent", USER_AGENT)
+	request.Header.Add("User-Agent", userAgent)
 	resp, err := y.client.Do(request)
 	if err != nil {
 		return nil, nil, err
@@ -166,10 +168,11 @@ func (y yahoo) toSignUpPage() ([]*http.Cookie, []byte, error) {
 	return resp.Cookies(), respBytes, err
 }
 
+var acrumbPattern = regexp.MustCompile(`s=(?P<acrumb>[^;^&]*)`)
+
 func getAcrumb(cookies []*http.Cookie) string {
 	for _, c := range cookies {
-		re := regexp.MustCompile(`s=(?P<acrumb>[^;^&]*)`)
-		match := re.FindStringSubmatch(c.Value)
+		match := acrumbPattern.FindStringSubmatch(c.Value)
 		if len(match) > 1 {
 			return match[1]
 		}
