@@ -76,6 +76,9 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 	ret.Free = v.IsFreeDomain(syntax.Domain)
 	ret.RoleAccount = v.IsRoleAccount(syntax.Username)
 	ret.Disposable = v.IsDisposable(syntax.Domain)
+	if v.domainSuggestEnabled {
+		ret.Suggestion = v.SuggestDomain(syntax.Domain)
+	}
 
 	// If the domain name is disposable, mx and smtp are not checked.
 	if ret.Disposable {
@@ -106,10 +109,6 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 			return &ret, err
 		}
 		ret.Gravatar = gravatar
-	}
-
-	if v.domainSuggestEnabled {
-		ret.Suggestion = v.SuggestDomain(syntax.Domain)
 	}
 
 	return &ret, nil

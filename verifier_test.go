@@ -292,3 +292,17 @@ func TestCheckEmail_EnableDomainSuggest(t *testing.T) {
 
 	assert.Empty(t, ret.Suggestion)
 }
+
+func TestCheckEmail_EnableDomainSuggest_Gmail(t *testing.T) {
+	var (
+		// trueVal  = true
+		username = "email_username"
+		domain   = "gmai.com"
+		address  = username + "@" + domain
+		email    = address
+	)
+
+	ret, _ := verifier.EnableDomainSuggest().Verify(email)
+
+	assert.Equal(t, "gmail.com", ret.Suggestion)
+}
