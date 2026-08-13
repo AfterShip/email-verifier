@@ -1,8 +1,11 @@
 package emailverifier
 
 import (
+	"context"
+	"errors"
 	"net"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"testing"
 	"time"
@@ -235,4 +238,24 @@ func TestDialSMTPFailed_NoSuchHost(t *testing.T) {
 	assert.Nil(t, ret)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "no such host"))
+}
+
+func TestDialSMTP_WithCustomResolver(t *testing.T) {
+	domain := "github.com:25"
+	timeout := 5 * time.Second
+	wantErr := errors.New("custom resolver dial invoked")
+
+	var called atomic.Bool
+	customResolver := &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			called.Store(true)
+			return nil, wantErr
+		},
+	}
+
+	ret, err := dialSMTP(domain, "", customResolver, timeout, timeout)
+	assert.Nil(t, ret)
+	assert.Error(t, err)
+	assert.True(t, called.Load())
 }
