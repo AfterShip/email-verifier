@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCheckSMTPUnSupportedVendor(t *testing.T) {
@@ -256,6 +257,6 @@ func TestDialSMTP_WithCustomResolver(t *testing.T) {
 
 	ret, err := dialSMTP(domain, "", customResolver, timeout, timeout)
 	assert.Nil(t, ret)
-	assert.ErrorContains(t, err, wantErr.Error())
+	require.ErrorContains(t, err, wantErr.Error())
 	assert.True(t, called.Load())
 }
