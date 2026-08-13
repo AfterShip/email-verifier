@@ -256,6 +256,6 @@ func TestDialSMTP_WithCustomResolver(t *testing.T) {
 
 	ret, err := dialSMTP(domain, "", customResolver, timeout, timeout)
 	assert.Nil(t, ret)
-	assert.Error(t, err)
+	assert.ErrorContains(t, err, wantErr.Error())
 	assert.True(t, called.Load())
 }
