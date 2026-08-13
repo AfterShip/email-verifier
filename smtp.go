@@ -114,9 +114,6 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 
 // newSMTPClient generates a new available SMTP client
 func newSMTPClient(domain, proxyURI string, resolver *net.Resolver, connectTimeout, operationTimeout time.Duration) (*smtp.Client, *net.MX, error) {
-	if resolver == nil {
-		resolver = net.DefaultResolver
-	}
 	domain = domainToASCII(domain)
 	mxRecords, err := resolver.LookupMX(context.Background(), domain)
 	if err != nil {

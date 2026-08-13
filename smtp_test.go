@@ -1,6 +1,7 @@
 package emailverifier
 
 import (
+	"net"
 	"strings"
 	"syscall"
 	"testing"
@@ -196,7 +197,7 @@ func TestCheckSMTPOK_HostNotExists(t *testing.T) {
 func TestNewSMTPClientOK(t *testing.T) {
 	domain := "gmail.com"
 	timeout := 5 * time.Second
-	ret, _, err := newSMTPClient(domain, "", nil, timeout, timeout)
+	ret, _, err := newSMTPClient(domain, "", net.DefaultResolver, timeout, timeout)
 	assert.NotNil(t, ret)
 	assert.Nil(t, err)
 }
@@ -205,7 +206,7 @@ func TestNewSMTPClientFailed_WithInvalidProxy(t *testing.T) {
 	domain := "gmail.com"
 	proxyURI := "socks5://user:password@127.0.0.1:1080?timeout=5s"
 	timeout := 5 * time.Second
-	ret, _, err := newSMTPClient(domain, proxyURI, nil, timeout, timeout)
+	ret, _, err := newSMTPClient(domain, proxyURI, net.DefaultResolver, timeout, timeout)
 	assert.Nil(t, ret)
 	assert.Error(t, err, syscall.ECONNREFUSED)
 }
@@ -213,7 +214,7 @@ func TestNewSMTPClientFailed_WithInvalidProxy(t *testing.T) {
 func TestNewSMTPClientFailed(t *testing.T) {
 	domain := "zzzz171777.com"
 	timeout := 5 * time.Second
-	ret, _, err := newSMTPClient(domain, "", nil, timeout, timeout)
+	ret, _, err := newSMTPClient(domain, "", net.DefaultResolver, timeout, timeout)
 	assert.Nil(t, ret)
 	assert.Error(t, err)
 }
@@ -221,7 +222,7 @@ func TestNewSMTPClientFailed(t *testing.T) {
 func TestDialSMTPFailed_NoPortIsConfigured(t *testing.T) {
 	disposableDomain := "zzzz1717.com"
 	timeout := 5 * time.Second
-	ret, err := dialSMTP(disposableDomain, "", nil, timeout, timeout)
+	ret, err := dialSMTP(disposableDomain, "", net.DefaultResolver, timeout, timeout)
 	assert.Nil(t, ret)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "missing port"))
@@ -230,7 +231,7 @@ func TestDialSMTPFailed_NoPortIsConfigured(t *testing.T) {
 func TestDialSMTPFailed_NoSuchHost(t *testing.T) {
 	disposableDomain := "zzzzyyyyaaa123.com:25"
 	timeout := 5 * time.Second
-	ret, err := dialSMTP(disposableDomain, "", nil, timeout, timeout)
+	ret, err := dialSMTP(disposableDomain, "", net.DefaultResolver, timeout, timeout)
 	assert.Nil(t, ret)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "no such host"))
