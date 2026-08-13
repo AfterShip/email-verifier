@@ -148,7 +148,7 @@ func main() {
 
 ### Use a custom DNS resolver
 
-By default, the verifier uses `net.DefaultResolver` (which reads `/etc/resolv.conf`) to perform MX and SMTP host lookups. You can override this behaviour by supplying your own `*net.Resolver` via `Resolver()`, for example to query a specific DNS server.
+By default, the verifier uses `net.DefaultResolver` (the platform's system-configured DNS resolver) for MX lookups and direct SMTP host lookups. You can override this behaviour by supplying your own `*net.Resolver` via `Resolver()`, for example to query a specific DNS server. When a proxy is configured, SMTP hostname resolution follows the proxy path rather than this resolver.
 
 ```go
 var (
