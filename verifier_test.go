@@ -1,6 +1,7 @@
 package emailverifier
 
 import (
+	"net"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -305,4 +306,17 @@ func TestCheckEmail_EnableDomainSuggest_Gmail(t *testing.T) {
 	ret, _ := verifier.EnableDomainSuggest().Verify(email)
 
 	assert.Equal(t, "gmail.com", ret.Suggestion)
+}
+
+func TestNewVerifierOK_DefaultResolver(t *testing.T) {
+	v := NewVerifier()
+	assert.Equal(t, net.DefaultResolver, v.resolver)
+}
+
+func TestVerifier_Resolver(t *testing.T) {
+	customResolver := &net.Resolver{PreferGo: true}
+
+	v := NewVerifier().Resolver(customResolver)
+
+	assert.Same(t, customResolver, v.resolver)
 }

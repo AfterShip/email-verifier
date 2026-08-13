@@ -146,6 +146,39 @@ func main() {
 }
 ```
 
+### Use a custom DNS resolver
+
+By default, the verifier uses `net.DefaultResolver` (which reads `/etc/resolv.conf`) to perform MX and SMTP host lookups. You can override this behaviour by supplying your own `*net.Resolver` via `Resolver()`, for example to query a specific DNS server.
+
+```go
+var (
+    verifier = emailverifier.
+        NewVerifier().
+        EnableSMTPCheck().
+        Resolver(&net.Resolver{
+            PreferGo: true,
+            Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+                d := net.Dialer{}
+                return d.DialContext(ctx, network, "8.8.8.8:53")
+            },
+        })
+)
+
+func main() {
+
+    domain := "domain.org"
+    username := "username"
+    ret, err := verifier.CheckSMTP(domain, username)
+    if err != nil {
+        fmt.Println("check smtp failed: ", err)
+        return
+    }
+
+    fmt.Println("smtp validation result: ", ret)
+
+}
+```
+
 ### Misc Validation
 
 To check if an email domain is disposable via `IsDisposable`
