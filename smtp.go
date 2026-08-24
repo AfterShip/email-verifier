@@ -39,7 +39,13 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 	email := fmt.Sprintf("%s@%s", username, domain)
 
 	// Dial any SMTP server that will accept a connection
-	client, mx, err := newSMTPClient(domain, v.proxyURI, v.connectTimeout, v.operationTimeout)
+	var getMxFunc GetMXFunc
+	if v.mxCacheEnabled {
+		getMxFunc = v.mxCache.Get
+	} else {
+		getMxFunc = net.LookupMX
+	}
+	client, mx, err := newSMTPClient(domain, v.proxyURI, v.connectTimeout, v.operationTimeout, getMxFunc)
 	if err != nil {
 		return &ret, ParseSMTPError(err)
 	}
@@ -113,9 +119,13 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 }
 
 // newSMTPClient generates a new available SMTP client
-func newSMTPClient(domain, proxyURI string, connectTimeout, operationTimeout time.Duration) (*smtp.Client, *net.MX, error) {
+func newSMTPClient(domain, proxyURI string, connectTimeout, operationTimeout time.Duration, getMx GetMXFunc) (*smtp.Client, *net.MX, error) {
 	domain = domainToASCII(domain)
-	mxRecords, err := net.LookupMX(domain)
+
+	var mxRecords []*net.MX
+	var err error
+	mxRecords, err = getMx(domain)
+
 	if err != nil {
 		return nil, nil, err
 	}
