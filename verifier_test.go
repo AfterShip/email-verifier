@@ -320,3 +320,14 @@ func TestVerifier_Resolver(t *testing.T) {
 
 	assert.Same(t, customResolver, v.resolver)
 }
+
+func TestVerifier_Resolver_NilRestoresDefault(t *testing.T) {
+	customResolver := &net.Resolver{PreferGo: true}
+
+	v := NewVerifier().Resolver(customResolver)
+	assert.Same(t, customResolver, v.resolver)
+
+	v.Resolver(nil)
+
+	assert.Same(t, net.DefaultResolver, v.resolver)
+}
