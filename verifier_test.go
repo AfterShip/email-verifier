@@ -35,6 +35,7 @@ func TestCheckEmailOK_SMTPHostNotExists(t *testing.T) {
 }
 
 func TestCheckEmailOK_SMTPHostExists_NotCatchAll(t *testing.T) {
+	requireLiveNetwork(t)
 	var (
 		// trueVal  = true
 		username = "email_username"
@@ -69,6 +70,7 @@ func TestCheckEmailOK_SMTPHostExists_NotCatchAll(t *testing.T) {
 }
 
 func TestCheckEmailOK_SMTPHostExists_FreeDomain(t *testing.T) {
+	requireLiveNetwork(t)
 	var (
 		// trueVal  = true
 		username = "email_username"
@@ -187,6 +189,7 @@ func TestCheckEmail_Disposable_override(t *testing.T) {
 }
 
 func TestCheckEmail_RoleAccount(t *testing.T) {
+	requireLiveNetwork(t)
 	var (
 		// trueVal  = true
 		username = "admin"

@@ -15,6 +15,7 @@ func TestCheckSMTPUnSupportedVendor(t *testing.T) {
 }
 
 func TestCheckSMTPOK_ByApi(t *testing.T) {
+	requireLiveNetwork(t)
 	cases := []struct {
 		name     string
 		domain   string
@@ -71,6 +72,7 @@ func TestCheckSMTPOK_ByApi(t *testing.T) {
 }
 
 func TestCheckSMTPOK_HostExists(t *testing.T) {
+	requireLiveNetwork(t)
 	domain := "github.com"
 
 	smtp, err := verifier.CheckSMTP(domain, "")
@@ -85,6 +87,7 @@ func TestCheckSMTPOK_HostExists(t *testing.T) {
 }
 
 func TestCheckSMTPOK_CatchAllHost(t *testing.T) {
+	requireLiveNetwork(t)
 	domain := "gmail.com"
 
 	smtp, err := verifier.CheckSMTP(domain, "")
@@ -99,6 +102,7 @@ func TestCheckSMTPOK_CatchAllHost(t *testing.T) {
 }
 
 func TestCheckSMTPOK_NoCatchAllHost(t *testing.T) {
+	requireLiveNetwork(t)
 	domain := "gmail.com"
 
 	smtp, err := verifier.CheckSMTP(domain, "")
@@ -113,6 +117,7 @@ func TestCheckSMTPOK_NoCatchAllHost(t *testing.T) {
 }
 
 func TestCheckSMTPOK_NoCatchAllHostCatchAllCheckDisabled(t *testing.T) {
+	requireLiveNetwork(t)
 	domain := "gmail.com"
 
 	var verifier = NewVerifier().EnableSMTPCheck().DisableCatchAllCheck()
@@ -128,6 +133,7 @@ func TestCheckSMTPOK_NoCatchAllHostCatchAllCheckDisabled(t *testing.T) {
 }
 
 func TestCheckSMTPOK_UpdateFromEmail(t *testing.T) {
+	requireLiveNetwork(t)
 	domain := "github.com"
 	verifier.FromEmail("from@email.top")
 
@@ -144,6 +150,7 @@ func TestCheckSMTPOK_UpdateFromEmail(t *testing.T) {
 }
 
 func TestCheckSMTPOK_UpdateHelloName(t *testing.T) {
+	requireLiveNetwork(t)
 	domain := "github.com"
 	verifier.HelloName("email.top")
 
@@ -160,6 +167,7 @@ func TestCheckSMTPOK_UpdateHelloName(t *testing.T) {
 }
 
 func TestCheckSMTPOK_WithNoExistUsername(t *testing.T) {
+	requireLiveNetwork(t)
 	domain := "github.com"
 	username := "testing"
 
@@ -194,6 +202,7 @@ func TestCheckSMTPOK_HostNotExists(t *testing.T) {
 }
 
 func TestNewSMTPClientOK(t *testing.T) {
+	requireLiveNetwork(t)
 	domain := "gmail.com"
 	timeout := 5 * time.Second
 	ret, _, err := newSMTPClient(domain, "", timeout, timeout)
