@@ -13,14 +13,14 @@ func TestYahooCheckByAPI(t *testing.T) {
 	t.Run("email exists", func(tt *testing.T) {
 		res, err := yahooAPIVerifier.check("yahoo.com", "hello")
 		require.NoError(tt, err)
-		assert.Equal(tt, true, res.HostExists)
-		assert.Equal(tt, true, res.Deliverable)
+		assert.True(tt, res.HostExists)
+		assert.True(tt, res.Deliverable)
 	})
 	t.Run("invalid email not exists", func(tt *testing.T) {
 		res, err := yahooAPIVerifier.check("yahoo.com", "123")
 		require.NoError(tt, err)
-		assert.Equal(tt, true, res.HostExists)
-		assert.Equal(tt, false, res.Deliverable)
+		assert.True(tt, res.HostExists)
+		assert.False(tt, res.Deliverable)
 	})
 }
 
