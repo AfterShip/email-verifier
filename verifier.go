@@ -3,7 +3,6 @@ package emailverifier
 import (
 	"fmt"
 	"net"
-	"net/http"
 	"time"
 )
 
@@ -17,7 +16,7 @@ type Verifier struct {
 	helloName            string                     // email to use in the `MAIL FROM:` SMTP command. defaults to `localhost`
 	schedule             *schedule                  // schedule represents a job schedule
 	proxyURI             string                     // use a SOCKS5 proxy to verify the email,
-	apiVerifiers         map[string]smtpAPIVerifier // currently support gmail & yahoo, further contributions are welcomed.
+	apiVerifiers         map[string]smtpAPIVerifier // per-vendor API verifiers; no built-in vendors currently, contributions are welcomed.
 	resolver             *net.Resolver              // resolver used to perform MX and SMTP DNS lookups, defaults to net.DefaultResolver
 
 	// Timeouts
@@ -147,17 +146,16 @@ func (v *Verifier) EnableSMTPCheck() *Verifier {
 	return v
 }
 
-// EnableAPIVerifier API verifier is activated when EnableAPIVerifier for the target vendor.
+// EnableAPIVerifier activates an API-based existence check for the given vendor.
 // ** Please know ** that this is a tricky way (but relatively stable) to check if target vendor's email exists.
 // If you use this feature in a production environment, please ensure that you have sufficient backup measures in place, as this may encounter rate limiting or other API issues.
+//
+// There are currently no built-in vendors: the Yahoo verifier was removed once its
+// endpoint stopped existing (see https://github.com/AfterShip/email-verifier/issues/195),
+// following the same fate as the Gmail verifier removed in #113. This remains an
+// extension point; contributions adding a working vendor are welcome.
 func (v *Verifier) EnableAPIVerifier(name string) error {
-	switch name {
-	case YAHOO:
-		v.apiVerifiers[YAHOO] = newYahooAPIVerifier(http.DefaultClient)
-	default:
-		return fmt.Errorf("unsupported to enable the API verifier for vendor: %s", name)
-	}
-	return nil
+	return fmt.Errorf("unsupported to enable the API verifier for vendor: %s", name)
 }
 
 func (v *Verifier) DisableAPIVerifier(name string) {

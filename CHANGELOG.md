@@ -1,8 +1,13 @@
 ## [Change log](https://github.com/AfterShip/email-verifier/releases)
 
+Unreleased
+----------
+* **Breaking**: Remove the non-functional Yahoo API verifier; `EnableAPIVerifier(YAHOO)` and the `YAHOO` constant are gone [#198](https://github.com/AfterShip/email-verifier/pull/198)
+* Fix: Yahoo API test panic no longer aborts the test suite [#196](https://github.com/AfterShip/email-verifier/pull/196)
+
 v1.4.0
 ----------
-* Feature: Support Gmail&Yahoo SMTP check by API [#76](https://github.com/AfterShip/email-verifier/pull/88)
+* Feature: Support Gmail&Yahoo SMTP check by API [#88](https://github.com/AfterShip/email-verifier/pull/88)
 * Optimization: Return HasMXRecord as true when at least one valid mx records exist [#94](https://github.com/AfterShip/email-verifier/pull/94)
 * Update Dependencies
 

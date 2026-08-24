@@ -19,62 +19,6 @@ func TestCheckSMTPUnSupportedVendor(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestCheckSMTPOK_ByApi(t *testing.T) {
-	cases := []struct {
-		name     string
-		domain   string
-		username string
-		expected *SMTP
-	}{
-		{
-			name:     "yahoo exists",
-			domain:   "yahoo.com",
-			username: "someone",
-			expected: &SMTP{
-				HostExists:  true,
-				Deliverable: true,
-			},
-		},
-		{
-			name:     "myyahoo exists",
-			domain:   "myyahoo.com",
-			username: "someone",
-			expected: &SMTP{
-				HostExists:  true,
-				Deliverable: true,
-			},
-		},
-		{
-			name:     "yahoo no exists",
-			domain:   "yahoo.com",
-			username: "123",
-			expected: &SMTP{
-				HostExists:  true,
-				Deliverable: false,
-			},
-		},
-		{
-			name:     "myyahoo no exists",
-			domain:   "myyahoo.com",
-			username: "123",
-			expected: &SMTP{
-				HostExists:  true,
-				Deliverable: false,
-			},
-		},
-	}
-	_ = verifier.EnableAPIVerifier(YAHOO)
-	defer verifier.DisableAPIVerifier(YAHOO)
-	for _, c := range cases {
-		test := c
-		t.Run(test.name, func(tt *testing.T) {
-			smtp, err := verifier.CheckSMTP(test.domain, test.username)
-			assert.NoError(t, err)
-			assert.Equal(t, test.expected, smtp)
-		})
-	}
-}
-
 func TestCheckSMTPOK_HostExists(t *testing.T) {
 	domain := "github.com"
 
