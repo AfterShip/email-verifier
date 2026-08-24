@@ -179,6 +179,13 @@ func main() {
 }
 ```
 
+> Note: `PreferGo: true` is doing real work here, it is not boilerplate. MX record lookups always
+> go through Go's own DNS client, so a custom `Dial` is honoured for those either way. Resolving
+> the mail server's hostname to an IP for the TCP connection is different: without `PreferGo` that
+> step may use the system (cgo) resolver, which ignores `Dial` entirely and quietly falls back to
+> `/etc/resolv.conf`. Even with it set, `/etc/hosts` is still consulted before DNS, so a host
+> listed there never reaches your resolver.
+
 ### Misc Validation
 
 To check if an email domain is disposable via `IsDisposable`
