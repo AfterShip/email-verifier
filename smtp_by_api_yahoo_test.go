@@ -5,21 +5,22 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestYahooCheckByAPI(t *testing.T) {
 	yahooAPIVerifier := newYahooAPIVerifier(nil)
 	t.Run("email exists", func(tt *testing.T) {
 		res, err := yahooAPIVerifier.check("yahoo.com", "hello")
-		assert.NoError(t, err)
-		assert.Equal(t, true, res.HostExists)
-		assert.Equal(t, true, res.Deliverable)
+		require.NoError(tt, err)
+		assert.True(tt, res.HostExists)
+		assert.True(tt, res.Deliverable)
 	})
 	t.Run("invalid email not exists", func(tt *testing.T) {
 		res, err := yahooAPIVerifier.check("yahoo.com", "123")
-		assert.NoError(t, err)
-		assert.Equal(t, true, res.HostExists)
-		assert.Equal(t, false, res.Deliverable)
+		require.NoError(tt, err)
+		assert.True(tt, res.HostExists)
+		assert.False(tt, res.Deliverable)
 	})
 }
 
