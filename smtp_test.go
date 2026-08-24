@@ -204,3 +204,29 @@ func TestDialSMTP_WithCustomResolver(t *testing.T) {
 	assert.True(t, called.Load())
 	require.ErrorContains(t, err, wantErr.Error())
 }
+
+// The counterpart to the test above: SOCKS5 hands the target hostname to the
+// proxy to resolve remotely, so the custom resolver must not be consulted on
+// the proxy path. This pins the behaviour the README documents; if the proxy
+// path ever gains resolver support, this test should fail and prompt a docs
+// update. The proxy address is an IP so that resolving the proxy's own name
+// cannot influence the assertion.
+func TestDialSMTP_ProxyBypassesCustomResolver(t *testing.T) {
+	domain := "github.com:25"
+	proxyURI := "socks5://127.0.0.1:1080"
+	timeout := 5 * time.Second
+
+	var called atomic.Bool
+	customResolver := &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			called.Store(true)
+			return nil, errors.New("custom resolver dial invoked")
+		},
+	}
+
+	ret, err := dialSMTP(domain, proxyURI, customResolver, timeout, timeout)
+	assert.Nil(t, ret)
+	require.Error(t, err)
+	assert.False(t, called.Load())
+}
