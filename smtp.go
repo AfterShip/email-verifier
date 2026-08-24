@@ -39,7 +39,7 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 	email := fmt.Sprintf("%s@%s", username, domain)
 
 	// Dial any SMTP server that will accept a connection
-	client, mx, err := newSMTPClient(domain, v.proxyURI, v.resolver, v.connectTimeout, v.operationTimeout)
+	client, mx, err := newSMTPClient(domain, v.proxyURI, v.dnsResolver(), v.connectTimeout, v.operationTimeout)
 	if err != nil {
 		return &ret, ParseSMTPError(err)
 	}
