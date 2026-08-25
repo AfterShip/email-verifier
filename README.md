@@ -117,9 +117,18 @@ If you want to disable catchAll checking, use the `DisableCatchAllCheck()` switc
 > Note: because most of the ISPs block outgoing SMTP requests through port 25 to prevent email spamming, the module will not perform SMTP checking by default. You can initialize the verifier with  `EnableSMTPCheck()`  to enable such capability if port 25 is usable, 
 > or use a socks proxy to connect over SMTP
 
+> Note: set `FromEmail()` and `HelloName()` before verifying at any volume. The defaults are
+> `user@example.org` and `localhost`, and `example.org` is reserved by RFC 2606, so a server
+> that validates the sender can reject the whole exchange before it ever considers the
+> address you asked about. Rejections of this kind arrive at `MAIL FROM` and name the sender
+> or the connecting host rather than the recipient, for example
+> `550 5.7.25 Forward-confirmed reverse DNS failed` or
+> `550 5.7.1 Service unavailable, Client host [...] blocked using Spamhaus`. Use a domain you
+> control, with a PTR record for the IP you connect from.
+
 ### Use a SOCKS5 proxy to verify email 
 
-Support setting a SOCKS5 proxy to verify the email, proxyURI should be in the format: `socks5://user:password@127.0.0.1:1080?timeout=5s`
+Support setting a SOCKS5 proxy to verify the email, proxyURI should be in the format: `socks5://user:password@127.0.0.1:1080`
 
 The protocol could be socks5, socks4 and socks4a.
 
@@ -128,7 +137,7 @@ var (
     verifier = emailverifier.
         NewVerifier().
         EnableSMTPCheck().
-    	Proxy("socks5://user:password@127.0.0.1:1080?timeout=5s")
+    	Proxy("socks5://user:password@127.0.0.1:1080")
 )
 
 func main() {
@@ -145,6 +154,37 @@ func main() {
 
 }
 ```
+
+Two things to know about the proxy:
+
+> **A query string in the proxy URI is ignored.** `golang.org/x/net/proxy` reads only the
+> scheme, credentials and host, so a `?timeout=5s` has no effect. Use `ConnectTimeout()` and
+> `OperationTimeout()` instead.
+
+> **DNS does not go through the proxy.** Only the connection to the mail server does, so MX
+> lookups still leave from the local machine. To route them through the proxy as well, dial
+> your DNS server over TCP through it — SOCKS5 carries TCP, and Go frames DNS over a
+> non-packet connection per RFC 7766:
+>
+> ```go
+> socksDialer, err := proxy.SOCKS5("tcp", "127.0.0.1:1080", nil, proxy.Direct)
+> if err != nil {
+>     return err
+> }
+> verifier = emailverifier.
+>     NewVerifier().
+>     EnableSMTPCheck().
+>     Proxy("socks5://127.0.0.1:1080").
+>     Resolver(&net.Resolver{
+>         PreferGo: true,
+>         Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+>             // ignore network, which may be "udp": SOCKS5 CONNECT carries TCP only
+>             return socksDialer.Dial("tcp", "8.8.8.8:53")
+>         },
+>     })
+> ```
+>
+> Each lookup opens a TCP connection through the proxy, so this costs more than plain UDP DNS.
 
 ### Use a custom DNS resolver
 

@@ -224,8 +224,15 @@ func (v *Verifier) HelloName(domain string) *Verifier {
 }
 
 // Proxy sets a SOCKS5 proxy to verify the email,
-// proxyURI should be in the format: "socks5://user:password@127.0.0.1:1080?timeout=5s".
+// proxyURI should be in the format: "socks5://user:password@127.0.0.1:1080".
 // The protocol could be socks5, socks4 and socks4a.
+//
+// Only the scheme, credentials and host are read; a query string is ignored, so
+// a "?timeout=5s" has no effect. Use ConnectTimeout and OperationTimeout.
+//
+// The proxy carries the connection to the mail server, not DNS: MX lookups
+// still go out from the local machine. See Resolver for routing those through
+// the proxy too.
 func (v *Verifier) Proxy(proxyURI string) *Verifier {
 	v.proxyURI = proxyURI
 	return v
