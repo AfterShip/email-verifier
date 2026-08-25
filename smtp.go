@@ -7,7 +7,9 @@ import (
 	"math/rand"
 	"net"
 	"net/smtp"
+	"net/textproto"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -47,6 +49,12 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 	// Defer quit the SMTP connection
 	defer client.Close()
 
+	// We opened a connection and read the server's greeting, so the host is
+	// there whatever happens from here on. Recorded before EHLO and MAIL FROM
+	// so that a rejection at either -- which is about our sender, not about the
+	// host -- does not report the host as missing.
+	ret.HostExists = true
+
 	// Check by api when enabled and host recognized.
 	for _, apiVerifier := range v.apiVerifiers {
 		if apiVerifier.isSupported(strings.ToLower(mx.Host)) {
@@ -63,9 +71,6 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 	if err = client.Mail(v.fromEmail); err != nil {
 		return &ret, ParseSMTPError(err)
 	}
-
-	// Host exists if we've successfully formed a connection
-	ret.HostExists = true
 
 	// Default sets catch-all to true
 	ret.CatchAll = true
@@ -170,13 +175,47 @@ func newSMTPClient(domain, proxyURI string, resolver *net.Resolver, connectTimeo
 		case error:
 			errs = append(errs, r)
 			if len(errs) == len(mxRecords) {
-				return nil, nil, errs[0]
+				return nil, nil, preferredDialError(errs)
 			}
 		default:
 			return nil, nil, errors.New("Unexpected response dialing SMTP server")
 		}
 	}
 
+}
+
+// preferredDialError picks the most useful of the errors gathered while racing
+// the MX hosts.
+//
+// The hosts are dialled concurrently, so the first error to arrive is the one
+// that failed fastest -- typically a refused connection or a DNS miss. An error
+// carrying an SMTP reply took longer precisely because a server answered and
+// said why it was refusing us, which is what the caller needs. Returning the
+// first arrival systematically preferred the least informative one.
+func preferredDialError(errs []error) error {
+	for _, err := range errs {
+		if hasSMTPReply(err) {
+			return err
+		}
+	}
+	return errs[0]
+}
+
+// hasSMTPReply reports whether err carries a reply from an SMTP server, as
+// opposed to a network level failure.
+func hasSMTPReply(err error) bool {
+	var protoErr *textproto.Error
+	if errors.As(err, &protoErr) {
+		return true
+	}
+	// Errors that have already been rendered to a string keep the reply code
+	// at the front, so fall back to reading it from there.
+	s := err.Error()
+	if len(s) < 3 {
+		return false
+	}
+	code, convErr := strconv.Atoi(s[:3])
+	return convErr == nil && code >= 200 && code < 600
 }
 
 // dialSMTP is a timeout wrapper for smtp.Dial. It attempts to dial an
