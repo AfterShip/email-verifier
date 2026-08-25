@@ -1,7 +1,10 @@
 package emailverifier
 
 import (
+	"errors"
 	"fmt"
+	"net/textproto"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -35,6 +38,9 @@ type LookupError struct {
 	// errors.As to reach the underlying *net.DNSError, *net.OpError or
 	// *textproto.Error instead of having to match on Details.
 	cause error
+
+	// enhanced is the RFC 3463 enhanced status code the server sent, if any.
+	enhanced string
 }
 
 // newLookupError creates a new LookupError reference and returns it
@@ -60,8 +66,51 @@ func (e *LookupError) Unwrap() error {
 	return e.cause
 }
 
+// EnhancedCode returns the RFC 3463 enhanced status code the server sent, for
+// example "5.7.1", or an empty string if it sent none. Several large providers
+// send none, so callers must handle the empty case rather than read it as a
+// classification.
+//
+// The class digit is dependable -- 2 success, 4 transient, 5 permanent -- but
+// the subject is evidence, not a verdict: providers disagree with the registry
+// and with each other over which subject an unknown recipient gets.
+func (e *LookupError) EnhancedCode() string {
+	if e == nil {
+		return ""
+	}
+	return e.enhanced
+}
+
 func (e *LookupError) Error() string {
 	return fmt.Sprintf("%s : %s", e.Message, e.Details)
+}
+
+// enhancedCodeInReplyPattern matches the code in a reply that reaches us
+// flattened into one string: right after the reply code, so that the IP
+// addresses and diagnostic identifiers these replies carry are not mistaken for
+// one.
+var enhancedCodeInReplyPattern = regexp.MustCompile(`^[245][0-9]{2}[ -]\s*([245]\.[0-9]{1,3}\.[0-9]{1,3})\b`)
+
+// enhancedCodeInMsgPattern matches it where textproto keeps it: Code has been
+// split off, so the enhanced code starts Msg.
+var enhancedCodeInMsgPattern = regexp.MustCompile(`^\s*([245]\.[0-9]{1,3}\.[0-9]{1,3})\b`)
+
+// enhancedCodeOf extracts the enhanced status code from an SMTP reply. It starts
+// textproto.Error's Msg; Error() renders that with %q, which puts the code behind
+// a quote, so the rendered form serves only replies that reach us already
+// flattened -- ParseSMTPError is exported and takes those too.
+func enhancedCodeOf(err error) string {
+	var tp *textproto.Error
+	if errors.As(err, &tp) {
+		if m := enhancedCodeInMsgPattern.FindStringSubmatch(tp.Msg); len(m) > 1 {
+			return m[1]
+		}
+		return ""
+	}
+	if m := enhancedCodeInReplyPattern.FindStringSubmatch(err.Error()); len(m) > 1 {
+		return m[1]
+	}
+	return ""
 }
 
 // ParseSMTPError receives an MX Servers response message
@@ -75,11 +124,13 @@ func ParseSMTPError(err error) *LookupError {
 	if err == nil {
 		return nil
 	}
-	if le := parseSMTPError(err); le != nil {
-		return le.withCause(err)
+	le := parseSMTPError(err)
+	if le == nil {
+		errStr := err.Error()
+		le = newLookupError(errStr, errStr)
 	}
-	errStr := err.Error()
-	return newLookupError(errStr, errStr).withCause(err)
+	le.enhanced = enhancedCodeOf(err)
+	return le.withCause(err)
 }
 
 func parseSMTPError(err error) *LookupError {
