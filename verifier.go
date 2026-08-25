@@ -98,10 +98,15 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 	ret.HasMxRecords = mx.HasMXRecord
 
 	smtp, err := v.CheckSMTP(syntax.Domain, syntax.Username)
+
+	// Kept whether or not the check succeeded. A failed exchange still says how
+	// far it got, which is the difference between a host that never answered and
+	// one that answered and refused our sender.
+	ret.SMTP = smtp
+
 	if err != nil {
 		return &ret, err
 	}
-	ret.SMTP = smtp
 	ret.Reachable = v.calculateReachable(smtp)
 
 	if v.gravatarCheckEnabled {

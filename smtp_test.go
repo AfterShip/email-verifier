@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net"
+	"net/textproto"
 	"strings"
 	"sync/atomic"
 	"syscall"
@@ -229,4 +230,54 @@ func TestDialSMTP_ProxyBypassesCustomResolver(t *testing.T) {
 	assert.Nil(t, ret)
 	require.Error(t, err)
 	assert.False(t, called.Load())
+}
+
+func TestPreferredDialError(t *testing.T) {
+	network := errors.New("dial tcp 1.2.3.4:25: connect: connection refused")
+	dns := &net.DNSError{Err: "no such host", Name: "mx.example.invalid", IsNotFound: true}
+	reply := &textproto.Error{Code: 550, Msg: "5.7.1 Service unavailable, Client host blocked using Spamhaus."}
+	rendered := errors.New("421 4.7.0 Too many concurrent connections")
+
+	t.Run("prefers a server reply over a network failure", func(tt *testing.T) {
+		// the network failure arrives first because it fails fastest
+		assert.Same(tt, reply, preferredDialError([]error{network, reply}))
+	})
+
+	t.Run("prefers a server reply over a DNS failure", func(tt *testing.T) {
+		assert.Same(tt, reply, preferredDialError([]error{dns, reply}))
+	})
+
+	t.Run("recognises a reply that was already rendered to a string", func(tt *testing.T) {
+		assert.Same(tt, rendered, preferredDialError([]error{network, rendered}))
+	})
+
+	t.Run("falls back to the first error when no server replied", func(tt *testing.T) {
+		assert.Same(tt, network, preferredDialError([]error{network, dns}))
+	})
+
+	t.Run("single error", func(tt *testing.T) {
+		assert.Same(tt, network, preferredDialError([]error{network}))
+	})
+}
+
+func TestHasSMTPReply(t *testing.T) {
+	cases := []struct {
+		name string
+		err  error
+		want bool
+	}{
+		{"textproto error", &textproto.Error{Code: 550, Msg: "no such user"}, true},
+		{"rendered reply", errors.New("452 4.5.3 Recipients belong to multiple regions"), true},
+		{"connection refused", errors.New("dial tcp 1.2.3.4:25: connect: connection refused"), false},
+		{"dns miss", &net.DNSError{Err: "no such host"}, false},
+		{"too short to carry a code", errors.New("no"), false},
+		{"leading digits that are not a reply code", errors.New("103.26.221.42 unreachable"), false},
+		{"no MX records", errors.New("No MX records found"), false},
+	}
+	for _, c := range cases {
+		test := c
+		t.Run(test.name, func(tt *testing.T) {
+			assert.Equal(tt, test.want, hasSMTPReply(test.err))
+		})
+	}
 }
