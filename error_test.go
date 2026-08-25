@@ -2,9 +2,11 @@ package emailverifier
 
 import (
 	"errors"
+	"net"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParse550RCPTError(t *testing.T) {
@@ -32,7 +34,8 @@ func TestParseNoMxRecordsFoundError(t *testing.T) {
 	errStr := "No MX records found"
 	err := errors.New(errStr)
 	le := ParseSMTPError(err)
-	assert.Equal(t, &LookupError{Details: errStr, Message: errStr}, le)
+	assert.Equal(t, errStr, le.Message)
+	assert.Equal(t, errStr, le.Details)
 }
 
 func TestParseFullInBoxError(t *testing.T) {
@@ -48,7 +51,8 @@ func TestParseDailSMTPServerError(t *testing.T) {
 	errStr := "Unexpected response dialing SMTP server"
 	err := errors.New(errStr)
 	le := ParseSMTPError(err)
-	assert.Equal(t, &LookupError{Details: errStr, Message: errStr}, le)
+	assert.Equal(t, errStr, le.Message)
+	assert.Equal(t, errStr, le.Details)
 }
 
 func TestParseError_Code550(t *testing.T) {
@@ -60,12 +64,43 @@ func TestParseError_Code550(t *testing.T) {
 	assert.Equal(t, err.Error(), le.Details)
 }
 
-func TestParseError_Code400_Nil(t *testing.T) {
+// A status line that does not itself indicate a failure is still reported,
+// because ParseSMTPError is only ever reached with a non-nil error. Returning
+// nil used to hand callers a non-nil error interface wrapping a nil
+// *LookupError, and calling Error on that panics.
+func TestParseError_Code400_ReportedVerbatim(t *testing.T) {
 	errStr := "400"
 	err := errors.New(errStr)
 	le := ParseSMTPError(err)
 
-	assert.Equal(t, (*LookupError)(nil), le)
+	require.NotNil(t, le)
+	assert.Equal(t, errStr, le.Message)
+	assert.Equal(t, errStr, le.Details)
+	assert.NotPanics(t, func() { _ = le.Error() })
+}
+
+func TestParseSMTPError_NilInput(t *testing.T) {
+	assert.Nil(t, ParseSMTPError(nil))
+}
+
+func TestParseSMTPError_UnwrapsToCause(t *testing.T) {
+	cause := &net.DNSError{Err: "no such host", Name: "example.invalid", IsNotFound: true}
+
+	le := ParseSMTPError(cause)
+	require.NotNil(t, le)
+	assert.Equal(t, ErrNoSuchHost, le.Message)
+
+	// the point of wrapping: callers can inspect the underlying error by type
+	// instead of matching on Details
+	var dnsErr *net.DNSError
+	require.True(t, errors.As(error(le), &dnsErr))
+	assert.True(t, dnsErr.IsNotFound)
+	assert.True(t, errors.Is(error(le), cause))
+}
+
+func TestLookupError_UnwrapNilSafe(t *testing.T) {
+	var le *LookupError
+	assert.Nil(t, le.Unwrap())
 }
 
 func TestParseError_Code401(t *testing.T) {
@@ -73,7 +108,8 @@ func TestParseError_Code401(t *testing.T) {
 	err := errors.New(errStr)
 	le := ParseSMTPError(err)
 
-	assert.Equal(t, &LookupError{Details: errStr, Message: errStr}, le)
+	assert.Equal(t, errStr, le.Message)
+	assert.Equal(t, errStr, le.Details)
 }
 
 func TestParseError_Code421(t *testing.T) {

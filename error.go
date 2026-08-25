@@ -29,11 +29,35 @@ const (
 type LookupError struct {
 	Message string `json:"message" xml:"message"`
 	Details string `json:"details" xml:"details"`
+
+	// cause is the error this was derived from. It is deliberately unexported
+	// and not serialised; it exists so that callers can use errors.Is and
+	// errors.As to reach the underlying *net.DNSError, *net.OpError or
+	// *textproto.Error instead of having to match on Details.
+	cause error
 }
 
 // newLookupError creates a new LookupError reference and returns it
 func newLookupError(message, details string) *LookupError {
-	return &LookupError{message, details}
+	return &LookupError{Message: message, Details: details}
+}
+
+// withCause records the error this LookupError was derived from, so that
+// errors.Is and errors.As can see through to it.
+func (e *LookupError) withCause(cause error) *LookupError {
+	if e == nil {
+		return nil
+	}
+	e.cause = cause
+	return e
+}
+
+// Unwrap returns the error this LookupError was derived from, if any.
+func (e *LookupError) Unwrap() error {
+	if e == nil {
+		return nil
+	}
+	return e.cause
 }
 
 func (e *LookupError) Error() string {
@@ -41,8 +65,24 @@ func (e *LookupError) Error() string {
 }
 
 // ParseSMTPError receives an MX Servers response message
-// and generates the corresponding MX error
+// and generates the corresponding MX error.
+//
+// A non-nil err always yields a non-nil result: an error we cannot classify is
+// reported verbatim rather than discarded. Returning nil here would hand the
+// caller a non-nil error interface wrapping a nil *LookupError, whose Error
+// method then panics.
 func ParseSMTPError(err error) *LookupError {
+	if err == nil {
+		return nil
+	}
+	if le := parseSMTPError(err); le != nil {
+		return le.withCause(err)
+	}
+	errStr := err.Error()
+	return newLookupError(errStr, errStr).withCause(err)
+}
+
+func parseSMTPError(err error) *LookupError {
 	errStr := err.Error()
 
 	// Verify the length of the error before reading nil indexes
