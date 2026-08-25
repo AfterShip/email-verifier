@@ -146,6 +146,46 @@ func main() {
 }
 ```
 
+### Use a custom DNS resolver
+
+By default, the verifier uses `net.DefaultResolver` (the platform's system-configured DNS resolver) for MX lookups and direct SMTP host lookups. You can override this behaviour by supplying your own `*net.Resolver` via `Resolver()`, for example to query a specific DNS server. When a proxy is configured, SMTP hostname resolution follows the proxy path rather than this resolver. MX record lookups always use this resolver, whether or not a proxy is set.
+
+```go
+var (
+    verifier = emailverifier.
+        NewVerifier().
+        EnableSMTPCheck().
+        Resolver(&net.Resolver{
+            PreferGo: true,
+            Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+                d := net.Dialer{}
+                return d.DialContext(ctx, network, "8.8.8.8:53")
+            },
+        })
+)
+
+func main() {
+
+    domain := "domain.org"
+    username := "username"
+    ret, err := verifier.CheckSMTP(domain, username)
+    if err != nil {
+        fmt.Println("check smtp failed: ", err)
+        return
+    }
+
+    fmt.Println("smtp validation result: ", ret)
+
+}
+```
+
+> Note: `PreferGo: true` is doing real work here, it is not boilerplate. MX record lookups always
+> go through Go's own DNS client, so a custom `Dial` is honoured for those either way. Resolving
+> the mail server's hostname to an IP for the TCP connection is different: without `PreferGo` that
+> step may use the system (cgo) resolver, which ignores `Dial` entirely and quietly falls back to
+> `/etc/resolv.conf`. Even with it set, `/etc/hosts` is still consulted before DNS, so a host
+> listed there never reaches your resolver.
+
 ### Misc Validation
 
 To check if an email domain is disposable via `IsDisposable`

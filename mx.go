@@ -1,6 +1,9 @@
 package emailverifier
 
-import "net"
+import (
+	"context"
+	"net"
+)
 
 // Mx is detail about the Mx host
 type Mx struct {
@@ -11,7 +14,7 @@ type Mx struct {
 // CheckMX will return the DNS MX records for the given domain name sorted by preference.
 func (v *Verifier) CheckMX(domain string) (*Mx, error) {
 	domain = domainToASCII(domain)
-	mx, err := net.LookupMX(domain)
+	mx, err := v.dnsResolver().LookupMX(context.Background(), domain)
 	if err != nil && len(mx) == 0 {
 		return nil, err
 	}

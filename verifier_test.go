@@ -1,6 +1,7 @@
 package emailverifier
 
 import (
+	"net"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -305,4 +306,47 @@ func TestCheckEmail_EnableDomainSuggest_Gmail(t *testing.T) {
 	ret, _ := verifier.EnableDomainSuggest().Verify(email)
 
 	assert.Equal(t, "gmail.com", ret.Suggestion)
+}
+
+func TestNewVerifierOK_DefaultResolver(t *testing.T) {
+	v := NewVerifier()
+	assert.Nil(t, v.resolver)
+	assert.Same(t, net.DefaultResolver, v.dnsResolver())
+}
+
+func TestVerifier_Resolver(t *testing.T) {
+	customResolver := &net.Resolver{PreferGo: true}
+
+	v := NewVerifier().Resolver(customResolver)
+
+	assert.Same(t, customResolver, v.resolver)
+	assert.Same(t, customResolver, v.dnsResolver())
+}
+
+func TestVerifier_Resolver_NilRestoresDefault(t *testing.T) {
+	customResolver := &net.Resolver{PreferGo: true}
+
+	v := NewVerifier().Resolver(customResolver)
+	assert.Same(t, customResolver, v.dnsResolver())
+
+	v.Resolver(nil)
+
+	assert.Same(t, net.DefaultResolver, v.dnsResolver())
+}
+
+// net.DefaultResolver must be read at lookup time, not captured when the
+// Verifier is built. Callers who replace the global -- the only way to redirect
+// lookups before Resolver() existed -- would otherwise be silently ignored,
+// since NewVerifier is commonly called during package variable initialisation,
+// before any init() that installs the replacement.
+func TestVerifier_DefaultResolverReadAtCallTime(t *testing.T) {
+	original := net.DefaultResolver
+	t.Cleanup(func() { net.DefaultResolver = original })
+
+	v := NewVerifier()
+
+	replacement := &net.Resolver{PreferGo: true}
+	net.DefaultResolver = replacement
+
+	assert.Same(t, replacement, v.dnsResolver())
 }

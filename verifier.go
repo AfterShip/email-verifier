@@ -2,6 +2,7 @@ package emailverifier
 
 import (
 	"fmt"
+	"net"
 	"time"
 )
 
@@ -16,6 +17,7 @@ type Verifier struct {
 	schedule             *schedule                  // schedule represents a job schedule
 	proxyURI             string                     // use a SOCKS5 proxy to verify the email,
 	apiVerifiers         map[string]smtpAPIVerifier // per-vendor API verifiers; no built-in vendors currently, contributions are welcomed.
+	resolver             *net.Resolver              // resolver used to perform MX and SMTP DNS lookups; nil means net.DefaultResolver, read at call time
 
 	// Timeouts
 	connectTimeout   time.Duration // Timeout for establishing connections
@@ -227,6 +229,26 @@ func (v *Verifier) HelloName(domain string) *Verifier {
 func (v *Verifier) Proxy(proxyURI string) *Verifier {
 	v.proxyURI = proxyURI
 	return v
+}
+
+// Resolver sets a custom DNS resolver to use for MX and SMTP host lookups,
+// allowing users to configure custom DNS servers instead of relying on the
+// system's default resolver (e.g. /etc/resolv.conf). Passing nil restores
+// the default resolver (net.DefaultResolver).
+func (v *Verifier) Resolver(resolver *net.Resolver) *Verifier {
+	v.resolver = resolver
+	return v
+}
+
+// dnsResolver returns the resolver to use for lookups. net.DefaultResolver is
+// read here rather than captured in NewVerifier so that callers who replace the
+// global keep the behaviour they had before this option existed -- the previous
+// code called net.LookupMX, which reads net.DefaultResolver on every call.
+func (v *Verifier) dnsResolver() *net.Resolver {
+	if v.resolver == nil {
+		return net.DefaultResolver
+	}
+	return v.resolver
 }
 
 // ConnectTimeout sets the timeout for establishing connections.

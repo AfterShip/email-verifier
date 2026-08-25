@@ -1,12 +1,17 @@
 package emailverifier
 
 import (
+	"context"
+	"errors"
+	"net"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCheckSMTPUnSupportedVendor(t *testing.T) {
@@ -140,7 +145,7 @@ func TestCheckSMTPOK_HostNotExists(t *testing.T) {
 func TestNewSMTPClientOK(t *testing.T) {
 	domain := "gmail.com"
 	timeout := 5 * time.Second
-	ret, _, err := newSMTPClient(domain, "", timeout, timeout)
+	ret, _, err := newSMTPClient(domain, "", net.DefaultResolver, timeout, timeout)
 	assert.NotNil(t, ret)
 	assert.Nil(t, err)
 }
@@ -149,7 +154,7 @@ func TestNewSMTPClientFailed_WithInvalidProxy(t *testing.T) {
 	domain := "gmail.com"
 	proxyURI := "socks5://user:password@127.0.0.1:1080?timeout=5s"
 	timeout := 5 * time.Second
-	ret, _, err := newSMTPClient(domain, proxyURI, timeout, timeout)
+	ret, _, err := newSMTPClient(domain, proxyURI, net.DefaultResolver, timeout, timeout)
 	assert.Nil(t, ret)
 	assert.Error(t, err, syscall.ECONNREFUSED)
 }
@@ -157,7 +162,7 @@ func TestNewSMTPClientFailed_WithInvalidProxy(t *testing.T) {
 func TestNewSMTPClientFailed(t *testing.T) {
 	domain := "zzzz171777.com"
 	timeout := 5 * time.Second
-	ret, _, err := newSMTPClient(domain, "", timeout, timeout)
+	ret, _, err := newSMTPClient(domain, "", net.DefaultResolver, timeout, timeout)
 	assert.Nil(t, ret)
 	assert.Error(t, err)
 }
@@ -165,7 +170,7 @@ func TestNewSMTPClientFailed(t *testing.T) {
 func TestDialSMTPFailed_NoPortIsConfigured(t *testing.T) {
 	disposableDomain := "zzzz1717.com"
 	timeout := 5 * time.Second
-	ret, err := dialSMTP(disposableDomain, "", timeout, timeout)
+	ret, err := dialSMTP(disposableDomain, "", net.DefaultResolver, timeout, timeout)
 	assert.Nil(t, ret)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "missing port"))
@@ -174,8 +179,54 @@ func TestDialSMTPFailed_NoPortIsConfigured(t *testing.T) {
 func TestDialSMTPFailed_NoSuchHost(t *testing.T) {
 	disposableDomain := "zzzzyyyyaaa123.com:25"
 	timeout := 5 * time.Second
-	ret, err := dialSMTP(disposableDomain, "", timeout, timeout)
+	ret, err := dialSMTP(disposableDomain, "", net.DefaultResolver, timeout, timeout)
 	assert.Nil(t, ret)
 	assert.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "no such host"))
+}
+
+func TestDialSMTP_WithCustomResolver(t *testing.T) {
+	domain := "github.com:25"
+	timeout := 5 * time.Second
+	wantErr := errors.New("custom resolver dial invoked")
+
+	var called atomic.Bool
+	customResolver := &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			called.Store(true)
+			return nil, wantErr
+		},
+	}
+
+	ret, err := dialSMTP(domain, "", customResolver, timeout, timeout)
+	assert.Nil(t, ret)
+	assert.True(t, called.Load())
+	require.ErrorContains(t, err, wantErr.Error())
+}
+
+// The counterpart to the test above: SOCKS5 hands the target hostname to the
+// proxy to resolve remotely, so the custom resolver must not be consulted on
+// the proxy path. This pins the behaviour the README documents; if the proxy
+// path ever gains resolver support, this test should fail and prompt a docs
+// update. The proxy address is an IP so that resolving the proxy's own name
+// cannot influence the assertion.
+func TestDialSMTP_ProxyBypassesCustomResolver(t *testing.T) {
+	domain := "github.com:25"
+	proxyURI := "socks5://127.0.0.1:1080"
+	timeout := 5 * time.Second
+
+	var called atomic.Bool
+	customResolver := &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			called.Store(true)
+			return nil, errors.New("custom resolver dial invoked")
+		},
+	}
+
+	ret, err := dialSMTP(domain, proxyURI, customResolver, timeout, timeout)
+	assert.Nil(t, ret)
+	require.Error(t, err)
+	assert.False(t, called.Load())
 }

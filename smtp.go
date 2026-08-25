@@ -39,7 +39,7 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 	email := fmt.Sprintf("%s@%s", username, domain)
 
 	// Dial any SMTP server that will accept a connection
-	client, mx, err := newSMTPClient(domain, v.proxyURI, v.connectTimeout, v.operationTimeout)
+	client, mx, err := newSMTPClient(domain, v.proxyURI, v.dnsResolver(), v.connectTimeout, v.operationTimeout)
 	if err != nil {
 		return &ret, ParseSMTPError(err)
 	}
@@ -113,9 +113,9 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 }
 
 // newSMTPClient generates a new available SMTP client
-func newSMTPClient(domain, proxyURI string, connectTimeout, operationTimeout time.Duration) (*smtp.Client, *net.MX, error) {
+func newSMTPClient(domain, proxyURI string, resolver *net.Resolver, connectTimeout, operationTimeout time.Duration) (*smtp.Client, *net.MX, error) {
 	domain = domainToASCII(domain)
-	mxRecords, err := net.LookupMX(domain)
+	mxRecords, err := resolver.LookupMX(context.Background(), domain)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -138,7 +138,7 @@ func newSMTPClient(domain, proxyURI string, connectTimeout, operationTimeout tim
 		addr := r.Host + smtpPort
 		index := i
 		go func() {
-			c, err := dialSMTP(addr, proxyURI, connectTimeout, operationTimeout)
+			c, err := dialSMTP(addr, proxyURI, resolver, connectTimeout, operationTimeout)
 			if err != nil {
 				if !done {
 					ch <- err
@@ -182,7 +182,7 @@ func newSMTPClient(domain, proxyURI string, connectTimeout, operationTimeout tim
 // dialSMTP is a timeout wrapper for smtp.Dial. It attempts to dial an
 // SMTP server (socks5 proxy supported) and fails with a timeout if timeout is reached while
 // attempting to establish a new connection
-func dialSMTP(addr, proxyURI string, connectTimeout, operationTimeout time.Duration) (*smtp.Client, error) {
+func dialSMTP(addr, proxyURI string, resolver *net.Resolver, connectTimeout, operationTimeout time.Duration) (*smtp.Client, error) {
 	// Dial the new smtp connection
 	var conn net.Conn
 	var err error
@@ -190,7 +190,7 @@ func dialSMTP(addr, proxyURI string, connectTimeout, operationTimeout time.Durat
 	if proxyURI != "" {
 		conn, err = establishProxyConnection(addr, proxyURI, connectTimeout)
 	} else {
-		conn, err = establishConnection(addr, connectTimeout)
+		conn, err = establishConnection(addr, resolver, connectTimeout)
 	}
 	if err != nil {
 		return nil, err
@@ -218,8 +218,9 @@ func GenerateRandomEmail(domain string) string {
 }
 
 // establishConnection connects to the address on the named network address.
-func establishConnection(addr string, timeout time.Duration) (net.Conn, error) {
-	return net.DialTimeout("tcp", addr, timeout)
+func establishConnection(addr string, resolver *net.Resolver, timeout time.Duration) (net.Conn, error) {
+	dialer := net.Dialer{Timeout: timeout, Resolver: resolver}
+	return dialer.Dial("tcp", addr)
 }
 
 // establishProxyConnection connects to the address on the named network address
