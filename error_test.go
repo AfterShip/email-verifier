@@ -210,3 +210,74 @@ func TestParseError_basicErr_blocked(t *testing.T) {
 	assert.Equal(t, ErrBlocked, le.Message)
 	assert.Equal(t, err.Error(), le.Details)
 }
+
+// The reply strings below were captured from live servers, so the table
+// doubles as a record of what enhanced status codes actually look like in the
+// wild -- including providers that send none at all.
+func TestParseSMTPError_EnhancedCode(t *testing.T) {
+	cases := []struct {
+		name     string
+		reply    string
+		enhanced string
+	}{
+		{
+			name:     "gmail recipient unknown",
+			reply:    "550 5.1.1 The email account that you tried to reach does not exist.",
+			enhanced: "5.1.1",
+		},
+		{
+			name:     "zoho recipient unknown",
+			reply:    "550 5.1.1 User does not exist - <someone@zoho.com>",
+			enhanced: "5.1.1",
+		},
+		{
+			name:     "microsoft mailbox unavailable",
+			reply:    "550 5.5.0 Requested action not taken: mailbox unavailable (S2017062302). [AMS1EPF0000008F.eurprd05.prod.outlook.com]",
+			enhanced: "5.5.0",
+		},
+		{
+			name:     "microsoft transient, multiple regions",
+			reply:    "452 4.5.3 Recipients belong to multiple regions ATTR38 [AMS1EPF0000008F.eurprd05.prod.outlook.com]",
+			enhanced: "4.5.3",
+		},
+		{
+			name:     "yahoo sender has no reverse dns",
+			reply:    `550 5.7.25 Forward-confirmed reverse DNS failed tnmpmscs`,
+			enhanced: "5.7.25",
+		},
+		{
+			name:     "sender blocklisted, reply contains an IP address",
+			reply:    "550 5.7.1 Service unavailable, Client host [103.26.221.42] blocked using Spamhaus.",
+			enhanced: "5.7.1",
+		},
+		{
+			name:     "qq sends no enhanced code",
+			reply:    "550 Mailbox not found. http://service.mail.qq.com/detail/122/169",
+			enhanced: "",
+		},
+		{
+			name:     "netease sends no enhanced code",
+			reply:    "550 User not found: someone@163.com",
+			enhanced: "",
+		},
+		{
+			name:     "not an SMTP reply at all",
+			reply:    "dial tcp 1.2.3.4:25: connect: connection refused",
+			enhanced: "",
+		},
+	}
+
+	for _, c := range cases {
+		test := c
+		t.Run(test.name, func(tt *testing.T) {
+			le := ParseSMTPError(errors.New(test.reply))
+			require.NotNil(tt, le)
+			assert.Equal(tt, test.enhanced, le.EnhancedCode())
+		})
+	}
+}
+
+func TestLookupError_EnhancedCodeNilSafe(t *testing.T) {
+	var le *LookupError
+	assert.Empty(t, le.EnhancedCode())
+}

@@ -2,6 +2,7 @@ package emailverifier
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -35,6 +36,31 @@ type LookupError struct {
 	// errors.As to reach the underlying *net.DNSError, *net.OpError or
 	// *textproto.Error instead of having to match on Details.
 	cause error
+
+	// enhanced is the RFC 3463 enhanced status code the server sent, if any.
+	enhanced string
+}
+
+// enhancedCodePattern matches an RFC 3463 enhanced status code where servers
+// put it: immediately after the three digit reply code. Matching it there
+// rather than anywhere in the reply avoids picking up IP addresses and
+// diagnostic identifiers, which SMTP replies are full of.
+var enhancedCodePattern = regexp.MustCompile(`^[245][0-9]{2}[ -]\s*([245]\.[0-9]{1,3}\.[0-9]{1,3})\b`)
+
+// EnhancedCode returns the RFC 3463 enhanced status code the server sent, for
+// example "5.7.1", or an empty string if it sent none. Servers are not obliged
+// to send one and several large providers do not, so callers must handle the
+// empty case rather than treating it as a classification.
+//
+// The first subcode is the class (2 success, 4 transient, 5 permanent) and the
+// rest identify the condition: 5.1.x concerns the recipient address, while
+// 5.7.x is a policy or security rejection that says nothing about whether the
+// mailbox exists.
+func (e *LookupError) EnhancedCode() string {
+	if e == nil {
+		return ""
+	}
+	return e.enhanced
 }
 
 // newLookupError creates a new LookupError reference and returns it
@@ -75,11 +101,15 @@ func ParseSMTPError(err error) *LookupError {
 	if err == nil {
 		return nil
 	}
-	if le := parseSMTPError(err); le != nil {
-		return le.withCause(err)
-	}
 	errStr := err.Error()
-	return newLookupError(errStr, errStr).withCause(err)
+	le := parseSMTPError(err)
+	if le == nil {
+		le = newLookupError(errStr, errStr)
+	}
+	if m := enhancedCodePattern.FindStringSubmatch(errStr); len(m) > 1 {
+		le.enhanced = m[1]
+	}
+	return le.withCause(err)
 }
 
 func parseSMTPError(err error) *LookupError {
