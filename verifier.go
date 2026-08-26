@@ -91,7 +91,7 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 		errStr := err.Error()
 		if insContains(errStr, "no such host") {
 			ret.Reachable = reachableNo
-			return &ret, newLookupError(ErrNoSuchHost, errStr)
+			return &ret, newLookupError(ErrNoSuchHost, errStr).withCause(err)
 		}
 		return &ret, err
 	}

@@ -3,6 +3,7 @@
 Unreleased
 ----------
 * Feature: Support a custom DNS resolver for MX and SMTP host lookups via `Resolver()` [#191](https://github.com/AfterShip/email-verifier/pull/191)
+* **Breaking**: `LookupError` wraps the error it was derived from, reachable via `errors.Is`/`errors.As`. `ParseSMTPError` no longer returns a nil `*LookupError` for a non-nil input. Adds an unexported field, so whole-struct comparison against a `LookupError` literal no longer matches [#202](https://github.com/AfterShip/email-verifier/pull/202)
 * **Breaking**: Remove the non-functional Yahoo API verifier; `EnableAPIVerifier(YAHOO)` and the `YAHOO` constant are gone [#198](https://github.com/AfterShip/email-verifier/pull/198)
 * Fix: Yahoo API test panic no longer aborts the test suite [#196](https://github.com/AfterShip/email-verifier/pull/196)
 
