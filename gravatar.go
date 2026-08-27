@@ -18,7 +18,7 @@ type Gravatar struct {
 func (v *Verifier) CheckGravatar(email string) (*Gravatar, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	err, emailMd5 := getMD5Hash(strings.ToLower(strings.TrimSpace(email)))
+	emailMd5, err := getMD5Hash(strings.ToLower(strings.TrimSpace(email)))
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (v *Verifier) CheckGravatar(email string) (*Gravatar, error) {
 		return nil, err
 	}
 	// check body
-	err, md5Body := getMD5Hash(string(body))
+	md5Body, err := getMD5Hash(string(body))
 	if err != nil {
 		return nil, err
 	}
