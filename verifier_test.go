@@ -251,6 +251,35 @@ func TestCheckEmail_DisabledSMTPCheck(t *testing.T) {
 	assert.Equal(t, &expected, ret)
 }
 
+func TestCheckEmail_DisabledMXCheck(t *testing.T) {
+	var (
+		// trueVal  = true
+		username = "email_username"
+		domain   = "randomain.com"
+		address  = username + "@" + domain
+		email    = address
+	)
+
+	verifier := NewVerifier().DisableMXCheck()
+	ret, err := verifier.Verify(email)
+	expected := Result{
+		Email: email,
+		Syntax: Syntax{
+			Username: username,
+			Domain:   domain,
+			Valid:    true,
+		},
+		HasMxRecords: false,
+		Disposable:   false,
+		RoleAccount:  false,
+		Reachable:    reachableUnknown,
+		Free:         false,
+		SMTP:         nil,
+	}
+	assert.NoError(t, err)
+	assert.Equal(t, &expected, ret)
+}
+
 func TestNewVerifierOK_AutoUpdateDisposable(t *testing.T) {
 	verifier.EnableAutoUpdateDisposable()
 }

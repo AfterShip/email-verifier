@@ -8,6 +8,7 @@ import (
 
 // Verifier is an email verifier. Create one by calling NewVerifier
 type Verifier struct {
+	mxCheckEnabled       bool                       // MX record check enabled or disabled (enabled by default)
 	smtpCheckEnabled     bool                       // SMTP check enabled or disabled (disabled by default)
 	catchAllCheckEnabled bool                       // SMTP catchAll check enabled or disabled (enabled by default)
 	domainSuggestEnabled bool                       // whether suggest a most similar correct domain or not (disabled by default)
@@ -51,6 +52,7 @@ func init() {
 // NewVerifier creates a new email verifier
 func NewVerifier() *Verifier {
 	return &Verifier{
+		mxCheckEnabled:       true,
 		fromEmail:            defaultFromEmail,
 		helloName:            defaultHelloName,
 		catchAllCheckEnabled: true,
@@ -169,6 +171,19 @@ func (v *Verifier) DisableAPIVerifier(name string) {
 // DisableSMTPCheck disables check email by smtp
 func (v *Verifier) DisableSMTPCheck() *Verifier {
 	v.smtpCheckEnabled = false
+	return v
+}
+
+// EnableMXCheck enables MX record check by dns,
+// we check MX record by default
+func (v *Verifier) EnableMXCheck() *Verifier {
+	v.mxCheckEnabled = true
+	return v
+}
+
+// DisableMXCheck disables MX record check by dns
+func (v *Verifier) DisableMXCheck() *Verifier {
+	v.mxCheckEnabled = false
 	return v
 }
 
