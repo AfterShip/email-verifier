@@ -9,10 +9,24 @@ import (
 )
 
 func TestUpdateDisposableDomainsOK(t *testing.T) {
+	// updateDisposableDomains replaces the package-level set, and nothing here
+	// used to put it back: every test that ran afterwards saw only the four
+	// domains mocked below, so TestIsDisposableDomain_True was passing because
+	// its fixture appeared in that mock rather than in the generated data.
+	t.Cleanup(func() {
+		disposableSyncDomains.Range(func(key, _ interface{}) bool {
+			disposableSyncDomains.Delete(key)
+			return true
+		})
+		for d := range disposableDomains {
+			disposableSyncDomains.Store(d, struct{}{})
+		}
+	})
+
 	assert.False(t, verifier.IsDisposable("a.org"))
 	assert.False(t, verifier.IsDisposable("b.com"))
 
-	assert.True(t, verifier.IsDisposable("0009827.com"))
+	assert.True(t, verifier.IsDisposable("mailinator.com"))
 
 	mockResp := []string{"a.org", "b.com", "zzjbfwqi.shop", "dbbd8.club"}
 	defer gock.Off()
@@ -26,7 +40,7 @@ func TestUpdateDisposableDomainsOK(t *testing.T) {
 	assert.True(t, verifier.IsDisposable("a.org"))
 	assert.True(t, verifier.IsDisposable("b.com"))
 	assert.False(t, verifier.IsDisposable("c.net"))
-	assert.False(t, verifier.IsDisposable("0009827.com"))
+	assert.False(t, verifier.IsDisposable("mailinator.com"))
 }
 
 func TestUpdateDisposableDomainsFailed_NoSuchHost(t *testing.T) {

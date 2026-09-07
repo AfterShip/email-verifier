@@ -135,9 +135,14 @@ func TestCheckEmail_Disposable(t *testing.T) {
 	var (
 		// trueVal  = true
 		username = "exampleuser"
-		domain   = "zzjbfwqi.shop"
-		address  = username + "@" + domain
-		email    = address
+		// Listed by six of the upstreams behind the disposable list and with
+		// no DNS records, which is what the rest of this expectation assumes.
+		// The previous fixture, zzjbfwqi.shop, was only in the list this repo
+		// used to build from, and passed after that change only because an
+		// earlier test left it in the package-level set.
+		domain  = "spambox.us"
+		address = username + "@" + domain
+		email   = address
 	)
 
 	ret, err := verifier.Verify(email)

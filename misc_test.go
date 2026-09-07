@@ -74,6 +74,20 @@ func TestGeneratedMetadataMatchesSources(t *testing.T) {
 // whole families such as aws-mail-free-<n>.dynv6.net, into free.txt, where
 // IsFreeDomain called them free and SuggestDomain offered them as
 // corrections. Assert the property the subtraction provides.
+// EnableAutoUpdateDisposable refetches the list at disposableDataURL and, via
+// updateDisposableDomains, deletes every baked-in domain the fetched list
+// omits. So the list cmd/build_metadata bakes in has to be the list this
+// constant points at. It was not: the script built from tompec while this
+// pointed at disposable/, lists sharing only 37585 of tompec's 133602
+// entries, so turning auto-update on dropped 96017 domains and added 37679.
+func TestUpdateScriptFetchesTheDisposableDataURL(t *testing.T) {
+	script, err := os.ReadFile("cmd/build_metadata/update.sh")
+	require.NoError(t, err)
+
+	assert.Contains(t, string(script), disposableDataURL,
+		"cmd/build_metadata/update.sh must bake in the same disposable list that disposableDataURL refreshes at runtime")
+}
+
 func TestFreeAndDisposableDomainsAreDisjoint(t *testing.T) {
 	var overlap []string
 	for domain := range freeDomains {
@@ -88,28 +102,32 @@ func TestFreeAndDisposableDomainsAreDisjoint(t *testing.T) {
 }
 
 // A key that is not a hostname can never be returned by a lookup, so it is
-// dead weight that no test notices. free.txt shipped "atlanticbb.net "
-// for years -- one upstream entry has a no-break space attached, and
-// LC_ALL=C [[:space:]] does not match U+00A0, so every cleanup in update.sh
-// walked past it and IsFreeDomain("atlanticbb.net") returned false.
-//
-// disposableDomains is not checked here: twelve of its entries are IDNs
-// spelled in Unicode instead of punycode, and since IsDisposable converts its
-// argument with domainToASCII first, those keys are dead in the same way.
-// Converting them is a separate change to the disposable pipeline.
-func TestFreeDomainsAreWellFormedHostnames(t *testing.T) {
+// dead weight that no test notices, and both maps shipped some. free.txt
+// carried a U+00A0 no-break space on the end of atlanticbb.net for years:
+// one upstream entry has one attached, and LC_ALL=C [[:space:]] does not
+// match it, so every cleanup in update.sh walked past it and
+// IsFreeDomain("atlanticbb.net") returned false. The disposable list carried
+// twelve IDNs spelled in Unicode rather than punycode, dead for a related
+// reason -- IsDisposable converts its argument with domainToASCII before the
+// lookup, so nothing it was given could ever match them.
+func TestGeneratedDomainsAreWellFormedHostnames(t *testing.T) {
 	wellFormed := regexp.MustCompile(`^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$`)
 
-	var malformed []string
-	for domain := range freeDomains {
-		if !wellFormed.MatchString(domain) {
-			if len(malformed) < 10 {
-				malformed = append(malformed, strconv.Quote(domain))
+	for name, generated := range map[string]map[string]bool{
+		"free":       freeDomains,
+		"disposable": disposableDomains,
+	} {
+		var malformed []string
+		for domain := range generated {
+			if !wellFormed.MatchString(domain) {
+				if len(malformed) < 10 {
+					malformed = append(malformed, strconv.Quote(domain))
+				}
 			}
 		}
-	}
 
-	assert.Empty(t, malformed, "free domains that no lookup can match; check the normalisation in cmd/build_metadata/update.sh")
+		assert.Emptyf(t, malformed, "%s domains that no lookup can match; check the normalisation in cmd/build_metadata/update.sh", name)
+	}
 }
 
 func TestIsFreeDomain_True(t *testing.T) {
@@ -127,7 +145,10 @@ func TestCheckNotFreeDomain_False(t *testing.T) {
 }
 
 func TestIsDisposableDomain_True(t *testing.T) {
-	domain := "dbbd8.club"
+	// A long-lived service rather than one of the churning throwaway domains:
+	// the previous fixture, dbbd8.club, was only ever in the list this repo
+	// used to build from and vanished when the two were reconciled.
+	domain := "mailinator.com"
 
 	isDisposable := verifier.IsDisposable(domain)
 	assert.True(t, isDisposable)
