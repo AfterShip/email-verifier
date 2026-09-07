@@ -2,6 +2,7 @@
 
 Unreleased
 ----------
+* Fix: The free-domain list is built from its original sources instead of an aggregate that had begun merging disposable blocklists into itself. `IsFreeDomain` and `SuggestDomain` no longer treat throwaway domains as free providers, 108 carrier and portal mailboxes are recognised, and `IsFreeDomain("atlanticbb.net")` works -- the generated key carried a stray no-break space [#207](https://github.com/AfterShip/email-verifier/pull/207)
 * Fix: `IsRoleAccount` recognises `cto`, `ctos`, `cfo` and `cfos`. They were added to the source list in December 2025 but the generated map was never rebuilt, so they returned `false` until now [#205](https://github.com/AfterShip/email-verifier/pull/205)
 * Feature: Support a custom DNS resolver for MX and SMTP host lookups via `Resolver()` [#191](https://github.com/AfterShip/email-verifier/pull/191)
 * **Breaking**: `LookupError` wraps the error it was derived from, reachable via `errors.Is`/`errors.As`. `ParseSMTPError` no longer returns a nil `*LookupError` for a non-nil input. Adds an unexported field, so whole-struct comparison against a `LookupError` literal no longer matches [#202](https://github.com/AfterShip/email-verifier/pull/202)
