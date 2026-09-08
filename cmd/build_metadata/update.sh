@@ -94,8 +94,28 @@ require_line_count() {
 #    fetched list omits, enabling auto-update dropped 96017 baked-in domains
 #    and added 37679, leaving 75264.
 fetch https://raw.githubusercontent.com/disposable/disposable-email-domains/master/domains.json \
-    | jq -r '.[]' | normalise | keep_valid_domains > "$workdir/disposable.txt"
-require_line_count "$workdir/disposable.txt" 50000 - "disposable domains"
+    | jq -r '.[]' | normalise | keep_valid_domains > "$workdir/upstream_disposable.txt"
+require_line_count "$workdir/upstream_disposable.txt" 50000 - "disposable domains"
+
+#    Then remove the domains listed in disposable_allowlist.txt, which the
+#    upstream list classifies as disposable and which are not. Doing it here
+#    rather than only at runtime matters twice over: the generated map is what
+#    a caller gets without EnableAutoUpdateDisposable, and step 3 subtracts
+#    this file from the free candidates, so a domain taken out here stays in
+#    free.txt instead of being reported as neither.
+#
+#    An allowlist entry that upstream no longer lists is dead weight, and the
+#    only way to notice is to check: fail rather than carry it silently.
+normalise < ./disposable_allowlist.txt > "$workdir/allowlist.txt"
+stale=$(comm -23 "$workdir/allowlist.txt" "$workdir/upstream_disposable.txt")
+if [ -n "$stale" ]; then
+    echo "disposable_allowlist.txt lists domains the upstream list no longer has:" >&2
+    echo "$stale" | sed 's/^/  /' >&2
+    echo "remove them from disposable_allowlist.txt -- refusing to publish" >&2
+    exit 1
+fi
+comm -23 "$workdir/upstream_disposable.txt" "$workdir/allowlist.txt" > "$workdir/disposable.txt"
+echo "disposable allowlist: $(wc -l < "$workdir/allowlist.txt") entries removed"
 
 # 2. update free domains meta databases, from every source in
 #    free_domain_sources.txt plus the domains vendored in free_domains_extra.txt

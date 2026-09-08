@@ -5,14 +5,16 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gopkg.in/h2non/gock.v1"
 )
 
-func TestUpdateDisposableDomainsOK(t *testing.T) {
-	// updateDisposableDomains replaces the package-level set, and nothing here
-	// used to put it back: every test that ran afterwards saw only the four
-	// domains mocked below, so TestIsDisposableDomain_True was passing because
-	// its fixture appeared in that mock rather than in the generated data.
+// restoreDisposableDomains puts the package-level set back once the test ends.
+// updateDisposableDomains replaces it wholesale, and nothing used to undo
+// that: every test running after one of these saw the mock list instead of the
+// generated data, which is how two fixtures came to assert against domains
+// that were never in the generated maps at all.
+func restoreDisposableDomains(t *testing.T) {
 	t.Cleanup(func() {
 		disposableSyncDomains.Range(func(key, _ interface{}) bool {
 			disposableSyncDomains.Delete(key)
@@ -21,7 +23,14 @@ func TestUpdateDisposableDomainsOK(t *testing.T) {
 		for d := range disposableDomains {
 			disposableSyncDomains.Store(d, struct{}{})
 		}
+		for d := range additionalDisposableDomains {
+			delete(additionalDisposableDomains, d)
+		}
 	})
+}
+
+func TestUpdateDisposableDomainsOK(t *testing.T) {
+	restoreDisposableDomains(t)
 
 	assert.False(t, verifier.IsDisposable("a.org"))
 	assert.False(t, verifier.IsDisposable("b.com"))
@@ -41,6 +50,45 @@ func TestUpdateDisposableDomainsOK(t *testing.T) {
 	assert.True(t, verifier.IsDisposable("b.com"))
 	assert.False(t, verifier.IsDisposable("c.net"))
 	assert.False(t, verifier.IsDisposable("mailinator.com"))
+}
+
+// The upstream list has these domains; disposable_allowlist.txt is the only
+// thing keeping them out, so a refresh that reinstated them would quietly undo
+// what the generated list was built to express.
+func TestUpdateDisposableDomainsKeepsAllowlistOut(t *testing.T) {
+	restoreDisposableDomains(t)
+
+	mockResp := []string{"a.org", "hush.com", "lavabit.com"}
+	defer gock.Off()
+	gock.New("https://raw.githubusercontent.com").
+		Get("/disposable/disposable-email-domains/master/domains.json").
+		Reply(http.StatusOK).
+		JSON(mockResp)
+
+	require.NoError(t, updateDisposableDomains(disposableDataURL))
+
+	assert.True(t, verifier.IsDisposable("a.org"))
+	assert.False(t, verifier.IsDisposable("hush.com"))
+	assert.False(t, verifier.IsDisposable("lavabit.com"))
+}
+
+// A caller who deliberately blocks one of the allowlisted domains outranks the
+// allowlist, which is only there to correct the upstream list.
+func TestAddDisposableDomainsOutranksAllowlist(t *testing.T) {
+	restoreDisposableDomains(t)
+
+	verifier.AddDisposableDomains([]string{"hush.com"})
+
+	mockResp := []string{"a.org", "hush.com"}
+	defer gock.Off()
+	gock.New("https://raw.githubusercontent.com").
+		Get("/disposable/disposable-email-domains/master/domains.json").
+		Reply(http.StatusOK).
+		JSON(mockResp)
+
+	require.NoError(t, updateDisposableDomains(disposableDataURL))
+
+	assert.True(t, verifier.IsDisposable("hush.com"))
 }
 
 func TestUpdateDisposableDomainsFailed_NoSuchHost(t *testing.T) {

@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 )
 
 // writeFile writes content to a file
@@ -52,6 +53,12 @@ func buildMetaDataFile() {
 			srcPath:     "../../metadata_role.go",
 			description: "// map to store role-based accounts data",
 		},
+		fileInfo{
+			path:        "disposable_allowlist.txt",
+			varName:     "allowedDisposableDomains",
+			srcPath:     "../../metadata_disposable_allowlist.go",
+			description: "// map to store domains never to be treated as disposable",
+		},
 	)
 
 	for _, f := range files {
@@ -72,7 +79,15 @@ func buildMetaDataFile() {
 
 		data := make(map[string]bool)
 		for scanner.Scan() {
-			key := scanner.Text()
+			key := strings.TrimSpace(scanner.Text())
+
+			// The lists update.sh writes carry neither blank lines nor
+			// comments, but the hand-maintained ones need to explain
+			// themselves, and an unfiltered scan would turn every "#" line
+			// into a map key.
+			if key == "" || strings.HasPrefix(key, "#") {
+				continue
+			}
 
 			if !data[key] {
 				output.WriteString("\t")
