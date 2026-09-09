@@ -14,7 +14,7 @@ import (
 // writeFile writes content to a file
 func writeFile(filePath string, data []byte) {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		log.Fatalf("no such file: %s make sure running from the root of the repo directory", filePath)
+		log.Fatalf("no such file: %s make sure running from the cmd/build_metadata directory", filePath)
 	}
 
 	fmt.Printf("Writing new %s\n", filePath)
