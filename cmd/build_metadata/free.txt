@@ -36,6 +36,7 @@
 2bmail.co.uk
 2d2i.com
 2die4.com
+2iij.net
 2trom.com
 3000.it
 30minutesmail.com
@@ -96,6 +97,7 @@ adios.net
 adoption.com
 ados.fr
 adrenalinefreak.com
+adsl.no
 advalvas.be
 aeiou.pt
 aeneasmail.com
@@ -173,7 +175,10 @@ antongijsen.com
 antwerpen.com
 anymoment.com
 anytimenow.com
+aol.co.uk
 aol.com
+aol.de
+aol.fr
 aol.it
 aon.at
 apexmail.com
@@ -197,6 +202,7 @@ arnet.com.ar
 artlover.com
 artlover.com.au
 as-if.com
+asahi-net.or.jp
 asean-mail.com
 asheville.com
 asia-links.com
@@ -219,7 +225,7 @@ atheist.com
 athenachu.net
 atina.cl
 atl.lv
-atlanticbb.net 
+atlanticbb.net
 atlaswebmail.com
 atlink.com
 atmc.net
@@ -230,8 +236,10 @@ att.net
 attbi.com
 attglobal.net
 attymail.com
+au.com
 au.ru
 auctioneer.net
+auone-net.jp
 ausi.com
 aussiemail.com.au
 austin.rr.com
@@ -267,7 +275,10 @@ baseballmail.com
 basketballmail.com
 batuta.net
 baudoinconsulting.com
+bbiq.jp
+bbnett.no
 bboy.zzn.com
+bbtec.net
 bcpl.net
 bcvibes.com
 beeebank.com
@@ -299,6 +310,7 @@ bigfoot.com
 bigfoot.de
 bigger.com
 biggerbadder.com
+biglobe.ne.jp
 bigmailbox.com
 bigmir.net
 bigpond.au
@@ -322,6 +334,7 @@ birdowner.net
 bisons.com
 bitmail.com
 bitpage.net
+biz.ezweb.ne.jp
 bizhosting.com
 bk.ru
 bla-bla.com
@@ -340,6 +353,7 @@ bluemail.dk
 bluesfan.com
 bluewin.ch
 blueyonder.co.uk
+bluezone.no
 blushmail.com
 bmlsports.net
 boardermail.com
@@ -378,6 +392,7 @@ bright.net
 britneyclub.com
 brittonsign.com
 broadcast.net
+broadpark.no
 brokenvalve.com
 brusseler.com
 bsdmail.com
@@ -471,6 +486,7 @@ cheerful.com
 chef.net
 chek.com
 chello.nl
+chello.no
 chemist.com
 chequemail.com
 cheyenneweb.com
@@ -482,6 +498,8 @@ chinalook.com
 chinamail.com
 chirk.com
 chocaholic.com.au
+chol.com
+chollian.net
 christianmail.net
 churchusa.com
 cia-agent.com
@@ -549,6 +567,7 @@ columbusrr.com
 columnist.com
 comcast.net
 comic.com
+commufa.jp
 communityconnect.com
 comporium.net
 comprendemail.com
@@ -678,6 +697,7 @@ die-optimisten.net
 diemailbox.de
 digibel.be
 digital-filestore.de
+dion.ne.jp
 diplomats.com
 directbox.com
 direcway.com
@@ -687,12 +707,14 @@ discofan.com
 discovery.com
 discoverymail.com
 disinfo.net
+disney.ne.jp
 disposable.com
 dmailman.com
 dmv.com
 dnainternet.net
 dnsmadeeasy.com
 doclist.bounces.google.com
+docomo.ne.jp
 docs.google.com
 doctor.com
 dodo.com.au
@@ -715,9 +737,11 @@ dplanet.ch
 dr.com
 dragoncon.net
 dragracer.com
+dreamwiz.com
 dropzone.com
 drotposta.hu
 dslextreme.com
+dti.ne.jp
 dubaimail.com
 dublin.com
 dublin.ie
@@ -733,6 +757,7 @@ dynamitemail.com
 dyndns.org
 e-apollo.lv
 e-mail.com.tr
+e-mail.de
 e-mail.dk
 e-mail.ru
 e-mail.ua
@@ -750,6 +775,7 @@ eastmail.com
 easy.to
 easypost.com
 eatmydirt.com
+ebnett.no
 ec.rr.com
 ecardmail.com
 ecbsolutions.net
@@ -797,7 +823,6 @@ emailer.hubspot.com
 emailforyou.net
 emailgroups.net
 emailit.com
-emailondeck.com
 emailpinoy.com
 emailplanet.com
 emailplus.org
@@ -808,6 +833,8 @@ emailx.net
 ematic.com
 embarqmail.com
 eml.cc
+emnet.ne.jp
+emobile.ne.jp
 emumail.com
 end-war.com
 enel.net
@@ -816,10 +843,12 @@ england.com
 england.edu
 englandmail.com
 enter.net
+eonet.ne.jp
 epage.ru
 epatra.com
 epix.net
 epost.de
+epost.no
 eposta.hu
 eqqu.com
 eramail.co.za
@@ -855,11 +884,11 @@ ezcybersearch.com
 ezmail.egine.com
 ezmail.ru
 ezrs.com
+ezweb.ne.jp
 ezy.net
 f-m.fm
 f1fans.net
 facebook.com
-facebookmail.com
 fahr-zur-hoelle.org
 falseaddress.com
 fan.com
@@ -959,6 +988,7 @@ free.fr
 freeaccess.nl
 freeaccount.com
 freeandsingle.com
+freechal.com
 freedom.usa.com
 freedomlover.com
 freegates.be
@@ -973,6 +1003,7 @@ freemail.gr
 freemail.hu
 freemail.it
 freemail.lt
+freemail.ne.jp
 freemail.nl
 freemail.org.mk
 freenet.de
@@ -995,6 +1026,7 @@ fresnomail.com
 freudenkinder.de
 friends-cafe.com
 friendsfan.com
+frisurf.no
 from-africa.com
 from-america.com
 from-argentina.com
@@ -1116,6 +1148,7 @@ geography.net
 geologist.com
 geopia.com
 germanymail.com
+getmail.no
 gh2000.com
 ghanamail.com
 ghostmail.com
@@ -1201,14 +1234,19 @@ hackermail.net
 hailmail.net
 hairdresser.net
 hamptonroads.com
+hanafos.com
+hananet.net
 handbag.com
 handleit.com
 hang-ten.com
 hanmail.net
+hanmail2.net
+hanmir.com
 happemail.com
 happycounsel.com
 happypuppy.com
 hardcorefreak.com
+haugnett.no
 hawaii.rr.com
 hawaiiantel.net
 headbone.com
@@ -1228,12 +1266,14 @@ herr-der-mails.de
 hetnet.nl
 hey.to
 hhdevel.com
+hi-ho.ne.jp
 highmilton.com
 highquality.com
 highveldmail.co.za
 hilarious.com
 hiphopfan.com
 hispavista.com
+hitel.net
 hitmail.com
 hitthe.net
 hkg.net
@@ -1290,7 +1330,6 @@ hotmail.ru
 hotmail.se
 hotpop3.com
 hotvoice.com
-housefancom
 housemail.com
 hsuchi.net
 html.tou.com
@@ -1308,6 +1347,7 @@ i-mail.com.au
 i-p.com
 i-plus.net
 i.am
+i.softbank.jp
 i.ua
 i12.com
 iamawoman.com
@@ -1334,6 +1374,7 @@ ignazio.it
 ignmail.com
 ihateclowns.com
 ihwy.com
+iij4u.or.jp
 iinet.net.au
 ijustdontcare.com
 ilkposta.com
@@ -1379,8 +1420,11 @@ info66.com
 infohq.com
 infomail.es
 infomart.or.jp
+infoseek.co.jp
+infoseek.jp
 infospacemail.com
 infovia.com.ar
+infoweb.ne.jp
 inicia.es
 inmail.sk
 inmail24.com
@@ -1459,6 +1503,8 @@ jaydemail.com
 jazzandjava.com
 jazzfan.com
 jazzgame.com
+jcom.home.ne.jp
+jcom.zaq.ne.jp
 jerusalemmail.com
 jetable.de
 jetemail.net
@@ -1486,6 +1532,7 @@ kaazoo.com
 kaffeeschluerfer.com
 kaffeeschluerfer.de
 kaixo.com
+kakao.com
 kalpoint.com
 kansascity.com
 kapoorweb.com
@@ -1496,6 +1543,7 @@ katamail.com
 kayafmmail.co.za
 kbjrmail.com
 kcks.com
+kcn.ne.jp
 keg-party.com
 keko.com.ar
 kellychen.com
@@ -1520,6 +1568,7 @@ kommespaeter.de
 konx.com
 korea.com
 koreamail.com
+kornet.net
 kozmail.com
 kpnmail.nl
 krim.ws
@@ -1598,6 +1647,7 @@ live.nl
 live.no
 live.ru
 live.se
+livedoor.com
 liverpoolfans.com
 llandudno.com
 llangollen.com
@@ -1611,6 +1661,7 @@ looksmart.co.uk
 looksmart.com
 looksmart.com.au
 lopezclub.com
+losmail.no
 louiskoo.com
 love.com
 love.cz
@@ -1636,6 +1687,7 @@ lycos.it
 lycos.ne.jp
 lycosemail.com
 lycosmail.com
+lyse.net
 m-a-i-l.com
 m-hmail.com
 m4.org
@@ -1671,6 +1723,7 @@ mail.de
 mail.ee
 mail.entrepeneurmag.com
 mail.freetown.com
+mail.goo.ne.jp
 mail.gr
 mail.hitthebeach.com
 mail.htl22.at
@@ -1686,10 +1739,10 @@ mail.r-o-o-t.com
 mail.ru
 mail.salu.net
 mail.sisna.com
+mail.sony.jp
 mail.spaceports.com
 mail.svenz.eu
 mail.theboys.com
-mail.tm
 mail.usa.com
 mail.vasarhely.hu
 mail15.com
@@ -3049,6 +3102,7 @@ medione.net
 medmail.com
 medscape.com
 meetingmall.com
+megaegg.ne.jp
 megago.com
 megamail.pt
 megapathdsl.net
@@ -3067,6 +3121,7 @@ merda.flu.cc
 merda.igg.biz
 merda.nut.cc
 merda.usa.cc
+mesh.ad.jp
 message.hu
 message.myspace.com
 messages.to
@@ -3083,8 +3138,10 @@ mikrotamanet.com
 millionaireintraining.com
 millionairemail.com
 milmail.com
+mimer.no
 mindless.com
 mindspring.com
+mineo.jp
 mini-mail.com
 minister.com
 misery.net
@@ -3107,6 +3164,7 @@ money.net
 montevideo.com.uy
 moonman.com
 moose-mail.com
+mopera.net
 mor19.uu.gl
 mortaza.com
 mosaicfx.com
@@ -3219,6 +3277,7 @@ netcenter-vn.net
 netcmail.com
 netcom.ca
 netcom.com
+netcom.no
 netcourrier.com
 netexecutive.com
 netexpressway.com
@@ -3239,6 +3298,7 @@ netscape.com
 netscape.net
 netscapeonline.co.uk
 netsero.net
+netsgo.com
 netspace.net.au
 netspeedway.com
 netsquare.com
@@ -3265,6 +3325,8 @@ nicebush.com
 nicegal.com
 nicholastse.net
 nicolastse.com
+nifty.com
+nifty.ne.jp
 nightmail.com
 nikopage.com
 nimail.com
@@ -3276,6 +3338,8 @@ norika-fujiwara.com
 norikomail.com
 northgates.net
 nospammail.net
+nownuri.net
+ntebb.no
 ntelos.net
 ntlworld.com
 ntscan.com
@@ -3294,8 +3358,11 @@ o2.co.uk
 oaklandas-fan.com
 oath.com
 oceanfree.net
+ocn.ne.jp
 oddpost.com
 odmail.com
+odn.ad.jp
+odn.ne.jp
 office-dateien.de
 office-email.com
 officedomain.com
@@ -3323,9 +3390,12 @@ onet.com.pl
 onet.eu
 onet.pl
 oninet.pt
+online-home.de
 online.de
 online.ie
 online.nl
+online.no
+onlinehome.de
 onlinewiz.com
 onmilwaukee.com
 onobox.com
@@ -3400,7 +3470,9 @@ pagons.org
 pakistanmail.com
 pakistanoye.com
 palestinemail.com
+panda.tnc.ne.jp
 pandora.be
+paran.com
 parkjiyoon.com
 parrot.com
 parsmail.com
@@ -3416,6 +3488,7 @@ pconnections.net
 pcpostal.com
 pcsrock.com
 pcusers.otherinbox.com
+pdx.ne.jp
 peachworld.com
 pediatrician.com
 pemail.net
@@ -3441,10 +3514,12 @@ pianomail.com
 pickupman.com
 picusnet.com
 pigpig.net
+pikara.ne.jp
 pinoymail.com
 pipeline.com
 piracha.net
 pisem.net
+plala.or.jp
 planet-mail.com
 planet.nl
 planetaccess.com
@@ -3585,6 +3660,8 @@ radicalz.com
 radiku.ye.vc
 radiologist.net
 ragingbull.com
+rakumail.jp
+rakuten.jp
 ralib.com
 rambler.ru
 ranmamail.com
@@ -3709,6 +3786,7 @@ seekstoyboy.com
 seguros.com.br
 send.hu
 sendme.cz
+sensewave.com
 sent.as
 sent.at
 sent.com
@@ -3751,6 +3829,9 @@ skafan.com
 skim.com
 skizo.hu
 sky.com
+sky.tkc.ne.jp
+sky.tkk.ne.jp
+sky.tu-ka.ne.jp
 skynet.be
 slamdunkfan.com
 slingshot.com
@@ -3770,6 +3851,7 @@ sniper.hu
 snoopymail.com
 snowboarding.com
 snowdonia.net
+so-net.ne.jp
 socamail.com
 socceramerica.net
 soccermail.com
@@ -3777,6 +3859,7 @@ soccermomz.com
 socialworker.net
 sociologist.com
 sofortmail.de
+softbank.ne.jp
 softhome.net
 sogou.com
 sohu.com
@@ -3789,6 +3872,7 @@ sonnenkinder.org
 soon.com
 soulfoodcookbook.com
 sp.nl
+spaaqs.ne.jp
 space-bank.com
 space-man.com
 space-ship.com
@@ -3835,6 +3919,7 @@ starplace.com
 starpower.net
 starspath.com
 start.com.au
+start.no
 starting-point.com
 startrekmail.com
 stealthmail.com
@@ -3892,6 +3977,7 @@ sx172.com
 sympatico.ca
 syom.com
 syriamail.com
+t-com.ne.jp
 t-online.de
 t2mail.com
 takuyakimura.com
@@ -3921,6 +4007,7 @@ techseek.com
 techspot.com
 teenagedirtbag.com
 tele2.nl
+tele2.no
 telebot.com
 telebot.net
 telefonica.net
@@ -3938,7 +4025,6 @@ telpage.net
 telstra.com
 telstra.com.au
 telus.net
-tempmail.net
 temtulsa.net
 tenchiclub.com
 tenderkiss.com
@@ -4041,8 +4127,10 @@ thezhangs.net
 thirdage.com
 thisgirl.com
 thoic.com
+thrunet.com
 thundermail.com
 tidni.com
+tiki.ne.jp
 timein.net
 tin.it
 tiscali.at
@@ -4050,9 +4138,12 @@ tiscali.be
 tiscali.co.uk
 tiscali.it
 tiscali.lu
+tiscali.no
 tiscali.se
+tistory.com
 tkcity.com
 toast.com
+tokai.or.jp
 toke.com
 tom.com
 toolsource.com
@@ -4107,6 +4198,7 @@ uaemail.com
 ubbi.com
 ubbi.com.br
 uboot.com
+ucom.ne.jp
 uk2.net
 uk2k.com
 uk2net.com
@@ -4128,6 +4220,7 @@ unforgettable.com
 uni.de
 unican.es
 unihome.com
+unitel.co.kr
 unitybox.de
 universal.pt
 uno.ee
@@ -4147,6 +4240,7 @@ uomail.com
 upc.nl
 upcmail.nl
 upf.org
+uqmobile.jp
 ureach.com
 urgentmail.biz
 usa.com
@@ -4203,6 +4297,7 @@ vjtimail.com
 vlmail.com
 vnet.citiz.net
 vnn.vn
+vodafone.ne.jp
 vodafone.nl
 vodafonethuis.nl
 voila.fr
@@ -4232,6 +4327,7 @@ warpmail.net
 warrior.hu
 waumail.com
 wbdet.com
+wcm.ne.jp
 wearab.net
 web-mail.com.ar
 web-police.com
@@ -4278,6 +4374,7 @@ wickedmail.com
 wideopenwest.com
 wildmail.com
 will-hier-weg.de
+willcom.com
 windowslive.com
 windrivers.net
 windstream.net
@@ -4410,6 +4507,7 @@ yandex.ru
 yandex.ua
 yapost.com
 yawmail.com
+ybb.ne.jp
 yclub.com
 yeah.net
 yebox.com
@@ -4423,6 +4521,9 @@ yesey.net
 ygm.com
 yifan.net
 ymail.com
+ymail.ne.jp
+ymobile.ne.jp
+ymobile1.ne.jp
 ynnmail.com
 yogotemail.com
 yopolis.com
@@ -4447,7 +4548,9 @@ yourwap.com
 youvegotmail.net
 yuuhuu.net
 yyhmail.com
+za.com
 zahadum.com
+zaq.ne.jp
 zcities.com
 zdnetmail.com
 zeeks.com

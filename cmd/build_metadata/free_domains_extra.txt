@@ -1,0 +1,126 @@
+# Free mailbox providers that neither upstream source lists.
+#
+# Vendored from Kikobeats/free-email-domains (MIT), which used to be this
+# repo's free-domain source. That project builds its output by merging the
+# HubSpot list now named in free_domain_sources.txt with two disposable
+# blocklists, so consuming it wholesale pulled thousands of throwaway domains
+# into free.txt. Its own hand-maintained
+# additions are the one part not available anywhere else, so they live here
+# instead -- mostly JP/KR/NO/DE carrier and portal mailboxes, plus Proton.
+#
+# Two of its entries are left out: tempmail.net and spambox.xyz, both
+# throwaway services rather than providers. Add domains here directly; anything
+# a disposable source lists is dropped again by update.sh.
+2iij.net
+adsl.no
+aol.co.uk
+aol.de
+aol.fr
+asahi-net.or.jp
+au.com
+auone-net.jp
+bbiq.jp
+bbnett.no
+bbtec.net
+biglobe.ne.jp
+biz.ezweb.ne.jp
+bluezone.no
+broadpark.no
+chello.no
+chol.com
+chollian.net
+commufa.jp
+daum.net
+dion.ne.jp
+disney.ne.jp
+docomo.ne.jp
+dreamwiz.com
+dti.ne.jp
+e-mail.de
+ebnett.no
+emnet.ne.jp
+emobile.ne.jp
+eonet.ne.jp
+epost.no
+ezweb.ne.jp
+freechal.com
+freemail.ne.jp
+frisurf.no
+getmail.no
+hanafos.com
+hananet.net
+hanmail2.net
+hanmir.com
+haugnett.no
+hi-ho.ne.jp
+hitel.net
+i.softbank.jp
+iij4u.or.jp
+infoseek.co.jp
+infoseek.jp
+infoweb.ne.jp
+jcom.home.ne.jp
+jcom.zaq.ne.jp
+kakao.com
+kcn.ne.jp
+kornet.net
+livedoor.com
+losmail.no
+lyse.net
+mail.goo.ne.jp
+mail.sony.jp
+megaegg.ne.jp
+mesh.ad.jp
+mimer.no
+mineo.jp
+mopera.net
+nate.com
+netcom.no
+netsgo.com
+nifty.com
+nifty.ne.jp
+nownuri.net
+ntebb.no
+ocn.ne.jp
+odn.ad.jp
+odn.ne.jp
+online-home.de
+online.de
+online.no
+onlinehome.de
+panda.tnc.ne.jp
+paran.com
+pdx.ne.jp
+pikara.ne.jp
+plala.or.jp
+pm.me
+proton.me
+protonmail.ch
+rakumail.jp
+rakuten.jp
+sensewave.com
+sky.tkc.ne.jp
+sky.tkk.ne.jp
+sky.tu-ka.ne.jp
+so-net.ne.jp
+softbank.ne.jp
+spaaqs.ne.jp
+start.no
+t-com.ne.jp
+tele2.no
+thrunet.com
+tiki.ne.jp
+tiscali.no
+tistory.com
+tokai.or.jp
+ucom.ne.jp
+unitel.co.kr
+uqmobile.jp
+vodafone.ne.jp
+wcm.ne.jp
+willcom.com
+ybb.ne.jp
+ymail.ne.jp
+ymobile.ne.jp
+ymobile1.ne.jp
+zaq.ne.jp
