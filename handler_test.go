@@ -1,8 +1,12 @@
 package emailverifier
 
 import (
+	"fmt"
 	"net/http"
+	"net/http/httptest"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -23,9 +27,10 @@ func restoreDisposableDomains(t *testing.T) {
 		for d := range disposableDomains {
 			disposableSyncDomains.Store(d, struct{}{})
 		}
-		for d := range additionalDisposableDomains {
-			delete(additionalDisposableDomains, d)
-		}
+		additionalDisposableDomains.Range(func(key, _ interface{}) bool {
+			additionalDisposableDomains.Delete(key)
+			return true
+		})
 	})
 }
 
@@ -89,6 +94,79 @@ func TestAddDisposableDomainsOutranksAllowlist(t *testing.T) {
 	require.NoError(t, updateDisposableDomains(disposableDataURL))
 
 	assert.True(t, verifier.IsDisposable("hush.com"))
+}
+
+// AddDisposableDomains is reachable from whatever goroutine the caller likes,
+// while EnableAutoUpdateDisposable runs updateDisposableDomains on a schedule
+// goroutine, and both touch additionalDisposableDomains. While that was a plain
+// map the pair was a `fatal error: concurrent map iteration and map write` --
+// unrecoverable, not something a caller can defend against.
+//
+// Nothing caught it because this is the first test in the package to run
+// anything concurrently. `make test` does pass -race, but the detector reports
+// only conflicting accesses that actually execute, and every other test drives
+// both functions from the one goroutine; EnableAutoUpdateDisposable starts a
+// schedule, but at a 24h period it never fires inside a test.
+func TestAddDisposableDomainsIsConcurrentSafe(t *testing.T) {
+	restoreDisposableDomains(t)
+
+	// Two things keep this cheap. updateDisposableDomains walks the whole
+	// disposable set, all 75k entries of it, which is beside the point here, so
+	// empty it first -- the cleanup above puts it back. And the adder rewrites
+	// one key rather than adding new ones: storing an existing key is still a
+	// map write, so the race is unchanged, but neither map grows. An adder that
+	// keeps adding makes every refresh walk a longer map, and that quadratic
+	// cost lands only once the bug is fixed and nothing crashes early.
+	disposableSyncDomains.Range(func(key, _ interface{}) bool {
+		disposableSyncDomains.Delete(key)
+		return true
+	})
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, `["fetched.example"]`)
+	}))
+	defer srv.Close()
+
+	seeded := make([]string, 5000)
+	for i := range seeded {
+		seeded[i] = fmt.Sprintf("seeded-%d.example", i)
+	}
+	verifier.AddDisposableDomains(seeded)
+
+	// Both loops run to a deadline rather than a count, so they overlap for the
+	// whole window instead of one finishing before the other starts.
+	deadline := time.Now().Add(500 * time.Millisecond)
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() { // stands in for a caller adding domains as it goes
+		defer wg.Done()
+		for time.Now().Before(deadline) {
+			verifier.AddDisposableDomains([]string{"churned.example"})
+		}
+	}()
+
+	// Reported after Wait rather than asserted in the goroutine: require calls
+	// t.FailNow, which only works on the goroutine running the test. Single
+	// writer, and Wait orders the read after it.
+	var refreshErr error
+
+	wg.Add(1)
+	go func() { // stands in for the schedule goroutine
+		defer wg.Done()
+		for time.Now().Before(deadline) {
+			if refreshErr = updateDisposableDomains(srv.URL); refreshErr != nil {
+				return
+			}
+		}
+	}()
+
+	wg.Wait()
+	require.NoError(t, refreshErr)
+
+	assert.True(t, verifier.IsDisposable("seeded-0.example"), "a refresh dropped a caller's domain")
+	assert.True(t, verifier.IsDisposable("churned.example"))
+	assert.True(t, verifier.IsDisposable("fetched.example"))
 }
 
 func TestUpdateDisposableDomainsFailed_NoSuchHost(t *testing.T) {

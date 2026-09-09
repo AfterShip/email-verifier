@@ -70,8 +70,9 @@ func updateDisposableDomains(source string) error {
 
 	// add additionalDisposableDomains again -- after the allowlist, so a
 	// caller who explicitly adds one of those domains still gets it back
-	for d := range additionalDisposableDomains {
-		disposableSyncDomains.Store(d, struct{}{})
-	}
+	additionalDisposableDomains.Range(func(key, _ interface{}) bool {
+		disposableSyncDomains.Store(key, struct{}{})
+		return true
+	})
 	return nil
 }

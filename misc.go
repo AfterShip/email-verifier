@@ -7,6 +7,13 @@ import (
 
 var (
 	disposableSyncDomains sync.Map // concurrent safe map to store disposable domains data
+
+	// additional list of disposable domains set via users of this library.
+	// Concurrent safe for the same reason as the map above: it is written by
+	// AddDisposableDomains, which callers reach from whatever goroutine they
+	// like, and read by updateDisposableDomains on the schedule goroutine that
+	// EnableAutoUpdateDisposable starts.
+	additionalDisposableDomains sync.Map
 )
 
 // IsRoleAccount checks if username is a role-based account
