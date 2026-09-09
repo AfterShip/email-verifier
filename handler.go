@@ -61,7 +61,15 @@ func updateDisposableDomains(source string) error {
 		disposableSyncDomains.Store(d, struct{}{})
 	}
 
-	// add additionalDisposableDomains again
+	// The generated list has the domains in disposable_allowlist.txt removed
+	// already; take them out of what was just fetched too, or the first
+	// refresh reinstates every one of them.
+	for d := range allowedDisposableDomains {
+		disposableSyncDomains.Delete(d)
+	}
+
+	// add additionalDisposableDomains again -- after the allowlist, so a
+	// caller who explicitly adds one of those domains still gets it back
 	for d := range additionalDisposableDomains {
 		disposableSyncDomains.Store(d, struct{}{})
 	}

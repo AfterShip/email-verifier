@@ -5,6 +5,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,6 +29,7 @@ func TestGeneratedMetadataMatchesSources(t *testing.T) {
 		{"disposable", "cmd/build_metadata/disposable.txt", disposableDomains},
 		{"free", "cmd/build_metadata/free.txt", freeDomains},
 		{"role", "cmd/build_metadata/role.txt", roleAccounts},
+		{"disposable allowlist", "cmd/build_metadata/disposable_allowlist.txt", allowedDisposableDomains},
 	}
 
 	for _, c := range cases {
@@ -44,8 +46,10 @@ func TestGeneratedMetadataMatchesSources(t *testing.T) {
 			scanner := bufio.NewScanner(file)
 			scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
 			for scanner.Scan() {
-				entry := scanner.Text()
-				if entry == "" {
+				entry := strings.TrimSpace(scanner.Text())
+				// Skipped the same way the generator skips them, so a
+				// hand-maintained list can carry its own reasoning.
+				if entry == "" || strings.HasPrefix(entry, "#") {
 					continue
 				}
 				entries[entry] = true
@@ -128,6 +132,26 @@ func TestGeneratedDomainsAreWellFormedHostnames(t *testing.T) {
 
 		assert.Emptyf(t, malformed, "%s domains that no lookup can match; check the normalisation in cmd/build_metadata/update.sh", name)
 	}
+}
+
+// disposable_allowlist.txt exists because the upstream disposable list
+// classifies a handful of real providers as throwaway services. update.sh
+// subtracts it, so nothing in it should reach the generated map -- and the
+// subtraction matters twice, since free.txt is the free candidates minus the
+// disposable list: a domain wrongly listed there is not merely reported
+// disposable, it is also dropped from free, leaving the library answering
+// "neither" about a real mailbox provider.
+func TestAllowedDomainsAreNotDisposable(t *testing.T) {
+	require.NotEmpty(t, allowedDisposableDomains, "allowlist is empty; the generated map is stale")
+
+	var listed []string
+	for domain := range allowedDisposableDomains {
+		if disposableDomains[domain] {
+			listed = append(listed, domain)
+		}
+	}
+
+	assert.Empty(t, listed, "allowlisted domains still in the generated disposable map; check the subtraction in cmd/build_metadata/update.sh")
 }
 
 func TestIsFreeDomain_True(t *testing.T) {

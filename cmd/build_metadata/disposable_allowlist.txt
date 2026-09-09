@@ -1,0 +1,27 @@
+# Domains the upstream disposable list classifies as disposable and that are
+# not. They are subtracted from disposable.txt when it is generated, and
+# deleted again after every EnableAutoUpdateDisposable() refresh, so they stay
+# out either way.
+#
+# An entry here fixes both misclassifications at once. free.txt is the free
+# candidates minus the disposable list, so a domain wrongly in that list is not
+# merely reported disposable -- it is also dropped from free, leaving the
+# library to answer "neither" about a real mailbox provider.
+#
+# An entry needs a reason someone else can check. "It resolves" is not one:
+# most disposable domains resolve. update.sh fails if an entry here is no
+# longer in the upstream list, so this cannot quietly accumulate dead weight.
+
+# Catalogued as free mail services by disposable/disposable's own
+# mailservices.json. That file is not wired into its blocklist generation --
+# the only switch that reads it, --add-free-mailservices, is passed from cli.py
+# into options the generator never consults -- so nothing there removes them.
+4x4man.com
+alphafrau.de
+mail2world.com
+qmail.com
+
+# Long-running providers running their own mail infrastructure, neither of them
+# offering throwaway addresses.
+hush.com
+lavabit.com
