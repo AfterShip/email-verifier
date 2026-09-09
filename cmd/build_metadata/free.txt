@@ -1,6 +1,5 @@
 1033edge.com
 11mail.com
-123.com
 123box.net
 123india.com
 123mail.cl
@@ -30,8 +29,8 @@
 1webhighway.com
 2-mail.com
 212.com
+21cn.com
 24horas.com
-2911.net
 2980.com
 2bmail.co.uk
 2d2i.com
@@ -53,14 +52,11 @@
 4email.net
 4mg.com
 4newyork.com
-4x4man.com
 50mail.com
 5iron.com
 5star.com
 74.ru
-74gmail.com
 88.am
-8848.net
 888.nu
 97rock.com
 aaamail.zzn.com
@@ -104,7 +100,6 @@ aeneasmail.com
 afreeinternet.com
 africamail.com
 africamel.net
-ag.us.to
 agoodmail.com
 ahaa.dk
 aichi.com
@@ -134,7 +129,6 @@ allracing.com
 allsaintsfan.com
 alltel.net
 alpenjodel.de
-alphafrau.de
 alskens.dk
 altavista.com
 altavista.net
@@ -159,7 +153,6 @@ anfmail.com
 angelfan.com
 angelfire.com
 angelic.com
-animail.net
 animal.net
 animalhouse.com
 animalwoman.net
@@ -328,7 +321,6 @@ billsfan.net
 bimamail.com
 bimla.net
 bin-wieder-da.de
-bio-muesli.info
 birdlover.com
 birdowner.net
 bisons.com
@@ -346,7 +338,6 @@ blazemail.com
 blazenet.net
 bleib-bei-mir.de
 blockfilter.com
-bluebottle.com
 bluehyppo.com
 bluemail.ch
 bluemail.dk
@@ -583,7 +574,6 @@ connectbox.com
 conok.com
 consultant.com
 contractor.net
-contrasto.cu.cc
 cookiemonster.com
 cool.br
 coole-files.de
@@ -591,7 +581,6 @@ coolgoose.ca
 coolgoose.com
 coolkiwi.com
 coollist.com
-coolmail.com
 coolmail.net
 coolsend.com
 coolsite.net
@@ -670,7 +659,6 @@ dazedandconfused.com
 dbzmail.com
 dca.net
 deadlymob.org
-deal-maker.com
 dearriba.com
 death-star.com
 dejanews.com
@@ -709,6 +697,7 @@ discoverymail.com
 disinfo.net
 disney.ne.jp
 disposable.com
+dm.w3internet.co.uk
 dmailman.com
 dmv.com
 dnainternet.net
@@ -753,7 +742,6 @@ duno.com
 dutchmail.com
 dwp.net
 dygo.com
-dynamitemail.com
 dyndns.org
 e-apollo.lv
 e-mail.com.tr
@@ -782,13 +770,10 @@ ecbsolutions.net
 echina.com
 ecompare.com
 edge.net
-edmail.com
 ednatx.com
 edtnmail.com
 educacao.te.pt
 educastmail.com
-ehmail.com
-eintagsmail.de
 eircom.net
 elisanet.fi
 elitemail.org
@@ -802,7 +787,6 @@ email.cz
 email.ee
 email.it
 email.nu
-email.org
 email.ro
 email.ru
 email.si
@@ -889,6 +873,7 @@ ezy.net
 f-m.fm
 f1fans.net
 facebook.com
+facebookmail.com
 fahr-zur-hoelle.org
 falseaddress.com
 fan.com
@@ -903,7 +888,6 @@ fast-mail.org
 fastem.com
 fastemail.us
 fastemailer.com
-fastermail.com
 fastest.cc
 fastimap.com
 fastmail.ca
@@ -955,6 +939,7 @@ fire-brigade.com
 fireman.net
 fishburne.org
 fishfuse.com
+flashbox.5july.org
 flashcom.net
 flashemail.com
 flashmail.com
@@ -965,7 +950,6 @@ fmailbox.com
 fmgirl.com
 fmguy.com
 fnbmail.co.za
-fnmail.com
 folkfan.com
 foodmail.com
 football.theboys.com
@@ -1188,7 +1172,6 @@ goldenmail.ru
 goldmail.ru
 goldtoolbox.com
 golfemail.com
-golfilla.info
 golfmail.be
 gonavy.net
 goodnewsmail.com
@@ -1201,7 +1184,6 @@ gorontalo.net
 gospelfan.com
 gothere.uk.com
 gotomy.com
-gotti.otherinbox.com
 govolsfan.com
 gportal.hu
 grabmail.com
@@ -1338,7 +1320,6 @@ hughes.net
 humanoid.net
 hunsa.com
 hurting.com
-hush.com
 hushmail.com
 hypernautica.com
 i-connect.com
@@ -1524,7 +1505,6 @@ jubiimail.dk
 jump.com
 jumpy.it
 juniormail.com
-junkmail.com
 juno.com
 justemail.net
 justicemail.com
@@ -1591,9 +1571,7 @@ lankamail.com
 laposte.net
 lass-es-geschehen.de
 latemodels.com
-latinmail.com
 latino.com
-lavabit.com
 lavache.com
 law.com
 lawyer.com
@@ -1619,6 +1597,7 @@ linuxfreemail.com
 linuxmail.org
 lionsfan.com.au
 liontrucks.com
+liquidinformation.net
 list.ru
 listomail.com
 littleapple.com
@@ -1745,7 +1724,6 @@ mail.svenz.eu
 mail.theboys.com
 mail.usa.com
 mail.vasarhely.hu
-mail15.com
 mail1st.com
 mail2007.com
 mail2aaron.com
@@ -2989,7 +2967,6 @@ mail2wired.com
 mail2wisconsin.com
 mail2woman.com
 mail2wonder.com
-mail2world.com
 mail2worship.com
 mail2wow.com
 mail2www.com
@@ -3163,16 +3140,13 @@ monemail.com
 money.net
 montevideo.com.uy
 moonman.com
-moose-mail.com
 mopera.net
-mor19.uu.gl
 mortaza.com
 mosaicfx.com
 moscowmail.com
 most-wanted.com
 mostlysunny.com
 motormania.com
-movemail.com
 movieluver.com
 mp4.it
 mr-potatohead.com
@@ -3344,7 +3318,6 @@ ntelos.net
 ntlworld.com
 ntscan.com
 null.net
-nullbox.info
 nur-fuer-spam.de
 nus.edu.sg
 nxt.ru
@@ -3369,7 +3342,6 @@ officedomain.com
 offroadwarrior.com
 oi.com.br
 oicexchange.com
-oikrach.com
 okbank.com
 okhuman.com
 okmad.com
@@ -3487,7 +3459,6 @@ patmedia.net
 pconnections.net
 pcpostal.com
 pcsrock.com
-pcusers.otherinbox.com
 pdx.ne.jp
 peachworld.com
 pediatrician.com
@@ -3506,9 +3477,7 @@ pezeshkpour.com
 phayze.com
 phone.net
 photographer.net
-phpbb.uu.gl
 phreaker.net
-phus8kajuspa.cu.cc
 physicist.net
 pianomail.com
 pickupman.com
@@ -3631,7 +3600,6 @@ purpleturtle.com
 q.com
 qatarmail.com
 qis.net
-qmail.com
 qprfans.com
 qq.com
 qrio.com
@@ -3657,7 +3625,6 @@ racefanz.com
 racingfan.com.au
 racingmail.com
 radicalz.com
-radiku.ye.vc
 radiologist.net
 ragingbull.com
 rakumail.jp
@@ -3806,8 +3773,7 @@ shaw.ca
 she.com
 shinedyoureyes.com
 shitaway.cu.cc
-shitaway.usa.cc
-shockinmytown.cu.cc
+shitware.nl
 shootmail.com
 shortmail.com
 shotgun.hu
@@ -3815,7 +3781,6 @@ shuf.com
 sialkotcity.com
 sialkotian.com
 sialkotoye.com
-sify.com
 silkroad.net
 sina.cn
 sina.com
@@ -3837,11 +3802,11 @@ slamdunkfan.com
 slingshot.com
 slo.net
 slotter.com
+smap.4nmv.ru
 smapxsmap.net
 smileyface.comsmithemail.net
 smoothmail.com
 sms.at
-snail-mail.net
 snail-mail.ney
 snakebite.com
 sndt.net
@@ -3858,7 +3823,6 @@ soccermail.com
 soccermomz.com
 socialworker.net
 sociologist.com
-sofortmail.de
 softbank.ne.jp
 softhome.net
 sogou.com
@@ -3884,6 +3848,7 @@ spacemart.com
 spacetowns.com
 spacewar.com
 spainmail.com
+spam.2012-2016.ru
 spameater.com
 spartapiet.com
 spazmail.com
@@ -3927,7 +3892,6 @@ stipte.nl
 stockracer.com
 stoned.com
 stones.com
-stop-my-spam.pp.ua
 stopdropandroll.com
 storksite.com
 streber24.de
@@ -3960,7 +3924,6 @@ survivormail.com
 swbell.net
 sweb.cz
 swedenmail.com
-sweetville.net
 swift-mail.com
 swiftdesk.com
 swingeasyhithard.com
@@ -3997,7 +3960,6 @@ teamdiscovery.com
 teamtulsa.net
 tech-center.com
 tech4peace.org
-techemail.com
 techie.com
 technisamail.co.za
 technologist.com
@@ -4035,7 +3997,6 @@ terra.com
 terra.com.ar
 terra.com.br
 terra.es
-test.com
 test.de
 tfanus.com.er
 tfz.net
@@ -4194,7 +4155,6 @@ typemail.com
 u2club.com
 ua.fm
 uae.ac
-uaemail.com
 ubbi.com
 ubbi.com.br
 uboot.com
@@ -4226,7 +4186,6 @@ universal.pt
 uno.ee
 uno.it
 unofree.it
-unomail.com
 unterderbruecke.de
 uol.com.ar
 uol.com.br
@@ -4236,7 +4195,6 @@ uol.com.ve
 uole.com
 uole.com.ve
 uolmail.com
-uomail.com
 upc.nl
 upcmail.nl
 upf.org
@@ -4269,6 +4227,7 @@ verlass-mich-nicht.de
 versatel.nl
 veryfast.biz
 veryspeedy.net
+vfemail.net
 videotron.ca
 vinbazar.com
 violinmakers.co.uk
@@ -4292,7 +4251,6 @@ visto.com
 visualcities.com
 vivavelocity.com
 vivianhsu.net
-vjmail.com
 vjtimail.com
 vlmail.com
 vnet.citiz.net
@@ -4334,7 +4292,6 @@ web-police.com
 web.de
 webave.com
 webcammail.com
-webcity.ca
 webdream.com
 webinbox.com
 webindia123.com
@@ -4353,7 +4310,6 @@ webtopmail.com
 weedmail.com
 weekmail.com
 weekonline.com
-wegas.ru
 wehshee.com
 weibsvolk.de
 weibsvolk.org
@@ -4361,7 +4317,6 @@ weinenvorglueck.de
 welsh-lady.com
 westnet.com
 westnet.com.au
-whale-mail.com
 whartontx.com
 wheelweb.com
 whipmail.com
@@ -4401,10 +4356,8 @@ workmail.com
 worldemail.com
 worldmailer.com
 worldnet.att.net
-wormseo.cn
 wosaddict.com
 wouldilie.com
-wovz.cu.cc
 wow.com
 wowgirl.com
 wowmail.com
@@ -4428,7 +4381,6 @@ x-mail.net
 x-networks.net
 x5g.com
 xaker.ru
-xing886.uu.gl
 xmastime.com
 xms.nl
 xmsg.com
@@ -4444,7 +4396,6 @@ xzapmail.com
 y7mail.com
 ya.ru
 yada-yada.com
-yaho.com
 yahoo.ae
 yahoo.at
 yahoo.be
@@ -4515,11 +4466,9 @@ yehaa.com
 yehey.com
 yemenmail.com
 yepmail.net
-yert.ye.vc
 yesbox.net
 yesey.net
 ygm.com
-yifan.net
 ymail.com
 ymail.ne.jp
 ymobile.ne.jp
@@ -4529,7 +4478,6 @@ yogotemail.com
 yopolis.com
 yopweb.com
 youareadork.com
-youmailr.com
 youpy.com
 your-house.com
 your-mail.com
@@ -4547,8 +4495,6 @@ yourteacher.net
 yourwap.com
 youvegotmail.net
 yuuhuu.net
-yyhmail.com
-za.com
 zahadum.com
 zaq.ne.jp
 zcities.com
@@ -4557,6 +4503,7 @@ zeeks.com
 zeepost.nl
 zensearch.net
 zhaowei.net
+zhouemail.510520.org
 ziggo.nl
 zionweb.org
 zip.net

@@ -86,13 +86,15 @@ require_line_count() {
 
 # 1. update disposable domains meta databases.
 #
-#    Deliberately not run through keep_valid_domains. Twelve entries upstream
-#    are IDNs spelled in Unicode rather than punycode, and IsDisposable
-#    converts its argument with domainToASCII before looking it up, so those
-#    keys already never match. Dropping them would hide that; converting them
-#    is the actual fix and does not belong in a change to the free list.
-fetch https://raw.githubusercontent.com/tompec/disposable-email-domains/main/index.json \
-    | jq -r '.[]' | normalise > "$workdir/disposable.txt"
+#    This URL is also in constants.go as disposableDataURL, where
+#    EnableAutoUpdateDisposable fetches it at runtime. Keep the two identical.
+#    They were not: this script built the list from tompec while the library
+#    refreshed it from here, and the two share only 37585 entries out of
+#    tompec's 133602. Since updateDisposableDomains deletes whatever the
+#    fetched list omits, enabling auto-update dropped 96017 baked-in domains
+#    and added 37679, leaving 75264.
+fetch https://raw.githubusercontent.com/disposable/disposable-email-domains/master/domains.json \
+    | jq -r '.[]' | normalise | keep_valid_domains > "$workdir/disposable.txt"
 require_line_count "$workdir/disposable.txt" 50000 - "disposable domains"
 
 # 2. update free domains meta databases, from every source in

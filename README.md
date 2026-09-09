@@ -335,7 +335,7 @@ This means that the server does not allow real-time verification of an email rig
 - [trumail](https://github.com/trumail/trumail)
 - [check-if-email-exists](https://github.com/amaurymartiny/check-if-email-exists)
 - [mailcheck](https://github.com/mailcheck/mailcheck)
-- disposable domains from [tompec/disposable-email-domains](https://github.com/tompec/disposable-email-domains), and from [disposable/disposable-email-domains](https://github.com/disposable/disposable-email-domains) when `EnableAutoUpdateDisposable()` is on
+- disposable domains from [disposable/disposable-email-domains](https://github.com/disposable/disposable-email-domains), both for the generated list and for `EnableAutoUpdateDisposable()`
 - free provider data from [HubSpot's free email domain list](https://f.hubspotusercontent40.net/hubfs/2832391/Marketing/Lead-Capture/free-domains-2.csv) and [tbrianjones/free_email_provider_domains](https://gist.github.com/tbrianjones/5992856), plus carrier and portal mailboxes vendored from [Kikobeats/free-email-domains](https://github.com/Kikobeats/free-email-domains)
 
 ## Contributing

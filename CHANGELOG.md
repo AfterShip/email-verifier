@@ -2,6 +2,7 @@
 
 Unreleased
 ----------
+* **Breaking**: The generated disposable list now comes from the same source `EnableAutoUpdateDisposable()` fetches at runtime. The two had diverged, so enabling auto-update used to replace most of the baked-in list; it is now a no-op. `IsDisposable` gains 37679 domains and loses 96017, the vast majority of which no longer resolve [#208](https://github.com/AfterShip/email-verifier/pull/208)
 * Fix: The free-domain list is built from its original sources instead of an aggregate that had begun merging disposable blocklists into itself. `IsFreeDomain` and `SuggestDomain` no longer treat throwaway domains as free providers, 108 carrier and portal mailboxes are recognised, and `IsFreeDomain("atlanticbb.net")` works -- the generated key carried a stray no-break space [#207](https://github.com/AfterShip/email-verifier/pull/207)
 * Fix: `IsRoleAccount` recognises `cto`, `ctos`, `cfo` and `cfos`. They were added to the source list in December 2025 but the generated map was never rebuilt, so they returned `false` until now [#205](https://github.com/AfterShip/email-verifier/pull/205)
 * Feature: Support a custom DNS resolver for MX and SMTP host lookups via `Resolver()` [#191](https://github.com/AfterShip/email-verifier/pull/191)
