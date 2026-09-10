@@ -22,20 +22,13 @@ fetch() {
     curl --silent --show-error --fail --location "$1"
 }
 
-# Upstream lists arrive unsorted and with stray whitespace, blank lines,
-# comments and mixed case; the HubSpot list is CRLF.
+# Upstream lists carry stray whitespace, blank lines, comments and mixed case,
+# and HubSpot's is CRLF. One tbrianjones entry ends in U+00A0, which LC_ALL=C
+# [[:space:]] does not match, so it needs a substitution of its own -- as
+# literal bytes through $'...', since \xNN is not portable.
 #
-# The no-break space substitution is not hypothetical. One entry in the
-# tbrianjones list is "atlanticbb.net\u00a0", and under LC_ALL=C
-# [[:space:]] does not match U+00A0, so it survived every cleanup this script
-# used to do: metadata_free.go shipped that domain with the no-break space
-# attached, as a key no lookup could ever match. Turning it into a plain space
-# lets the trim below recover the domain, and leaves anything with one in the
-# middle for the validation step to reject. The bytes go through $'...' rather
-# than a sed escape because BSD sed does not understand \xNN.
-#
-# Sorting is not cosmetic: the lists are combined with comm below, which needs
-# sorted inputs and silently misreports without them.
+# The sort is required, not tidiness: comm below needs sorted inputs, and
+# without them GNU comm aborts the run while BSD comm publishes a wrong list.
 normalise() {
     sed $'s/\302\240/ /g' \
         | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' \
@@ -44,10 +37,8 @@ normalise() {
         | sort -u
 }
 
-# Whatever is left that is not shaped like a hostname says something went
-# wrong upstream or in transit -- a truncated line, an error page, two sources
-# concatenated without a newline between them. Drop those, but say so: a
-# silent drop is how a source turning into an error page looks like a source
+# Anything not shaped like a hostname means the fetch or the source went wrong.
+# Report what gets dropped: shrinking in silence looks the same as a source
 # that simply got smaller.
 keep_valid_domains() {
     awk '
@@ -61,14 +52,10 @@ keep_valid_domains() {
 }
 
 # A count outside these bounds means the fetch returned something other than
-# the data. The floors catch an empty or truncated response, which would
-# otherwise be published as "nothing is disposable" and let every disposable
-# domain through as a free one.
-#
-# The free ceiling catches the opposite failure, which is the one that actually
-# happened: a source silently starts including disposable domains and the list
-# doubles. free.txt is a slowly growing set of real mailbox providers, so a
-# jump past this is a change in what a source publishes, not organic growth.
+# the data. The floors catch an empty response, which would otherwise publish
+# "nothing is disposable" and let every disposable domain through as free. The
+# free ceiling catches the failure that did happen: a source starting to merge
+# disposable blocklists into itself, which doubled the list.
 require_line_count() {
     local file=$1 min=$2 max=$3 label=$4
     local count
@@ -86,26 +73,21 @@ require_line_count() {
 
 # 1. update disposable domains meta databases.
 #
-#    This URL is also in constants.go as disposableDataURL, where
-#    EnableAutoUpdateDisposable fetches it at runtime. Keep the two identical.
-#    They were not: this script built the list from tompec while the library
-#    refreshed it from here, and the two share only 37585 entries out of
-#    tompec's 133602. Since updateDisposableDomains deletes whatever the
-#    fetched list omits, enabling auto-update dropped 96017 baked-in domains
-#    and added 37679, leaving 75264.
+#    Same URL as disposableDataURL in constants.go, where
+#    EnableAutoUpdateDisposable fetches it at runtime. They have to match:
+#    updateDisposableDomains deletes whatever the fetched list omits, so a
+#    different source here means auto-update replaces most of the baked-in
+#    list. TestUpdateScriptFetchesTheDisposableDataURL holds them together.
 fetch https://raw.githubusercontent.com/disposable/disposable-email-domains/master/domains.json \
     | jq -r '.[]' | normalise | keep_valid_domains > "$workdir/upstream_disposable.txt"
 require_line_count "$workdir/upstream_disposable.txt" 50000 - "disposable domains"
 
-#    Then remove the domains listed in disposable_allowlist.txt, which the
-#    upstream list classifies as disposable and which are not. Doing it here
-#    rather than only at runtime matters twice over: the generated map is what
-#    a caller gets without EnableAutoUpdateDisposable, and step 3 subtracts
-#    this file from the free candidates, so a domain taken out here stays in
-#    free.txt instead of being reported as neither.
-#
-#    An allowlist entry that upstream no longer lists is dead weight, and the
-#    only way to notice is to check: fail rather than carry it silently.
+#    Then remove disposable_allowlist.txt, domains the upstream list calls
+#    disposable and which are not. Here rather than only at runtime because the
+#    generated map is what a caller gets without EnableAutoUpdateDisposable,
+#    and because step 3 subtracts this file, so a domain taken out here stays
+#    in free.txt rather than being reported as neither. An entry upstream has
+#    since dropped is dead weight, hence the check.
 normalise < ./disposable_allowlist.txt > "$workdir/allowlist.txt"
 stale=$(comm -23 "$workdir/allowlist.txt" "$workdir/upstream_disposable.txt")
 if [ -n "$stale" ]; then
@@ -123,29 +105,25 @@ while read -r source; do
     [ -n "$source" ] || continue
     fetch "$source" >> "$workdir/free_raw.txt"
     # Not every source ends with a newline -- the tbrianjones list does not --
-    # so terminate each one explicitly, or its last domain merges with the
-    # first line of whatever is appended next. This is what the original
-    # script's echo "$(curl ...)" was doing. normalise drops the blank lines
-    # it leaves behind.
+    # so terminate each one, or its last domain merges with the first line of
+    # the next. normalise drops the blank lines this leaves.
     echo >> "$workdir/free_raw.txt"
 done < ./free_domain_sources.txt
 cat ./free_domains_extra.txt >> "$workdir/free_raw.txt"
 
-# 3. normalise, then drop anything already known to be disposable. The free
-#    sources are signup blocklists rather than provider directories -- HubSpot
-#    publishes theirs under Marketing/Lead-Capture -- so they carry throwaway
-#    domains alongside the real providers and this subtraction is what
-#    separates the two.
+# 3. normalise, then drop anything known to be disposable. The free sources are
+#    signup blocklists rather than provider directories -- HubSpot publishes
+#    theirs under Marketing/Lead-Capture -- so they carry throwaway domains
+#    alongside the real ones, and this subtraction is what separates them.
 normalise < "$workdir/free_raw.txt" \
     | keep_valid_domains \
     | comm -23 - "$workdir/disposable.txt" > "$workdir/free.txt"
 require_line_count "$workdir/free.txt" 3000 6000 "free domains"
 
-# 4. publish, only now that both lists are known good. Writing through the
-#    existing files keeps their permissions; mv would carry mktemp's 0600 over,
-#    leaving free.txt unreadable to other users in the working tree of whoever
-#    ran this. Never in the repository -- git records only the exec bit -- but
-#    it does happen locally.
+# 4. publish, only now that both lists are known good. cat rather than mv so
+#    the targets keep their permissions: mv carries mktemp's 0600 across,
+#    leaving free.txt unreadable to others in the working tree of whoever ran
+#    it. Not in the repository -- git records only the exec bit.
 cat "$workdir/disposable.txt" > ./disposable.txt
 cat "$workdir/free.txt" > ./free.txt
 
