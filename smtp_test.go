@@ -138,7 +138,7 @@ func TestCheckSMTPOK_HostNotExists(t *testing.T) {
 	domain := "notExistHost.com"
 
 	smtp, err := verifier.CheckSMTP(domain, "")
-	require.Error(t, err, ErrNoSuchHost)
+	require.ErrorContains(t, err, ErrNoSuchHost)
 	assert.Equal(t, &SMTP{}, smtp)
 }
 
@@ -156,7 +156,7 @@ func TestNewSMTPClientFailed_WithInvalidProxy(t *testing.T) {
 	timeout := 5 * time.Second
 	ret, _, err := newSMTPClient(domain, proxyURI, net.DefaultResolver, timeout, timeout)
 	assert.Nil(t, ret)
-	assert.Error(t, err, syscall.ECONNREFUSED)
+	require.ErrorIs(t, err, syscall.ECONNREFUSED)
 }
 
 func TestNewSMTPClientFailed(t *testing.T) {

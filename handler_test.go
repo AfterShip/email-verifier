@@ -183,7 +183,7 @@ func TestUpdateDisposableDomainsFailed_StatusNotFound(t *testing.T) {
 		Reply(http.StatusNotFound)
 
 	err := updateDisposableDomains(disposableDataURL)
-	assert.Error(t, err, "get disposable domains from https://raw.githubusercontent.com/disposable/disposable-email-domains/master/domains.json with status_code: 404")
+	require.EqualError(t, err, "get disposable domains from https://raw.githubusercontent.com/disposable/disposable-email-domains/master/domains.json with status_code: 404")
 }
 
 func TestUpdateDisposableDomainsFailed_StatusInternalError(t *testing.T) {
@@ -193,7 +193,7 @@ func TestUpdateDisposableDomainsFailed_StatusInternalError(t *testing.T) {
 		Reply(http.StatusInternalServerError)
 
 	err := updateDisposableDomains(disposableDataURL)
-	assert.Error(t, err, "get disposable domains from https://raw.githubusercontent.com/disposable/disposable-email-domains/master/domains.json with status_code: 500")
+	require.EqualError(t, err, "get disposable domains from https://raw.githubusercontent.com/disposable/disposable-email-domains/master/domains.json with status_code: 500")
 }
 
 func TestUpdateDisposableDomains_NoResponse(t *testing.T) {
@@ -216,5 +216,5 @@ func TestUpdateDisposableDomains_WrongResponse(t *testing.T) {
 		JSON("testing")
 
 	err := updateDisposableDomains(disposableDataURL)
-	assert.Error(t, err, "invalid character 'e' in literal true (expecting 'r')")
+	require.EqualError(t, err, "invalid character 'e' in literal true (expecting 'r')")
 }
