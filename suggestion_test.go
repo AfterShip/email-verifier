@@ -10,14 +10,14 @@ func TestSuggestDomainOK_HitExactDomain(t *testing.T) {
 	domain := "gmail.com"
 
 	ret := verifier.SuggestDomain(domain)
-	assert.Equal(t, "", ret)
+	assert.Empty(t, ret)
 }
 
 func TestSuggestDomainOK_NullString(t *testing.T) {
 	domain := ""
 
 	ret := verifier.SuggestDomain(domain)
-	assert.Equal(t, "", ret)
+	assert.Empty(t, ret)
 }
 
 func TestSuggestDomainOK_SimilarDomain1(t *testing.T) {

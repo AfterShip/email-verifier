@@ -7,13 +7,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCheckMxOK(t *testing.T) {
 	domain := "github.com"
 
 	mx, err := verifier.CheckMX(domain)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, mx.HasMXRecord)
 }
 

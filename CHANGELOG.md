@@ -2,6 +2,7 @@
 
 Unreleased
 ----------
+* Internal: Lint the whole repository rather than only changed lines, clearing 42 pre-existing findings; enable `usestdlibvars` and `intrange`; fix six error assertions that only checked that an error was non-nil [#217](https://github.com/AfterShip/email-verifier/pull/217)
 
 v1.5.0
 ----------

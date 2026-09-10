@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCheckEmailOK_SMTPHostNotExists(t *testing.T) {
@@ -31,7 +32,7 @@ func TestCheckEmailOK_SMTPHostNotExists(t *testing.T) {
 		Free:         false,
 		SMTP:         nil,
 	}
-	assert.ErrorContains(t, err, ErrNoSuchHost)
+	require.ErrorContains(t, err, ErrNoSuchHost)
 	assert.Equal(t, &expected, ret)
 }
 
@@ -65,7 +66,7 @@ func TestCheckEmailOK_SMTPHostExists_NotCatchAll(t *testing.T) {
 			Disabled:    false,
 		},
 	}
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &expected, ret)
 }
 
@@ -99,7 +100,7 @@ func TestCheckEmailOK_SMTPHostExists_FreeDomain(t *testing.T) {
 			Disabled:    false,
 		},
 	}
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &expected, ret)
 }
 
@@ -127,7 +128,7 @@ func TestCheckEmail_ErrorSyntax(t *testing.T) {
 		Free:         false,
 		SMTP:         nil,
 	}
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &expected, ret)
 }
 
@@ -160,7 +161,7 @@ func TestCheckEmail_Disposable(t *testing.T) {
 		Free:         false,
 		SMTP:         nil,
 	}
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &expected, ret)
 }
 
@@ -188,7 +189,7 @@ func TestCheckEmail_Disposable_override(t *testing.T) {
 		Free:         false,
 		SMTP:         nil,
 	}
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &expected, ret)
 }
 
@@ -222,7 +223,7 @@ func TestCheckEmail_RoleAccount(t *testing.T) {
 			Disabled:    false,
 		},
 	}
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &expected, ret)
 }
 
@@ -252,7 +253,7 @@ func TestCheckEmail_DisabledSMTPCheck(t *testing.T) {
 		SMTP:         nil,
 	}
 	verifier.EnableSMTPCheck()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &expected, ret)
 }
 

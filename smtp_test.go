@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net"
 	"net/textproto"
-	"strings"
 	"sync/atomic"
 	"syscall"
 	"testing"
@@ -30,7 +29,7 @@ func TestCheckSMTPOK_HostExists(t *testing.T) {
 		CatchAll:   true,
 		Disabled:   false,
 	}
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &expected, smtp)
 }
 
@@ -44,7 +43,7 @@ func TestCheckSMTPOK_CatchAllHost(t *testing.T) {
 		CatchAll:   false,
 		Disabled:   false,
 	}
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &expected, smtp)
 }
 
@@ -58,7 +57,7 @@ func TestCheckSMTPOK_NoCatchAllHost(t *testing.T) {
 		CatchAll:   false,
 		Disabled:   false,
 	}
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &expected, smtp)
 }
 
@@ -73,7 +72,7 @@ func TestCheckSMTPOK_NoCatchAllHostCatchAllCheckDisabled(t *testing.T) {
 		CatchAll:   true,
 		Disabled:   false,
 	}
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &expected, smtp)
 }
 
@@ -89,7 +88,7 @@ func TestCheckSMTPOK_UpdateFromEmail(t *testing.T) {
 		Deliverable: false,
 		Disabled:    false,
 	}
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &expected, smtp)
 }
 
@@ -105,7 +104,7 @@ func TestCheckSMTPOK_UpdateHelloName(t *testing.T) {
 		Deliverable: false,
 		Disabled:    false,
 	}
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &expected, smtp)
 }
 
@@ -120,7 +119,7 @@ func TestCheckSMTPOK_WithNoExistUsername(t *testing.T) {
 		CatchAll:   true,
 		Disabled:   false,
 	}
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, &expected, smtp)
 }
 
@@ -131,7 +130,7 @@ func TestCheckSMTP_DisabledSMTPCheck(t *testing.T) {
 	smtp, err := verifier.CheckSMTP(domain, "username")
 	verifier.EnableSMTPCheck()
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Nil(t, smtp)
 }
 
@@ -139,7 +138,7 @@ func TestCheckSMTPOK_HostNotExists(t *testing.T) {
 	domain := "notExistHost.com"
 
 	smtp, err := verifier.CheckSMTP(domain, "")
-	assert.Error(t, err, ErrNoSuchHost)
+	require.Error(t, err, ErrNoSuchHost)
 	assert.Equal(t, &SMTP{}, smtp)
 }
 
@@ -148,7 +147,7 @@ func TestNewSMTPClientOK(t *testing.T) {
 	timeout := 5 * time.Second
 	ret, _, err := newSMTPClient(domain, "", net.DefaultResolver, timeout, timeout)
 	assert.NotNil(t, ret)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
 func TestNewSMTPClientFailed_WithInvalidProxy(t *testing.T) {
@@ -173,8 +172,8 @@ func TestDialSMTPFailed_NoPortIsConfigured(t *testing.T) {
 	timeout := 5 * time.Second
 	ret, err := dialSMTP(disposableDomain, "", net.DefaultResolver, timeout, timeout)
 	assert.Nil(t, ret)
-	assert.Error(t, err)
-	assert.True(t, strings.Contains(err.Error(), "missing port"))
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "missing port")
 }
 
 func TestDialSMTPFailed_NoSuchHost(t *testing.T) {
@@ -182,8 +181,8 @@ func TestDialSMTPFailed_NoSuchHost(t *testing.T) {
 	timeout := 5 * time.Second
 	ret, err := dialSMTP(disposableDomain, "", net.DefaultResolver, timeout, timeout)
 	assert.Nil(t, ret)
-	assert.Error(t, err)
-	assert.True(t, strings.Contains(err.Error(), "no such host"))
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "no such host")
 }
 
 func TestDialSMTP_WithCustomResolver(t *testing.T) {

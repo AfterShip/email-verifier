@@ -50,7 +50,7 @@ func TestUpdateDisposableDomainsOK(t *testing.T) {
 		JSON(mockResp)
 
 	err := updateDisposableDomains(disposableDataURL)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, verifier.IsDisposable("a.org"))
 	assert.True(t, verifier.IsDisposable("b.com"))
 	assert.False(t, verifier.IsDisposable("c.net"))
@@ -172,7 +172,7 @@ func TestAddDisposableDomainsIsConcurrentSafe(t *testing.T) {
 func TestUpdateDisposableDomainsFailed_NoSuchHost(t *testing.T) {
 
 	err := updateDisposableDomains("http://abcmockxyz.aaa")
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "no such host")
 }
 
