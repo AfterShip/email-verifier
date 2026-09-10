@@ -12,6 +12,13 @@ Unreleased
 * **Breaking**: Remove the non-functional Yahoo API verifier; `EnableAPIVerifier(YAHOO)` and the `YAHOO` constant are gone [#198](https://github.com/AfterShip/email-verifier/pull/198)
 * Fix: Yahoo API test panic no longer aborts the test suite [#196](https://github.com/AfterShip/email-verifier/pull/196)
 
+v1.4.1
+----------
+* Feature: Configurable timeouts via `ConnectTimeout()` and `OperationTimeout()` [#110](https://github.com/AfterShip/email-verifier/pull/110)
+* **Breaking**: Remove the Gmail API verifier; `EnableAPIVerifier(GMAIL)` and the `GMAIL` constant are gone [#113](https://github.com/AfterShip/email-verifier/pull/113)
+* Update the free domain sources and rebuild the generated metadata [#127](https://github.com/AfterShip/email-verifier/pull/127)
+* Update Dependencies
+
 v1.4.0
 ----------
 * Feature: Support Gmail&Yahoo SMTP check by API [#88](https://github.com/AfterShip/email-verifier/pull/88)
