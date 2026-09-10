@@ -1,6 +1,11 @@
 repos:
   - repo: 'https://github.com/golangci/golangci-lint'
-    rev: v2.2.1
+    # Keep in step with the version the Lint job pins in
+    # .github/workflows/ci.yml. This hook compiles golangci-lint from source
+    # with whatever Go is installed, so an older rev still runs -- what it
+    # gives you is a local linter behind the one CI runs, which is how a change
+    # passes pre-commit and fails the Lint job.
+    rev: v2.13.2
     hooks:
       - id: golangci-lint
         entry: golangci-lint run

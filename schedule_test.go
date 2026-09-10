@@ -8,20 +8,35 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Waits for firings rather than sleeping a fixed window: the third tick of a
+// three-period sleep lands as the sleep expires, so an exact count is a coin
+// flip. The count after stop() is settled by construction -- stop() sends on
+// an unbuffered channel and the goroutine receives only while parked in its
+// select, never mid job, so nothing can fire after it returns.
 func TestStartScheduleOK(t *testing.T) {
-	var ops uint32
-	f := func() {
-		atomic.AddUint32(&ops, 1)
-	}
+	var ops int32
+	fired := make(chan struct{}, 16)
+	s := newSchedule(10*time.Millisecond, func() {
+		atomic.AddInt32(&ops, 1)
+		select {
+		case fired <- struct{}{}:
+		default:
+		}
+	})
 
-	s := newSchedule(time.Second, f)
 	s.start()
-	time.Sleep(time.Second * 3)
+	for i := 0; i < 3; i++ {
+		select {
+		case <-fired:
+		case <-time.After(5 * time.Second):
+			t.Fatalf("fired %d times in 5s, expected at least 3", atomic.LoadInt32(&ops))
+		}
+	}
 	s.stop()
 
-	actual := atomic.LoadUint32(&ops)
-	assert.Equal(t, uint32(3), actual)
-	// assert.True(t, uint32(2) <= actual && actual <= uint32(3))
+	settled := atomic.LoadInt32(&ops)
+	time.Sleep(50 * time.Millisecond)
+	assert.Equal(t, settled, atomic.LoadInt32(&ops), "schedule kept firing after stop")
 }
 
 func TestNewScheduleOK(t *testing.T) {

@@ -24,6 +24,11 @@ Use `go get` to install this package.
 go get -u github.com/AfterShip/email-verifier
 ```
 
+### Supported Go versions
+
+The three most recent Go releases, currently **1.25, 1.26 and 1.27**, each covered by CI.
+`go.mod` requires the oldest of them, so an older toolchain will refuse to build this module.
+
 ## Usage
 
 ### Basic usage
