@@ -25,7 +25,7 @@ func (v *Verifier) CheckGravatar(email string) (*Gravatar, error) {
 		return nil, err
 	}
 	gravatarURL := gravatarBaseURL + emailMd5 + "?d=404"
-	req, err := http.NewRequestWithContext(ctx, "GET", gravatarURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, gravatarURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (v *Verifier) CheckGravatar(email string) (*Gravatar, error) {
 	if err != nil {
 		return nil, err
 	}
-	if md5Body == gravatarDefaultMd5 || resp.StatusCode != 200 {
+	if md5Body == gravatarDefaultMd5 || resp.StatusCode != http.StatusOK {
 		return &Gravatar{
 			HasGravatar: false,
 			GravatarUrl: "",

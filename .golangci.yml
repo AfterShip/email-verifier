@@ -29,6 +29,7 @@ linters:
     - gochecksumtype
     - gosec
     - gosmopolitan
+    - intrange
     - loggercheck
     - makezero
     - musttag
@@ -43,6 +44,7 @@ linters:
     - sqlclosecheck
     - testifylint
     - unparam
+    - usestdlibvars
     - zerologlint
   disable:
     - prealloc

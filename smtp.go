@@ -253,7 +253,7 @@ func dialSMTP(addr, proxyURI string, resolver *net.Resolver, connectTimeout, ope
 // primarily for checking the existence of a catch-all address
 func GenerateRandomEmail(domain string) string {
 	r := make([]byte, 32)
-	for i := 0; i < 32; i++ {
+	for i := range 32 {
 		r[i] = alphanumeric[rand.Intn(len(alphanumeric))] //nolint:gosec
 	}
 	return fmt.Sprintf("%s@%s", string(r), domain)
