@@ -356,3 +356,34 @@ func TestVerifier_DefaultResolverReadAtCallTime(t *testing.T) {
 
 	assert.Same(t, replacement, v.dnsResolver())
 }
+
+// The catch-all probe's outcome, not SMTP.CatchAll, decides whether an address
+// is unverifiable. CatchAll is also true when the probe never ran and when it
+// could not conclude, which used to turn a definite refusal into "unknown".
+func TestCalculateReachable(t *testing.T) {
+	v := NewVerifier().EnableSMTPCheck()
+
+	cases := []struct {
+		name     string
+		smtp     SMTP
+		catchAll catchAllOutcome
+		want     string
+	}{
+		{"address accepted", SMTP{HostExists: true, Deliverable: true}, catchAllRefused, reachableYes},
+		{"address refused, probe ruled a catch-all out", SMTP{HostExists: true}, catchAllRefused, reachableNo},
+		{"address refused, probe disabled", SMTP{HostExists: true, CatchAll: true}, catchAllNotRun, reachableNo},
+		{"address accepted, probe disabled", SMTP{HostExists: true, CatchAll: true, Deliverable: true}, catchAllNotRun, reachableYes},
+		{"probe established a catch-all domain", SMTP{HostExists: true, CatchAll: true}, catchAllAccepted, reachableUnknown},
+		{"probe inconclusive, address never reached", SMTP{HostExists: true, CatchAll: true}, catchAllInconclusive, reachableUnknown},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(tt *testing.T) {
+			assert.Equal(tt, c.want, v.calculateReachable(&c.smtp, c.catchAll))
+		})
+	}
+}
+
+func TestCalculateReachable_SMTPCheckDisabled(t *testing.T) {
+	assert.Equal(t, reachableUnknown, NewVerifier().calculateReachable(nil, catchAllNotRun))
+}

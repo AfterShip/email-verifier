@@ -3,6 +3,7 @@
 Unreleased
 ----------
 * Internal: Lint the whole repository rather than only changed lines, clearing 42 pre-existing findings; enable `usestdlibvars` and `intrange`; fix six error assertions that only checked that an error was non-nil [#217](https://github.com/AfterShip/email-verifier/pull/217)
+* Fix: `Reachable` is `no`, not `unknown`, when the mail server explicitly refuses the address and `DisableCatchAllCheck()` is in effect. `SMTP.CatchAll` was set before the catch-all probe ran and only ever cleared by a 550-class refusal, so with the probe disabled it stayed `true` and suppressed the verdict the address check had already produced [#220](https://github.com/AfterShip/email-verifier/pull/220)
 
 v1.5.0
 ----------
