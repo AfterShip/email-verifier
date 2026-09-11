@@ -25,7 +25,7 @@ func TestStartScheduleOK(t *testing.T) {
 	})
 
 	s.start()
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		select {
 		case <-fired:
 		case <-time.After(5 * time.Second):

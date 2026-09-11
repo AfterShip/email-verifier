@@ -10,24 +10,26 @@ import (
 
 // Gravatar is detail about the Gravatar
 type Gravatar struct {
-	HasGravatar bool   `json:"has_gravatar"` // whether has gravatar
-	GravatarUrl string `json:"gravatar_url"` // gravatar url
+	HasGravatar bool `json:"has_gravatar"` // whether has gravatar
+	// GravatarUrl keeps its non-idiomatic spelling because it is an exported
+	// field: renaming it to GravatarURL would break every caller.
+	GravatarUrl string `json:"gravatar_url"` //nolint:staticcheck // ST1003
 }
 
 // CheckGravatar will return the Gravatar records for the given email.
 func (v *Verifier) CheckGravatar(email string) (*Gravatar, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	err, emailMd5 := getMD5Hash(strings.ToLower(strings.TrimSpace(email)))
+	emailMd5, err := getMD5Hash(strings.ToLower(strings.TrimSpace(email)))
 	if err != nil {
 		return nil, err
 	}
-	gravatarUrl := gravatarBaseUrl + emailMd5 + "?d=404"
-	req, err := http.NewRequest("GET", gravatarUrl, nil)
+	gravatarURL := gravatarBaseURL + emailMd5 + "?d=404"
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, gravatarURL, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := http.DefaultClient.Do(req.WithContext(ctx))
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -41,11 +43,11 @@ func (v *Verifier) CheckGravatar(email string) (*Gravatar, error) {
 		return nil, err
 	}
 	// check body
-	err, md5Body := getMD5Hash(string(body))
+	md5Body, err := getMD5Hash(string(body))
 	if err != nil {
 		return nil, err
 	}
-	if md5Body == gravatarDefaultMd5 || resp.StatusCode != 200 {
+	if md5Body == gravatarDefaultMd5 || resp.StatusCode != http.StatusOK {
 		return &Gravatar{
 			HasGravatar: false,
 			GravatarUrl: "",
@@ -53,6 +55,6 @@ func (v *Verifier) CheckGravatar(email string) (*Gravatar, error) {
 	}
 	return &Gravatar{
 		HasGravatar: true,
-		GravatarUrl: gravatarUrl,
+		GravatarUrl: gravatarURL,
 	}, nil
 }

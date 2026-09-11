@@ -16,7 +16,7 @@ func GetEmailVerification(w http.ResponseWriter, r *http.Request, ps httprouter.
 	verifier := emailVerifier.NewVerifier()
 	ret, err := verifier.Verify(ps.ByName("email"))
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if !ret.Syntax.Valid {
@@ -26,7 +26,7 @@ func GetEmailVerification(w http.ResponseWriter, r *http.Request, ps httprouter.
 
 	bytes, err := json.Marshal(ret)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

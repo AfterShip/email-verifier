@@ -8,7 +8,7 @@ import (
 )
 
 func TestDomainToASCII(t *testing.T) {
-	domain := "testingΣ✪✯☭➳卐.org"
+	domain := "testingΣ✪✯☭➳卐.org" //nolint:gosmopolitan // deliberate non-ASCII IDN input
 	ret := domainToASCII(domain)
 	expected := "xn--testing-0if2960fjccubz8h9z13a.org"
 	assert.Equal(t, expected, ret)

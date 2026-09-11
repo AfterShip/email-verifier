@@ -7,13 +7,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCheckMxOK(t *testing.T) {
 	domain := "github.com"
 
 	mx, err := verifier.CheckMX(domain)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, mx.HasMXRecord)
 }
 
@@ -22,7 +23,13 @@ func TestCheckNoMxOK(t *testing.T) {
 
 	mx, err := verifier.CheckMX(domain)
 	assert.Nil(t, mx)
-	assert.Error(t, err, ErrNoSuchHost)
+
+	// CheckMX surfaces the resolver error as-is; it is Verify that maps it to
+	// ErrNoSuchHost. Assert the DNS semantics rather than the message text,
+	// which carries the resolver address and so varies by environment.
+	var dnsErr *net.DNSError
+	require.ErrorAs(t, err, &dnsErr)
+	assert.True(t, dnsErr.IsNotFound, "expected NXDOMAIN, got %v", err)
 }
 
 func TestCheckMx_WithCustomResolver(t *testing.T) {

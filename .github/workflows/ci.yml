@@ -36,7 +36,6 @@ jobs:
           # go.mod, or it refuses to run: "the Go language version (go1.24)
           # used to build golangci-lint is lower than the targeted Go version".
           version: v2.13.2
-          only-new-issues: true
 
   test:
     name: Test

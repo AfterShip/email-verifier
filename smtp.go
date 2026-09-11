@@ -126,7 +126,10 @@ func newSMTPClient(domain, proxyURI string, resolver *net.Resolver, connectTimeo
 	}
 
 	if len(mxRecords) == 0 {
-		return nil, nil, errors.New("No MX records found")
+		// Capitalised on purpose: ParseSMTPError passes this string through
+		// verbatim as LookupError.Message, which is user-facing and matches the
+		// Err* constants in error.go.
+		return nil, nil, errors.New("No MX records found") //nolint:staticcheck // ST1005
 	}
 	// Create a channel for receiving response from
 	ch := make(chan interface{}, 1)
@@ -178,7 +181,8 @@ func newSMTPClient(domain, proxyURI string, resolver *net.Resolver, connectTimeo
 				return nil, nil, preferredDialError(errs)
 			}
 		default:
-			return nil, nil, errors.New("Unexpected response dialing SMTP server")
+			// Capitalised on purpose; see the note on "No MX records found" above.
+			return nil, nil, errors.New("Unexpected response dialing SMTP server") //nolint:staticcheck // ST1005
 		}
 	}
 
@@ -249,7 +253,7 @@ func dialSMTP(addr, proxyURI string, resolver *net.Resolver, connectTimeout, ope
 // primarily for checking the existence of a catch-all address
 func GenerateRandomEmail(domain string) string {
 	r := make([]byte, 32)
-	for i := 0; i < 32; i++ {
+	for i := range 32 {
 		r[i] = alphanumeric[rand.Intn(len(alphanumeric))] //nolint:gosec
 	}
 	return fmt.Sprintf("%s@%s", string(r), domain)
