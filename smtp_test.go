@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net"
 	"net/textproto"
+	"net/url"
 	"sync/atomic"
 	"syscall"
 	"testing"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/net/proxy"
 )
 
 func TestCheckSMTPUnSupportedVendor(t *testing.T) {
@@ -229,6 +231,43 @@ func TestDialSMTP_ProxyBypassesCustomResolver(t *testing.T) {
 	assert.Nil(t, ret)
 	require.Error(t, err)
 	assert.False(t, called.Load())
+}
+
+// Pins the schemes x/net/proxy actually resolves; socks4 and socks4a never worked.
+func TestEstablishProxyConnection_Schemes(t *testing.T) {
+	// Nothing listens here: a resolved scheme reaches a refused connection.
+	const proxyAddr = "127.0.0.1:1"
+
+	for _, scheme := range []string{"socks5", "socks5h"} {
+		t.Run(scheme+" is supported", func(tt *testing.T) {
+			_, err := establishProxyConnection("example.com:25", scheme+"://"+proxyAddr, time.Second)
+			require.Error(tt, err)
+			assert.NotContains(tt, err.Error(), "unknown scheme")
+		})
+	}
+
+	for _, scheme := range []string{"socks4", "socks4a", "http", "https"} {
+		t.Run(scheme+" is not supported", func(tt *testing.T) {
+			_, err := establishProxyConnection("example.com:25", scheme+"://"+proxyAddr, time.Second)
+			require.ErrorContains(tt, err, "proxy: unknown scheme: "+scheme)
+		})
+	}
+}
+
+type dialerWithoutContext struct{ err error }
+
+func (d dialerWithoutContext) Dial(_, _ string) (net.Conn, error) { return nil, d.err }
+
+func TestEstablishProxyConnection_DialerWithoutContext(t *testing.T) {
+	wantErr := errors.New("registered dialer reached")
+	proxy.RegisterDialerType("emailverifiertest", func(*url.URL, proxy.Dialer) (proxy.Dialer, error) {
+		return dialerWithoutContext{err: wantErr}, nil
+	})
+
+	// Used to panic on the proxy.ContextDialer assertion.
+	conn, err := establishProxyConnection("example.com:25", "emailverifiertest://127.0.0.1:1080", time.Second)
+	assert.Nil(t, conn)
+	require.ErrorIs(t, err, wantErr)
 }
 
 func TestPreferredDialError(t *testing.T) {
