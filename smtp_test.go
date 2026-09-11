@@ -280,3 +280,12 @@ func TestHasSMTPReply(t *testing.T) {
 		})
 	}
 }
+
+// The API-verifier branch returns before our own catch-all probe runs, so the
+// outcome has to come from what the verifier itself reported. Leaving it at
+// catchAllNotRun would turn a verifier's CatchAll: true into reachable "no".
+func TestCatchAllFromResult(t *testing.T) {
+	assert.Equal(t, catchAllAccepted, catchAllFromResult(&SMTP{CatchAll: true}))
+	assert.Equal(t, catchAllRefused, catchAllFromResult(&SMTP{CatchAll: false}))
+	assert.Equal(t, catchAllRefused, catchAllFromResult(nil))
+}

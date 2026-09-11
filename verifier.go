@@ -94,7 +94,7 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 	}
 	ret.HasMxRecords = mx.HasMXRecord
 
-	smtp, err := v.CheckSMTP(syntax.Domain, syntax.Username)
+	smtp, catchAll, err := v.checkSMTP(syntax.Domain, syntax.Username)
 
 	// Kept whether or not the check succeeded. A failed exchange still says how
 	// far it got, which is the difference between a host that never answered and
@@ -104,7 +104,7 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 	if err != nil {
 		return &ret, err
 	}
-	ret.Reachable = v.calculateReachable(smtp)
+	ret.Reachable = v.calculateReachable(smtp, catchAll)
 
 	if v.gravatarCheckEnabled {
 		gravatar, err := v.CheckGravatar(email)
@@ -169,9 +169,8 @@ func (v *Verifier) DisableSMTPCheck() *Verifier {
 	return v
 }
 
-// EnableCatchAllCheck enables catchAll check by smtp
-// for most ISPs block outgoing catchAll requests through port 25, to prevent spam,
-// we don't check catchAll by default
+// EnableCatchAllCheck enables the catchAll check by smtp. It is on by default;
+// this undoes a previous DisableCatchAllCheck.
 func (v *Verifier) EnableCatchAllCheck() *Verifier {
 	v.catchAllCheckEnabled = true
 	return v
@@ -272,14 +271,22 @@ func (v *Verifier) OperationTimeout(timeout time.Duration) *Verifier {
 	return v
 }
 
-func (v *Verifier) calculateReachable(s *SMTP) string {
+// calculateReachable turns the SMTP observations into a verdict. Callers reach
+// it only from Verify, which always has a username: a syntactically valid
+// address cannot have an empty local part, so the address itself was always
+// probed unless the catch-all probe returned first.
+func (v *Verifier) calculateReachable(s *SMTP, catchAll catchAllOutcome) string {
 	if !v.smtpCheckEnabled {
 		return reachableUnknown
 	}
 	if s.Deliverable {
 		return reachableYes
 	}
-	if s.CatchAll {
+	// Deliberately not s.CatchAll, which is also true when the probe never ran
+	// or could not conclude. Only a probe that established a catch-all domain,
+	// or one that returned before the address was probed, leaves the address
+	// unverifiable; otherwise the address was refused and that is a definite no.
+	if catchAll == catchAllAccepted || catchAll == catchAllInconclusive {
 		return reachableUnknown
 	}
 	return reachableNo
