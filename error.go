@@ -95,6 +95,31 @@ var enhancedCodeInReplyPattern = regexp.MustCompile(`^[245][0-9]{2}[ -]\s*([245]
 // split off, so the enhanced code starts Msg.
 var enhancedCodeInMsgPattern = regexp.MustCompile(`^\s*([245]\.[0-9]{1,3}\.[0-9]{1,3})\b`)
 
+// blockedKeywords mark a reply as a refusal of us rather than of the address.
+// One list: the 550 branch and parseBasicErr had drifted apart.
+var blockedKeywords = []string{
+	"spamhaus",
+	"proofpoint",
+	"cloudmark",
+	"banned",
+	"blacklisted",
+	"blocked",
+	"block list",
+	"denied",
+}
+
+// replyText returns the server's reply as it arrived. textproto.Error renders
+// with %q, which wraps the text in quotes and escapes a multi-line reply's
+// newlines, so Error() is a debug form rather than the reply. Errors carrying no
+// reply of their own fall back to it.
+func replyText(err error) string {
+	var tp *textproto.Error
+	if errors.As(err, &tp) {
+		return fmt.Sprintf("%03d %s", tp.Code, tp.Msg)
+	}
+	return err.Error()
+}
+
 // enhancedCodeOf extracts the enhanced status code from an SMTP reply. It starts
 // textproto.Error's Msg; Error() renders that with %q, which puts the code behind
 // a quote, so the rendered form serves only replies that reach us already
@@ -126,7 +151,7 @@ func ParseSMTPError(err error) *LookupError {
 	}
 	le := parseSMTPError(err)
 	if le == nil {
-		errStr := err.Error()
+		errStr := replyText(err)
 		le = newLookupError(errStr, errStr)
 	}
 	le.enhanced = enhancedCodeOf(err)
@@ -134,7 +159,7 @@ func ParseSMTPError(err error) *LookupError {
 }
 
 func parseSMTPError(err error) *LookupError {
-	errStr := err.Error()
+	errStr := replyText(err)
 
 	// Verify the length of the error before reading nil indexes
 	if len(errStr) < 3 {
@@ -147,11 +172,12 @@ func parseSMTPError(err error) *LookupError {
 		return parseBasicErr(err)
 	}
 
-	// If the status code is above 400 there was an error and we should return it
 	if status > 400 {
-		// Don't return an error if the error contains anything about the address
-		// being undeliverable
-		if insContains(errStr,
+		// Only a permanent reply can be read as a statement about the address: a
+		// 4xx says the server could not answer now, whatever its text mentions.
+		// Bounded above too, since ParseSMTPError is exported and a code outside
+		// SMTP's classes says nothing about a recipient either.
+		if status >= 500 && status < 600 && insContains(errStr,
 			"undeliverable",
 			"does not exist",
 			"may not exist",
@@ -185,15 +211,7 @@ func parseSMTPError(err error) *LookupError {
 		case 503:
 			return newLookupError(ErrNeedMAILBeforeRCPT, errStr)
 		case 550: // 550 is Mailbox Unavailable - usually undeliverable, ref: https://blog.mailtrap.io/550-5-1-1-rejected-fix/
-			if insContains(errStr,
-				"spamhaus",
-				"proofpoint",
-				"cloudmark",
-				"banned",
-				"blacklisted",
-				"blocked",
-				"block list",
-				"denied") {
+			if insContains(errStr, blockedKeywords...) {
 				return newLookupError(ErrBlocked, errStr)
 			}
 			return newLookupError(ErrServerUnavailable, errStr)
@@ -215,17 +233,11 @@ func parseSMTPError(err error) *LookupError {
 // parseBasicErr parses a basic MX record response and returns
 // a more understandable LookupError
 func parseBasicErr(err error) *LookupError {
-	errStr := err.Error()
+	errStr := replyText(err)
 
 	// Return a more understandable error
 	switch {
-	case insContains(errStr,
-		"spamhaus",
-		"proofpoint",
-		"cloudmark",
-		"banned",
-		"blocked",
-		"denied"):
+	case insContains(errStr, blockedKeywords...):
 		return newLookupError(ErrBlocked, errStr)
 	case insContains(errStr, "timeout"):
 		return newLookupError(ErrTimeout, errStr)

@@ -5,6 +5,7 @@ Unreleased
 * Internal: Lint the whole repository rather than only changed lines, clearing 42 pre-existing findings; enable `usestdlibvars` and `intrange`; fix six error assertions that only checked that an error was non-nil [#217](https://github.com/AfterShip/email-verifier/pull/217)
 * Fix: `Reachable` is `no`, not `unknown`, when the mail server explicitly refuses the address and `DisableCatchAllCheck()` is in effect. `SMTP.CatchAll` was set before the catch-all probe ran and only ever cleared by a 550-class refusal, so with the probe disabled it stayed `true` and suppressed the verdict the address check had already produced [#220](https://github.com/AfterShip/email-verifier/pull/220)
 * Feature: `LookupError.EnhancedCode()` exposes the RFC 3463 enhanced status code a server sent, for example `5.1.1`. The class digit is dependable, the subject digit is not a verdict -- Yandex answers an unknown recipient with the same `5.7.1` that Apple uses to say our sending IP is blocklisted -- and it is empty for the providers that send no code at all [#222](https://github.com/AfterShip/email-verifier/pull/222)
+* Fix: `LookupError.Details`, and `Message` for a reply code the classifier does not recognise, carry the SMTP reply as it arrived rather than Go's `%q` rendering of it, which added quotes and escaped the newlines of a multi-line reply. A transient 4xx is no longer read as a permanent statement about the recipient [#223](https://github.com/AfterShip/email-verifier/pull/223)
 
 v1.5.0
 ----------

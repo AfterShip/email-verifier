@@ -375,25 +375,71 @@ func TestLookupError_EnhancedCodeNilSafe(t *testing.T) {
 	assert.Empty(t, le.EnhancedCode())
 }
 
-// Pins current behaviour rather than endorsing it: Details, and Message for a
-// reply code parseSMTPError does not switch on, are built from the %q rendering,
-// so callers see escaped quotes and a literal \n. Details is serialised, so this
-// reaches everyone. Changing it wants its own review; this stops it drifting.
-func TestParseSMTPError_RenderedReplyLeaksIntoMessageAndDetails(t *testing.T) {
-	t.Run("Details always carries the rendered reply", func(tt *testing.T) {
-		le := ParseSMTPError(&textproto.Error{Code: 550, Msg: "Too many recipients."})
-		assert.Equal(tt, ErrServerUnavailable, le.Message)
-		assert.Equal(tt, `550 "Too many recipients."`, le.Details)
+// A 4xx says the server could not answer now. Its text may still mention the
+// recipient -- Microsoft's transient reply for a real mailbox does -- so the
+// keyword check that reads a reply as a statement about the address has to be
+// confined to permanent replies, or a rate limit is filed as a refusal.
+func TestParseSMTPError_TransientRepliesReachTheSwitch(t *testing.T) {
+	cases := []struct {
+		name    string
+		err     error
+		message string
+	}{
+		{"452 mentioning the recipient", &textproto.Error{Code: 452, Msg: "4.5.3 user unknown, try later"}, ErrTooManyRCPT},
+		{"421 mentioning the recipient", &textproto.Error{Code: 421, Msg: "4.7.0 mailbox does not exist right now"}, ErrTryAgainLater},
+		{"450 mentioning the recipient", &textproto.Error{Code: 450, Msg: "4.2.0 no mailbox here yet"}, ErrMailboxBusy},
+		{"the same phrase at 5xx still reads as the address", &textproto.Error{Code: 550, Msg: "5.1.1 user unknown"}, ErrServerUnavailable},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(tt *testing.T) {
+			assert.Equal(tt, c.message, ParseSMTPError(c.err).Message)
+		})
+	}
+}
+
+// One blocklist keyword list. The 550 branch and parseBasicErr had drifted
+// apart, so whether a phrase counted depended on the reply code.
+func TestParseSMTPError_BlockedKeywordsAreOneList(t *testing.T) {
+	for _, kw := range blockedKeywords {
+		t.Run(kw, func(tt *testing.T) {
+			// 550 is in the switch; 501 is not and falls to parseBasicErr.
+			for _, code := range []int{550, 501} {
+				le := ParseSMTPError(&textproto.Error{Code: code, Msg: "5.7.1 host is " + kw})
+				assert.Equal(tt, ErrBlocked, le.Message, "reply code %d", code)
+			}
+		})
+	}
+}
+
+// Details is meant to be the reply. textproto renders with %q, which is a debug
+// form: it adds quotes the server never sent and turns the newlines of a
+// multi-line reply into a literal \n.
+func TestParseSMTPError_DetailsIsTheReplyNotItsRendering(t *testing.T) {
+	t.Run("multi-line keeps its lines", func(tt *testing.T) {
+		le := ParseSMTPError(&textproto.Error{Code: 550, Msg: "5.1.1 line one\n5.1.1 line two"})
+		assert.Equal(tt, "550 5.1.1 line one\n5.1.1 line two", le.Details)
 	})
 
-	t.Run("an unswitched reply code leaves it in Message too", func(tt *testing.T) {
+	t.Run("the server's own quotes survive unescaped", func(tt *testing.T) {
+		le := ParseSMTPError(&textproto.Error{Code: 550, Msg: `5.7.1 see "docs"`})
+		assert.Equal(tt, `550 5.7.1 see "docs"`, le.Details)
+	})
+
+	// Message is built from the same text for a reply code parseSMTPError does
+	// not switch on, so it changes with Details rather than separately.
+	t.Run("an unswitched reply code carries the reply in Message too", func(tt *testing.T) {
 		le := ParseSMTPError(&textproto.Error{Code: 501, Msg: "5.7.1 <localhost>: Helo command rejected"})
-		assert.Equal(tt, `501 "5.7.1 <localhost>: Helo command rejected"`, le.Message)
+		assert.Equal(tt, "501 5.7.1 <localhost>: Helo command rejected", le.Message)
 		assert.Equal(tt, le.Message, le.Details)
 	})
 
-	t.Run("EnhancedCode is unaffected, being read from Msg", func(tt *testing.T) {
-		le := ParseSMTPError(&textproto.Error{Code: 501, Msg: "5.7.1 <localhost>: Helo command rejected"})
-		assert.Equal(tt, "5.7.1", le.EnhancedCode())
+	t.Run("a code outside SMTP's classes is not read as a recipient verdict", func(tt *testing.T) {
+		le := ParseSMTPError(&textproto.Error{Code: 600, Msg: "6.1.1 user unknown"})
+		assert.Equal(tt, "600 6.1.1 user unknown", le.Message)
+	})
+
+	t.Run("errors carrying no reply are unchanged", func(tt *testing.T) {
+		err := &net.DNSError{Err: "no such host", Name: "x.invalid", IsNotFound: true}
+		assert.Equal(tt, err.Error(), ParseSMTPError(err).Details)
 	})
 }
