@@ -242,7 +242,7 @@ func TestEstablishProxyConnection_Schemes(t *testing.T) {
 		t.Run(scheme+" is supported", func(tt *testing.T) {
 			_, err := establishProxyConnection("example.com:25", scheme+"://"+proxyAddr, time.Second)
 			require.Error(tt, err)
-			assert.NotContains(tt, err.Error(), "unknown scheme")
+			require.ErrorContains(tt, err, "socks connect")
 		})
 	}
 
