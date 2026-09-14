@@ -270,6 +270,25 @@ func TestEstablishProxyConnection_DialerWithoutContext(t *testing.T) {
 	require.ErrorIs(t, err, wantErr)
 }
 
+type slowDialer struct{ delay time.Duration }
+
+func (d slowDialer) Dial(_, _ string) (net.Conn, error) {
+	time.Sleep(d.delay)
+	return nil, errors.New("slow dialer finished")
+}
+
+func TestEstablishProxyConnection_DialerWithoutContextTimesOut(t *testing.T) {
+	proxy.RegisterDialerType("emailverifierslow", func(*url.URL, proxy.Dialer) (proxy.Dialer, error) {
+		return slowDialer{delay: 2 * time.Second}, nil
+	})
+
+	start := time.Now()
+	conn, err := establishProxyConnection("example.com:25", "emailverifierslow://127.0.0.1:1080", 50*time.Millisecond)
+	assert.Nil(t, conn)
+	require.ErrorIs(t, err, context.DeadlineExceeded)
+	assert.Less(t, time.Since(start), time.Second)
+}
+
 func TestPreferredDialError(t *testing.T) {
 	network := errors.New("dial tcp 1.2.3.4:25: connect: connection refused")
 	dns := &net.DNSError{Err: "no such host", Name: "mx.example.invalid", IsNotFound: true}
