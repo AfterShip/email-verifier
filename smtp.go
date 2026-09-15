@@ -326,5 +326,37 @@ func establishProxyConnection(addr, proxyURI string, timeout time.Duration) (net
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	return dialer.(proxy.ContextDialer).DialContext(ctx, "tcp", addr)
+	if contextDialer, ok := dialer.(proxy.ContextDialer); ok {
+		return contextDialer.DialContext(ctx, "tcp", addr)
+	}
+
+	// A dialer added with proxy.RegisterDialerType need not be a ContextDialer.
+	return dialWithTimeout(ctx, dialer, addr)
+}
+
+// dialWithTimeout dials through a Dialer that cannot take a context, abandoning
+// the attempt -- though not the goroutine -- when ctx is done, as x/net/proxy does.
+func dialWithTimeout(ctx context.Context, dialer proxy.Dialer, addr string) (net.Conn, error) {
+	type result struct {
+		conn net.Conn
+		err  error
+	}
+	done := make(chan result, 1)
+
+	go func() {
+		conn, err := dialer.Dial("tcp", addr)
+		done <- result{conn, err}
+	}()
+
+	select {
+	case <-ctx.Done():
+		go func() {
+			if r := <-done; r.conn != nil {
+				r.conn.Close()
+			}
+		}()
+		return nil, ctx.Err()
+	case r := <-done:
+		return r.conn, r.err
+	}
 }

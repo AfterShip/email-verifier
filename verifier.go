@@ -226,7 +226,10 @@ func (v *Verifier) HelloName(domain string) *Verifier {
 
 // Proxy sets a SOCKS5 proxy to verify the email,
 // proxyURI should be in the format: "socks5://user:password@127.0.0.1:1080".
-// The protocol could be socks5, socks4 and socks4a.
+//
+// The scheme must be socks5 or socks5h -- the only two golang.org/x/net/proxy
+// resolves. Anything else, socks4 and socks4a included, fails the dial with
+// "proxy: unknown scheme"; add it with proxy.RegisterDialerType.
 //
 // Only the scheme, credentials and host are read; a query string is ignored, so
 // a "?timeout=5s" has no effect. Use ConnectTimeout and OperationTimeout.

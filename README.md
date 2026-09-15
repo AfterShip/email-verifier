@@ -135,7 +135,10 @@ If you want to disable catchAll checking, use the `DisableCatchAllCheck()` switc
 
 Support setting a SOCKS5 proxy to verify the email, proxyURI should be in the format: `socks5://user:password@127.0.0.1:1080`
 
-The protocol could be socks5, socks4 and socks4a.
+The scheme must be `socks5` or `socks5h`, the only two `golang.org/x/net/proxy` resolves.
+Anything else, `socks4` and `socks4a` included, fails the dial with `proxy: unknown scheme`;
+add it with [`proxy.RegisterDialerType`](https://pkg.go.dev/golang.org/x/net/proxy#RegisterDialerType)
+before calling `Proxy()`.
 
 ```go
 var (
