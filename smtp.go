@@ -61,15 +61,49 @@ func catchAllFromResult(s *SMTP) catchAllOutcome {
 //
 // if server is catch-all server, username will not be checked
 func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
-	res, _, err := v.checkSMTP(domain, username)
-	return res, err
+	res, err := v.checkSMTP(domain, username)
+	return res.smtp, err
 }
 
-// checkSMTP is CheckSMTP plus what the catch-all probe concluded. Verify needs
-// that to tell a domain which accepts every address from one we could not ask.
-func (v *Verifier) checkSMTP(domain, username string) (*SMTP, catchAllOutcome, error) {
+// smtpClientFunc opens an SMTP session to a domain's mail exchanger. Held as a
+// field on Verifier so a test can drive checkSMTP against a local server.
+type smtpClientFunc func(domain, proxyURI string, resolver *net.Resolver,
+	connectTimeout, operationTimeout time.Duration) (*smtp.Client, *net.MX, error)
+
+// rcptOutcome records what the RCPT for the address the caller asked about
+// established. Its error is otherwise discarded, so a refusal of us and a
+// refusal of the address are indistinguishable once checkSMTP returns.
+type rcptOutcome int
+
+const (
+	// rcptNotRun means the address was never sent: the SMTP check was off, the
+	// catch-all probe returned first, or no username was given.
+	rcptNotRun rcptOutcome = iota
+	// rcptAccepted means the server took the address.
+	rcptAccepted
+	// rcptRefused means the server refused the address itself.
+	rcptRefused
+	// rcptBlocked means the server refused us -- our IP, our sender, our
+	// greeting -- and said nothing about the address.
+	rcptBlocked
+)
+
+// probeResult is what one SMTP exchange established. The zero value says both
+// probes concluded nothing, which is what every path that returns before them
+// means, so an early return names only what it did find out.
+type probeResult struct {
+	smtp     *SMTP
+	catchAll catchAllOutcome
+	rcpt     rcptOutcome
+}
+
+// checkSMTP is CheckSMTP plus what each probe concluded. Verify needs the
+// catch-all outcome to tell a domain which accepts every address from one we
+// could not ask, and the RCPT outcome to tell a refusal of the address from a
+// refusal of us.
+func (v *Verifier) checkSMTP(domain, username string) (*probeResult, error) {
 	if !v.smtpCheckEnabled {
-		return nil, catchAllNotRun, nil
+		return &probeResult{}, nil
 	}
 
 	var ret SMTP
@@ -78,9 +112,9 @@ func (v *Verifier) checkSMTP(domain, username string) (*SMTP, catchAllOutcome, e
 	email := fmt.Sprintf("%s@%s", username, domain)
 
 	// Dial any SMTP server that will accept a connection
-	client, mx, err := newSMTPClient(domain, v.proxyURI, v.dnsResolver(), v.connectTimeout, v.operationTimeout)
+	client, mx, err := v.smtpClient()(domain, v.proxyURI, v.dnsResolver(), v.connectTimeout, v.operationTimeout)
 	if err != nil {
-		return &ret, catchAll, ParseSMTPError(err)
+		return &probeResult{smtp: &ret, catchAll: catchAll}, ParseSMTPError(err)
 	}
 
 	// Defer quit the SMTP connection
@@ -96,18 +130,18 @@ func (v *Verifier) checkSMTP(domain, username string) (*SMTP, catchAllOutcome, e
 	for _, apiVerifier := range v.apiVerifiers {
 		if apiVerifier.isSupported(strings.ToLower(mx.Host)) {
 			res, err := apiVerifier.check(domain, username)
-			return res, catchAllFromResult(res), err
+			return &probeResult{smtp: res, catchAll: catchAllFromResult(res)}, err
 		}
 	}
 
 	// Sets the HELO/EHLO hostname
 	if err = client.Hello(v.helloName); err != nil {
-		return &ret, catchAll, ParseSMTPError(err)
+		return &probeResult{smtp: &ret, catchAll: catchAll}, ParseSMTPError(err)
 	}
 
 	// Sets the from email
 	if err = client.Mail(v.fromEmail); err != nil {
-		return &ret, catchAll, ParseSMTPError(err)
+		return &probeResult{smtp: &ret, catchAll: catchAll}, ParseSMTPError(err)
 	}
 
 	// Default sets catch-all to true
@@ -144,21 +178,27 @@ func (v *Verifier) checkSMTP(domain, username string) (*SMTP, catchAllOutcome, e
 		// If the email server is a catch-all email server,
 		// no need to calibrate deliverable on a specific user
 		if ret.CatchAll {
-			return &ret, catchAll, nil
+			return &probeResult{smtp: &ret, catchAll: catchAll}, nil
 		}
 	}
 
 	// If no username provided,
 	// no need to calibrate deliverable on a specific user
 	if username == "" {
-		return &ret, catchAll, nil
+		return &probeResult{smtp: &ret, catchAll: catchAll}, nil
 	}
 
+	rcpt := rcptRefused
 	if err = client.Rcpt(email); err == nil {
 		ret.Deliverable = true
+		rcpt = rcptAccepted
+	} else if refusedTheSender(err) {
+		// It would have refused any recipient we named, so this says nothing
+		// about whether the mailbox exists.
+		rcpt = rcptBlocked
 	}
 
-	return &ret, catchAll, nil
+	return &probeResult{smtp: &ret, catchAll: catchAll, rcpt: rcpt}, nil
 }
 
 // newSMTPClient generates a new available SMTP client
