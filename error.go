@@ -108,6 +108,26 @@ var blockedKeywords = []string{
 	"denied",
 }
 
+// refusedTheSender reports whether a refusal was of us -- our IP, our envelope
+// sender, our greeting -- rather than of the recipient.
+//
+// RFC 3463's subject 1 is address status, which a refusal of the sending side
+// does not use, so it decides. A reply without an enhanced code is left
+// unclassified rather than read from its text: RFC 5321 section 4.2 leaves that
+// text to each implementation, and it echoes the address we were asked about,
+// so a keyword in it may be the caller's rather than the server's.
+func refusedTheSender(err error) bool {
+	le := ParseSMTPError(err)
+	if le == nil {
+		return false
+	}
+	enhanced := le.EnhancedCode()
+	if enhanced == "" || strings.HasPrefix(enhanced, "4.1.") || strings.HasPrefix(enhanced, "5.1.") {
+		return false
+	}
+	return insContains(replyText(err), blockedKeywords...)
+}
+
 // replyText returns the server's reply as it arrived. textproto.Error renders
 // with %q, which wraps the text in quotes and escapes a multi-line reply's
 // newlines, so Error() is a debug form rather than the reply. Errors carrying no

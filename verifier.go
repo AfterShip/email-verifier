@@ -17,6 +17,7 @@ type Verifier struct {
 	schedule             *schedule                  // schedule represents a job schedule
 	proxyURI             string                     // use a SOCKS5 proxy to verify the email,
 	apiVerifiers         map[string]smtpAPIVerifier // per-vendor API verifiers; no built-in vendors currently, contributions are welcomed.
+	newClient            smtpClientFunc             // opens the SMTP session; nil means newSMTPClient, read at call time
 	resolver             *net.Resolver              // resolver used to perform MX and SMTP DNS lookups; nil means net.DefaultResolver, read at call time
 
 	// Timeouts
@@ -52,6 +53,7 @@ func NewVerifier() *Verifier {
 		helloName:            defaultHelloName,
 		catchAllCheckEnabled: true,
 		apiVerifiers:         map[string]smtpAPIVerifier{},
+		newClient:            newSMTPClient,
 		connectTimeout:       10 * time.Second,
 		operationTimeout:     10 * time.Second,
 	}
@@ -94,17 +96,17 @@ func (v *Verifier) Verify(email string) (*Result, error) {
 	}
 	ret.HasMxRecords = mx.HasMXRecord
 
-	smtp, catchAll, err := v.checkSMTP(syntax.Domain, syntax.Username)
+	probe, err := v.checkSMTP(syntax.Domain, syntax.Username)
 
 	// Kept whether or not the check succeeded. A failed exchange still says how
 	// far it got, which is the difference between a host that never answered and
 	// one that answered and refused our sender.
-	ret.SMTP = smtp
+	ret.SMTP = probe.smtp
 
 	if err != nil {
 		return &ret, err
 	}
-	ret.Reachable = v.calculateReachable(smtp, catchAll)
+	ret.Reachable = v.calculateReachable(probe)
 
 	if v.gravatarCheckEnabled {
 		gravatar, err := v.CheckGravatar(email)
@@ -251,10 +253,22 @@ func (v *Verifier) Resolver(resolver *net.Resolver) *Verifier {
 	return v
 }
 
+// smtpClient returns the function that opens the SMTP session. Defaulted here
+// rather than relied on from NewVerifier because Verifier and its setters are
+// exported: a composite literal is legal from outside the package, and such a
+// value reached the network before this field existed.
+//
 // dnsResolver returns the resolver to use for lookups. net.DefaultResolver is
 // read here rather than captured in NewVerifier so that callers who replace the
 // global keep the behaviour they had before this option existed -- the previous
 // code called net.LookupMX, which reads net.DefaultResolver on every call.
+func (v *Verifier) smtpClient() smtpClientFunc {
+	if v.newClient == nil {
+		return newSMTPClient
+	}
+	return v.newClient
+}
+
 func (v *Verifier) dnsResolver() *net.Resolver {
 	if v.resolver == nil {
 		return net.DefaultResolver
@@ -278,18 +292,23 @@ func (v *Verifier) OperationTimeout(timeout time.Duration) *Verifier {
 // it only from Verify, which always has a username: a syntactically valid
 // address cannot have an empty local part, so the address itself was always
 // probed unless the catch-all probe returned first.
-func (v *Verifier) calculateReachable(s *SMTP, catchAll catchAllOutcome) string {
+func (v *Verifier) calculateReachable(p *probeResult) string {
 	if !v.smtpCheckEnabled {
 		return reachableUnknown
 	}
-	if s.Deliverable {
+	if p.smtp.Deliverable {
 		return reachableYes
 	}
 	// Deliberately not s.CatchAll, which is also true when the probe never ran
 	// or could not conclude. Only a probe that established a catch-all domain,
 	// or one that returned before the address was probed, leaves the address
-	// unverifiable; otherwise the address was refused and that is a definite no.
-	if catchAll == catchAllAccepted || catchAll == catchAllInconclusive {
+	// unverifiable this way.
+	if p.catchAll == catchAllAccepted || p.catchAll == catchAllInconclusive {
+		return reachableUnknown
+	}
+	// The address was refused, but not necessarily as an address: a server
+	// refusing our IP or our sender refuses every recipient we name.
+	if p.rcpt == rcptBlocked {
 		return reachableUnknown
 	}
 	return reachableNo
