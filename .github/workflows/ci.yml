@@ -35,7 +35,10 @@ jobs:
           # Must be built with a Go at least as new as the `go` directive in
           # go.mod, or it refuses to run: "the Go language version (go1.24)
           # used to build golangci-lint is lower than the targeted Go version".
-          version: v2.13.2
+          # It must also read the export data of the Go installed above, which
+          # floats to the newest 1.27 patch: v2.13.2 stopped at go1.27.2 with
+          # "export data version 5 is greater than maximum supported version 4".
+          version: v2.15.0
 
   test:
     name: Test
