@@ -367,23 +367,53 @@ func TestCalculateReachable(t *testing.T) {
 		name     string
 		smtp     SMTP
 		catchAll catchAllOutcome
+		rcpt     rcptOutcome
 		want     string
 	}{
-		{"address accepted", SMTP{HostExists: true, Deliverable: true}, catchAllRefused, reachableYes},
-		{"address refused, probe ruled a catch-all out", SMTP{HostExists: true}, catchAllRefused, reachableNo},
-		{"address refused, probe disabled", SMTP{HostExists: true, CatchAll: true}, catchAllNotRun, reachableNo},
-		{"address accepted, probe disabled", SMTP{HostExists: true, CatchAll: true, Deliverable: true}, catchAllNotRun, reachableYes},
-		{"probe established a catch-all domain", SMTP{HostExists: true, CatchAll: true}, catchAllAccepted, reachableUnknown},
-		{"probe inconclusive, address never reached", SMTP{HostExists: true, CatchAll: true}, catchAllInconclusive, reachableUnknown},
+		{"address accepted", SMTP{HostExists: true, Deliverable: true}, catchAllRefused, rcptAccepted, reachableYes},
+		{"address refused, probe ruled a catch-all out", SMTP{HostExists: true}, catchAllRefused, rcptRefused, reachableNo},
+		{"address refused, probe disabled", SMTP{HostExists: true, CatchAll: true}, catchAllNotRun, rcptRefused, reachableNo},
+		{"address accepted, probe disabled", SMTP{HostExists: true, CatchAll: true, Deliverable: true}, catchAllNotRun, rcptAccepted, reachableYes},
+		{"probe established a catch-all domain", SMTP{HostExists: true, CatchAll: true}, catchAllAccepted, rcptNotRun, reachableUnknown},
+		{"probe inconclusive, address never reached", SMTP{HostExists: true, CatchAll: true}, catchAllInconclusive, rcptNotRun, reachableUnknown},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(tt *testing.T) {
-			assert.Equal(tt, c.want, v.calculateReachable(&c.smtp, c.catchAll))
+			assert.Equal(tt, c.want, v.calculateReachable(&probeResult{smtp: &c.smtp, catchAll: c.catchAll, rcpt: c.rcpt}))
 		})
 	}
 }
 
 func TestCalculateReachable_SMTPCheckDisabled(t *testing.T) {
-	assert.Equal(t, reachableUnknown, NewVerifier().calculateReachable(nil, catchAllNotRun))
+	assert.Equal(t, reachableUnknown, NewVerifier().calculateReachable(&probeResult{}))
+}
+
+// A refusal of us is not a statement about the address. The catch-all probe's
+// outcome cannot see this: the probe may have been refused as non-existent --
+// ruling a catch-all out -- while the address itself was refused because the
+// server does not accept mail from this IP at all.
+func TestCalculateReachable_BlockedRefusalIsNotAVerdict(t *testing.T) {
+	v := NewVerifier().EnableSMTPCheck()
+
+	refused := v.calculateReachable(&probeResult{smtp: &SMTP{HostExists: true}, catchAll: catchAllRefused, rcpt: rcptRefused})
+	assert.Equal(t, reachableNo, refused)
+
+	blocked := v.calculateReachable(&probeResult{smtp: &SMTP{HostExists: true}, catchAll: catchAllRefused, rcpt: rcptBlocked})
+	assert.Equal(t, reachableUnknown, blocked)
+}
+
+// End to end: a server that refuses us must not produce a verdict about the
+// address. Only the MX lookup leaves the machine; the SMTP session is local.
+func TestVerify_BlockedRefusalDoesNotBecomeUnreachable(t *testing.T) {
+	addr := fakeSMTP(t,
+		"550 5.1.1 no such user",                       // to the catch-all probe
+		"550 5.7.1 Client host blocked using Spamhaus") // to the address itself
+
+	v := verifierAgainst(addr)
+	result, err := v.Verify("real.user@github.com")
+
+	require.NoError(t, err)
+	assert.False(t, result.SMTP.Deliverable)
+	assert.Equal(t, reachableUnknown, result.Reachable)
 }

@@ -347,3 +347,43 @@ func TestCatchAllFromResult(t *testing.T) {
 	assert.Equal(t, catchAllRefused, catchAllFromResult(&SMTP{CatchAll: false}))
 	assert.Equal(t, catchAllRefused, catchAllFromResult(nil))
 }
+
+// A server that refuses us refuses every recipient we name, so its refusal of
+// the address is not a statement about the address. checkSMTP records which it
+// was; before this, client.Rcpt's error was discarded entirely.
+//
+// RFC 5321 section 4.2 says the reply code is for programs and the text is for
+// people, so the RFC 3463 enhanced code decides wherever the server sent one:
+// subject 1 is address status, which a refusal of the sending side never uses.
+// The keyword list only gets a say alongside a code, because the reply echoes
+// the address we asked about -- so a keyword in it may be the caller's, not the
+// server's.
+func TestCheckSMTP_RecordsWhetherTheRefusalWasAboutUs(t *testing.T) {
+	cases := []struct {
+		name  string
+		reply string
+		want  rcptOutcome
+	}{
+		{"the address was taken", "250 OK", rcptAccepted},
+
+		{"blocklist reply at 550", "550 5.7.1 Client host blocked using Spamhaus", rcptBlocked},
+		{"blocklist reply at 554, the Postfix default", "554 5.7.1 Service unavailable; Client host [198.51.100.1] blocked using zen.spamhaus.org", rcptBlocked},
+		{"blocklist reply at 553", "553 5.7.1 Your IP is blacklisted", rcptBlocked},
+
+		{"a missing mailbox is not a refusal of us", "550 5.1.1 User unknown", rcptRefused},
+		{"an address status outranks a keyword the caller supplied", "550 5.1.1 <denied@example.com>: Mailbox not found", rcptRefused},
+		{"... including one inside an innocent domain", "550 5.1.1 <alice@unblocked.dev>: Mailbox not found", rcptRefused},
+
+		{"no enhanced code, so no evidence we can read", "550 <denied@example.com>: Mailbox not found", rcptRefused},
+		{"... even when the keyword is the server's own", "550 blocked using Spamhaus", rcptRefused},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(tt *testing.T) {
+			addr := fakeSMTP(tt, "550 5.1.1 no such user", c.reply)
+			probe, err := verifierAgainst(addr).checkSMTP("example.com", "real.user")
+			require.NoError(tt, err)
+			assert.Equal(tt, c.want, probe.rcpt)
+		})
+	}
+}
