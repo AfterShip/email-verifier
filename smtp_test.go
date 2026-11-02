@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/textproto"
 	"net/url"
+	"strings"
 	"sync/atomic"
 	"syscall"
 	"testing"
@@ -346,4 +347,48 @@ func TestCatchAllFromResult(t *testing.T) {
 	assert.Equal(t, catchAllAccepted, catchAllFromResult(&SMTP{CatchAll: true}))
 	assert.Equal(t, catchAllRefused, catchAllFromResult(&SMTP{CatchAll: false}))
 	assert.Equal(t, catchAllRefused, catchAllFromResult(nil))
+}
+
+// GenerateRandomEmail feeds the catch-all probe: every SMTP exchange sends RCPT
+// TO for this address and reads the reply as "does this domain accept anything".
+// Nothing asserted its output before, so its shape was only exercised
+// incidentally through CheckSMTP, which needs a live mail server.
+func TestGenerateRandomEmail(t *testing.T) {
+	const domain = "example.com"
+
+	got := GenerateRandomEmail(domain)
+
+	local, host, found := strings.Cut(got, "@")
+	require.True(t, found, "address must contain an @: %q", got)
+	assert.Equal(t, domain, host, "the domain is passed through unchanged")
+	assert.Len(t, local, 32, "the local part is a fixed 32 characters")
+
+	// The probe is only meaningful if the address cannot collide with a real
+	// mailbox. A short or guessable local part risks matching one, which would
+	// read as "this domain is catch-all" and mark every address on it
+	// unverifiable.
+	assert.Regexp(t, `^[a-z0-9]+$`, local, "local part must stay inside alphanumeric")
+}
+
+func TestGenerateRandomEmail_DoesNotRepeat(t *testing.T) {
+	// This asserts distinctness, not unpredictability: a fixed sequence of
+	// distinct values would pass. It is still worth pinning, because a repeat
+	// is what would let the probe collide with a real mailbox -- the server then
+	// answers 250 for an address that does not exist, which reads as "this domain
+	// accepts anything" and marks every address on it unverifiable.
+	seen := make(map[string]struct{}, 100)
+	for range 100 {
+		seen[GenerateRandomEmail("example.com")] = struct{}{}
+	}
+	assert.Greater(t, len(seen), 90, "100 draws should almost all be distinct")
+}
+
+func TestGenerateRandomEmail_KeepsTheDomainVerbatim(t *testing.T) {
+	// Subdomains and mixed case must survive, because the address is handed
+	// straight to RCPT TO and a mangled domain would be rejected for the wrong
+	// reason.
+	for _, domain := range []string{"mail.example.co.uk", "Example.COM", "xn--fsq.example"} {
+		got := GenerateRandomEmail(domain)
+		assert.True(t, strings.HasSuffix(got, "@"+domain), "%q should end with @%s", got, domain)
+	}
 }
