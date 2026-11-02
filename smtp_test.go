@@ -14,6 +14,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/net/dns/dnsmessage"
 	"golang.org/x/net/proxy"
 )
 
@@ -391,4 +392,191 @@ func TestGenerateRandomEmail_KeepsTheDomainVerbatim(t *testing.T) {
 		got := GenerateRandomEmail(domain)
 		assert.True(t, strings.HasSuffix(got, "@"+domain), "%q should end with @%s", got, domain)
 	}
+}
+
+// fakeDNS is a local UDP DNS server that answers MX questions from a table and
+// counts what it was asked. It exists so the MX-then-dial ordering can be tested
+// without a network: the four newSMTPClient tests that predate these all pass
+// net.DefaultResolver, which means they only assert anything when the machine
+// has working DNS and an SMTP server that answers.
+//
+// The name is deliberately not "helpers": there is no helpers.go in this package,
+// and a <something>_test.go file that has no matching source file reads as
+// misplaced. These helpers stay next to the only tests that use them.
+type fakeDNS struct {
+	addr    string
+	queries atomic.Int32
+	mx      []string // hosts to answer MX questions with; empty means answer with none
+	rcode   uint8
+}
+
+func newFakeDNS(t *testing.T, mx []string, rcode dnsmessage.RCode) *fakeDNS {
+	t.Helper()
+
+	var lc net.ListenConfig
+	pc, err := lc.ListenPacket(context.Background(), "udp", "127.0.0.1:0")
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = pc.Close() })
+
+	f := &fakeDNS{addr: pc.LocalAddr().String(), mx: mx, rcode: uint8(rcode)}
+
+	go func() {
+		buf := make([]byte, 512)
+		for {
+			n, from, err := pc.ReadFrom(buf)
+			if err != nil {
+				return
+			}
+			var parser dnsmessage.Parser
+			header, err := parser.Start(buf[:n])
+			if err != nil {
+				continue
+			}
+			questions, err := parser.AllQuestions()
+			if err != nil {
+				continue
+			}
+
+			builder := dnsmessage.NewBuilder(nil, dnsmessage.Header{
+				ID: header.ID, Response: true, Authoritative: true,
+				RCode: dnsmessage.RCode(f.rcode),
+			})
+			builder.EnableCompression()
+			if err := builder.StartQuestions(); err != nil {
+				continue
+			}
+			for _, q := range questions {
+				_ = builder.Question(q)
+			}
+			if err := builder.StartAnswers(); err != nil {
+				continue
+			}
+			for _, q := range questions {
+				// The MX hostnames also need A records, or the dial cannot
+				// resolve them and fails in DNS rather than at the socket --
+				// which would make the port assertion below untestable.
+				if q.Type == dnsmessage.TypeA && f.hostsA(q.Name.String()) {
+					_ = builder.AResource(
+						dnsmessage.ResourceHeader{
+							Name:  q.Name,
+							Type:  dnsmessage.TypeA,
+							Class: dnsmessage.ClassINET,
+							TTL:   60,
+						},
+						dnsmessage.AResource{A: [4]byte{127, 0, 0, 1}},
+					)
+					continue
+				}
+				if q.Type != dnsmessage.TypeMX {
+					continue
+				}
+				f.queries.Add(1)
+				for i, host := range f.mx {
+					name, err := dnsmessage.NewName(host)
+					if err != nil {
+						continue
+					}
+					_ = builder.MXResource(
+						dnsmessage.ResourceHeader{
+							Name:  q.Name,
+							Type:  dnsmessage.TypeMX,
+							Class: dnsmessage.ClassINET,
+							TTL:   60,
+						},
+						dnsmessage.MXResource{Pref: uint16(i), MX: name},
+					)
+				}
+			}
+			response, err := builder.Finish()
+			if err != nil {
+				continue
+			}
+			_, _ = pc.WriteTo(response, from)
+		}
+	}()
+
+	return f
+}
+
+// hostsA reports whether name is one of the MX hosts this server answers for.
+func (f *fakeDNS) hostsA(name string) bool {
+	for _, host := range f.mx {
+		if host == name {
+			return true
+		}
+	}
+	return false
+}
+
+// resolver points a *net.Resolver at the fake server. PreferGo keeps it on the
+// pure-Go resolver, which is the one that respects Dial; with cgo the lookup can
+// go to libc and ignore this entirely.
+func (f *fakeDNS) resolver() *net.Resolver {
+	return &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, _ string) (net.Conn, error) {
+			var d net.Dialer
+			return d.DialContext(ctx, network, f.addr)
+		},
+	}
+}
+
+// The MX lookup is what decides the address that gets dialled, so it has to
+// happen first. Pinning the order matters because moving the dial ahead of the
+// lookup would still produce an error -- just a less useful one -- and that
+// regression would be invisible to every test that predates these.
+func TestNewSMTPClientLooksUpMXBeforeDialing(t *testing.T) {
+	f := newFakeDNS(t, []string{"mail.example.com."}, dnsmessage.RCodeSuccess)
+	timeout := 2 * time.Second
+
+	client, selected, err := newSMTPClient("example.com", "", f.resolver(), timeout, timeout)
+
+	assert.Nil(t, client)
+	assert.Nil(t, selected)
+	// A resolved MX is dialled, and refusing is proof the dial was reached.
+	require.Error(t, err)
+	require.ErrorIs(t, err, syscall.ECONNREFUSED)
+	// At least one MX question: the lookup ran, and the ECONNREFUSED above proves
+	// the dial came after it. The count is not pinned to one because the resolver
+	// may retry internally, which is its business rather than this function's.
+	assert.GreaterOrEqual(t, int(f.queries.Load()), 1, "expected the MX question before the dial")
+}
+
+// When the lookup fails, the caller must be told the name could not be resolved.
+// Reporting a connection failure here would send people looking at firewalls and
+// port 25 for a problem that is in DNS -- the two diagnoses have nothing in
+// common, so the error has to stay on the DNS side of the line.
+func TestNewSMTPClientMXFailureIsADNSErrorNotADialError(t *testing.T) {
+	f := newFakeDNS(t, nil, dnsmessage.RCodeNameError)
+	timeout := 2 * time.Second
+
+	client, selected, err := newSMTPClient("example.com", "", f.resolver(), timeout, timeout)
+
+	assert.Nil(t, client)
+	assert.Nil(t, selected)
+	require.Error(t, err)
+
+	var dnsErr *net.DNSError
+	require.ErrorAs(t, err, &dnsErr)
+	assert.True(t, dnsErr.IsNotFound, "expected a not-found DNS error, got %#v", dnsErr)
+	require.NotErrorIs(t, err, syscall.ECONNREFUSED)
+	// Same reasoning as above, and here it matters more: a resolver that retries a
+	// failed lookup will legitimately ask more than once.
+	assert.GreaterOrEqual(t, int(f.queries.Load()), 1, "expected at least one MX question")
+}
+
+// The address that gets dialled is the MX host plus smtpPort -- the constant, not
+// anything the caller supplied. This is the behaviour behind the note on
+// newSMTPClient's signature: the port is not a parameter, so injecting one at the
+// call site cannot change it. Asserting the assembled address keeps that true
+// even after the port becomes configurable, as long as the default stays 25.
+func TestNewSMTPClientDialsTheResolvedMXHostOnTheSMTPPort(t *testing.T) {
+	f := newFakeDNS(t, []string{"mail.example.com."}, dnsmessage.RCodeSuccess)
+	timeout := 2 * time.Second
+
+	_, _, err := newSMTPClient("example.com", "", f.resolver(), timeout, timeout)
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "dial tcp 127.0.0.1"+smtpPort,
+		"expected the dial to target the resolved MX host on smtpPort")
 }
