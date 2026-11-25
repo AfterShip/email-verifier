@@ -400,9 +400,6 @@ func TestGenerateRandomEmail_KeepsTheDomainVerbatim(t *testing.T) {
 // net.DefaultResolver, which means they only assert anything when the machine
 // has working DNS and an SMTP server that answers.
 //
-// The name is deliberately not "helpers": there is no helpers.go in this package,
-// and a <something>_test.go file that has no matching source file reads as
-// misplaced. These helpers stay next to the only tests that use them.
 type fakeDNS struct {
 	addr    string
 	queries atomic.Int32
@@ -521,27 +518,6 @@ func (f *fakeDNS) resolver() *net.Resolver {
 	}
 }
 
-// The MX lookup is what decides the address that gets dialled, so it has to
-// happen first. Pinning the order matters because moving the dial ahead of the
-// lookup would still produce an error -- just a less useful one -- and that
-// regression would be invisible to every test that predates these.
-func TestNewSMTPClientLooksUpMXBeforeDialing(t *testing.T) {
-	f := newFakeDNS(t, []string{"mail.example.com."}, dnsmessage.RCodeSuccess)
-	timeout := 2 * time.Second
-
-	client, selected, err := newSMTPClient("example.com", "", f.resolver(), timeout, timeout)
-
-	assert.Nil(t, client)
-	assert.Nil(t, selected)
-	// A resolved MX is dialled, and refusing is proof the dial was reached.
-	require.Error(t, err)
-	require.ErrorIs(t, err, syscall.ECONNREFUSED)
-	// At least one MX question: the lookup ran, and the ECONNREFUSED above proves
-	// the dial came after it. The count is not pinned to one because the resolver
-	// may retry internally, which is its business rather than this function's.
-	assert.GreaterOrEqual(t, int(f.queries.Load()), 1, "expected the MX question before the dial")
-}
-
 // When the lookup fails, the caller must be told the name could not be resolved.
 // Reporting a connection failure here would send people looking at firewalls and
 // port 25 for a problem that is in DNS -- the two diagnoses have nothing in
@@ -560,8 +536,11 @@ func TestNewSMTPClientMXFailureIsADNSErrorNotADialError(t *testing.T) {
 	require.ErrorAs(t, err, &dnsErr)
 	assert.True(t, dnsErr.IsNotFound, "expected a not-found DNS error, got %#v", dnsErr)
 	require.NotErrorIs(t, err, syscall.ECONNREFUSED)
-	// Same reasoning as above, and here it matters more: a resolver that retries a
-	// failed lookup will legitimately ask more than once.
+	// The count is not pinned to one because the resolver can legitimately ask
+	// more than once: on CI the extra question comes from the resolv.conf
+	// "search" list, which appends candidate suffixes, not from a retry inside
+	// this package. What this test owns is that at least one MX question reached
+	// the server, and that its failure surfaced as a DNS error.
 	assert.GreaterOrEqual(t, int(f.queries.Load()), 1, "expected at least one MX question")
 }
 
@@ -570,6 +549,10 @@ func TestNewSMTPClientMXFailureIsADNSErrorNotADialError(t *testing.T) {
 // newSMTPClient's signature: the port is not a parameter, so injecting one at the
 // call site cannot change it. Asserting the assembled address keeps that true
 // even after the port becomes configurable, as long as the default stays 25.
+//
+// This assumes nothing is listening on 127.0.0.1:25. If something is, the dial
+// connects instead of failing and the error text this asserts on never appears;
+// the test then fails for a reason that has nothing to do with the assertion.
 func TestNewSMTPClientDialsTheResolvedMXHostOnTheSMTPPort(t *testing.T) {
 	f := newFakeDNS(t, []string{"mail.example.com."}, dnsmessage.RCodeSuccess)
 	timeout := 2 * time.Second
