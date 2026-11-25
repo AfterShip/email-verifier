@@ -399,7 +399,6 @@ func TestGenerateRandomEmail_KeepsTheDomainVerbatim(t *testing.T) {
 // without a network: the four newSMTPClient tests that predate these all pass
 // net.DefaultResolver, which means they only assert anything when the machine
 // has working DNS and an SMTP server that answers.
-//
 type fakeDNS struct {
 	addr    string
 	queries atomic.Int32
