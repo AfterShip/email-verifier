@@ -1,7 +1,7 @@
 github.com/h2non/parth v0.0.0-20190131123155-b4df798d6542 h1:2VTzZjLZBgl62/EtslCrtky5vbi9dd7HrQPQIx6wqiw=
 github.com/h2non/parth v0.0.0-20190131123155-b4df798d6542/go.mod h1:Ow0tF8D4Kplbc8s8sSb3V2oUCygFHVp8gC3Dn6U4MNI=
-github.com/hbollon/go-edlib v1.7.0 h1:Jt3AtZ+AdgtJhzkrCFvkbdbNL3KCqZlGioLnUfwsxeU=
-github.com/hbollon/go-edlib v1.7.0/go.mod h1:wnt6o6EIVEzUfgbUZY7BerzQ2uvzp354qmS2xaLkrhM=
+github.com/hbollon/go-edlib v1.8.0 h1:NjW2LFVzkv/4S3lYbX/7P/3LMPMiFtrBuiZ72wiAwl8=
+github.com/hbollon/go-edlib v1.8.0/go.mod h1:c0zNjj4DFQ8Iq0V8obe2iYlCZ55zJ2YUUW1zOMKBDmI=
 github.com/julienschmidt/httprouter v1.3.0 h1:U0609e9tgbseu3rBINet9P48AI/D3oJs4dN7jwJOQ1U=
 github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8IZAc4RVcycCCAKdM=
 github.com/nbio/st v0.0.0-20140626010706-e9e8d9816f32 h1:W6apQkHrMkS0Muv8G/TipAy/FJl/rCYT0+EuS8+Z0z4=
