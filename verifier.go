@@ -17,6 +17,7 @@ type Verifier struct {
 	schedule             *schedule                  // schedule represents a job schedule
 	proxyURI             string                     // use a SOCKS5 proxy to verify the email,
 	apiVerifiers         map[string]smtpAPIVerifier // per-vendor API verifiers; no built-in vendors currently, contributions are welcomed.
+	newClient            smtpClientFunc             // opens the SMTP session; nil means newSMTPClient, read at call time
 	resolver             *net.Resolver              // resolver used to perform MX and SMTP DNS lookups; nil means net.DefaultResolver, read at call time
 
 	// Timeouts
@@ -260,6 +261,17 @@ func (v *Verifier) dnsResolver() *net.Resolver {
 		return net.DefaultResolver
 	}
 	return v.resolver
+}
+
+// smtpClient returns the function that opens the SMTP session. Defaulted here
+// rather than in NewVerifier because Verifier is exported: a composite literal
+// is legal from outside the package, and such a value reached the network
+// before this field existed.
+func (v *Verifier) smtpClient() smtpClientFunc {
+	if v.newClient == nil {
+		return newSMTPClient
+	}
+	return v.newClient
 }
 
 // ConnectTimeout sets the timeout for establishing connections.

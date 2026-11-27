@@ -65,6 +65,11 @@ func (v *Verifier) CheckSMTP(domain, username string) (*SMTP, error) {
 	return res, err
 }
 
+// smtpClientFunc opens an SMTP session to a domain's mail exchanger. Held as a
+// field on Verifier so a test can drive checkSMTP against a local server.
+type smtpClientFunc func(domain, proxyURI string, resolver *net.Resolver,
+	connectTimeout, operationTimeout time.Duration) (*smtp.Client, *net.MX, error)
+
 // checkSMTP is CheckSMTP plus what the catch-all probe concluded. Verify needs
 // that to tell a domain which accepts every address from one we could not ask.
 func (v *Verifier) checkSMTP(domain, username string) (*SMTP, catchAllOutcome, error) {
@@ -78,7 +83,7 @@ func (v *Verifier) checkSMTP(domain, username string) (*SMTP, catchAllOutcome, e
 	email := fmt.Sprintf("%s@%s", username, domain)
 
 	// Dial any SMTP server that will accept a connection
-	client, mx, err := newSMTPClient(domain, v.proxyURI, v.dnsResolver(), v.connectTimeout, v.operationTimeout)
+	client, mx, err := v.smtpClient()(domain, v.proxyURI, v.dnsResolver(), v.connectTimeout, v.operationTimeout)
 	if err != nil {
 		return &ret, catchAll, ParseSMTPError(err)
 	}
