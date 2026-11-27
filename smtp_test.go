@@ -1,9 +1,12 @@
 package emailverifier
 
 import (
+	"bufio"
 	"context"
 	"errors"
+	"fmt"
 	"net"
+	"net/smtp"
 	"net/textproto"
 	"net/url"
 	"strings"
@@ -373,10 +376,8 @@ func TestGenerateRandomEmail(t *testing.T) {
 
 func TestGenerateRandomEmail_DoesNotRepeat(t *testing.T) {
 	// This asserts distinctness, not unpredictability: a fixed sequence of
-	// distinct values would pass. It is still worth pinning, because a repeat
-	// is what would let the probe collide with a real mailbox -- the server then
-	// answers 250 for an address that does not exist, which reads as "this domain
-	// accepts anything" and marks every address on it unverifiable.
+	// distinct values would pass. What it catches is a generator with too few
+	// distinct outputs, such as one stuck on a value.
 	seen := make(map[string]struct{}, 100)
 	for range 100 {
 		seen[GenerateRandomEmail("example.com")] = struct{}{}
@@ -561,4 +562,114 @@ func TestNewSMTPClientDialsTheResolvedMXHostOnTheSMTPPort(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "dial tcp 127.0.0.1"+smtpPort,
 		"expected the dial to target the resolved MX host on smtpPort")
+}
+
+// fakeSMTP answers RCPT for the 32-character random local part GenerateRandomEmail
+// produces with randReply, and anything else with userReply, so the catch-all probe
+// and the address probe can be driven independently. Returns the listener address.
+func fakeSMTP(t *testing.T, randReply, userReply string) string {
+	t.Helper()
+	var lc net.ListenConfig
+	ln, err := lc.Listen(context.Background(), "tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = ln.Close() })
+
+	go func() {
+		for {
+			conn, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			go serveFakeSMTP(conn, randReply, userReply)
+		}
+	}()
+	return ln.Addr().String()
+}
+
+func serveFakeSMTP(conn net.Conn, randReply, userReply string) {
+	defer conn.Close()
+	br := bufio.NewReader(conn)
+	fmt.Fprint(conn, "220 fake ESMTP ready\r\n")
+	for {
+		line, err := br.ReadString('\n')
+		if err != nil {
+			return
+		}
+		command := strings.ToUpper(strings.TrimSpace(line))
+		switch {
+		case strings.HasPrefix(command, "EHLO"):
+			fmt.Fprint(conn, "250-fake\r\n250 OK\r\n")
+		case strings.HasPrefix(command, "RCPT"):
+			_, path, ok := strings.Cut(command, "<")
+			if !ok {
+				fmt.Fprint(conn, "501 5.5.4 Syntax error in parameters\r\n")
+				continue
+			}
+			local, _, _ := strings.Cut(path, "@")
+			if len(local) == 32 {
+				fmt.Fprintf(conn, "%s\r\n", randReply)
+			} else {
+				fmt.Fprintf(conn, "%s\r\n", userReply)
+			}
+		case strings.HasPrefix(command, "QUIT"):
+			fmt.Fprint(conn, "221 Bye\r\n")
+			return
+		default:
+			fmt.Fprint(conn, "250 OK\r\n")
+		}
+	}
+}
+
+// verifierAgainst returns a Verifier whose SMTP sessions all go to addr.
+func verifierAgainst(addr string) *Verifier {
+	v := NewVerifier().EnableSMTPCheck()
+	v.newClient = func(_, _ string, _ *net.Resolver, _, _ time.Duration) (*smtp.Client, *net.MX, error) {
+		var d net.Dialer
+		conn, err := d.DialContext(context.Background(), "tcp", addr)
+		if err != nil {
+			return nil, nil, err
+		}
+		// Fail fast rather than hang if the fake ever stops answering.
+		if err := conn.SetDeadline(time.Now().Add(5 * time.Second)); err != nil {
+			_ = conn.Close()
+			return nil, nil, err
+		}
+		client, err := smtp.NewClient(conn, "fake.example")
+		if err != nil {
+			_ = conn.Close()
+			return nil, nil, err
+		}
+		return client, &net.MX{Host: "fake.example"}, nil
+	}
+	return v
+}
+
+// Pins checkSMTP's current outcomes without a live mail server.
+func TestCheckSMTP_AgainstAFakeServer(t *testing.T) {
+	cases := []struct {
+		name            string
+		randReply       string // to the catch-all probe
+		userReply       string // to the address itself
+		wantOutcome     catchAllOutcome
+		wantCatchAll    bool
+		wantDeliverable bool
+	}{
+		{"catch-all domain, address never asked", "250 OK", "250 OK", catchAllAccepted, true, false},
+		{"address accepted", "550 5.1.1 no such user", "250 OK", catchAllRefused, false, true},
+		{"address refused", "550 5.1.1 no such user", "550 5.1.1 no such user", catchAllRefused, false, false},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(tt *testing.T) {
+			addr := fakeSMTP(tt, c.randReply, c.userReply)
+			res, catchAll, err := verifierAgainst(addr).checkSMTP("example.com", "real.user")
+			require.NoError(tt, err)
+			assert.Equal(tt, c.wantOutcome, catchAll)
+			assert.True(tt, res.HostExists)
+			assert.Equal(tt, c.wantCatchAll, res.CatchAll)
+			assert.Equal(tt, c.wantDeliverable, res.Deliverable)
+		})
+	}
 }

@@ -2,6 +2,7 @@ package emailverifier
 
 import (
 	"net"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -318,6 +319,15 @@ func TestNewVerifierOK_DefaultResolver(t *testing.T) {
 	v := NewVerifier()
 	assert.Nil(t, v.resolver)
 	assert.Same(t, net.DefaultResolver, v.dnsResolver())
+}
+
+// A Verifier built as a literal never goes through NewVerifier, so the nil
+// default has to hold there too, or CheckSMTP would call a nil func.
+func TestNewVerifierOK_DefaultSMTPClient(t *testing.T) {
+	for _, v := range []*Verifier{NewVerifier(), {}} {
+		assert.Nil(t, v.newClient)
+		assert.Equal(t, reflect.ValueOf(newSMTPClient).Pointer(), reflect.ValueOf(v.smtpClient()).Pointer())
+	}
 }
 
 func TestVerifier_Resolver(t *testing.T) {
