@@ -111,6 +111,62 @@ func TestParseSMTPError_UnwrapsToCause(t *testing.T) {
 	assert.ErrorIs(t, error(le), cause)
 }
 
+// A resolver that fails temporarily says nothing about the address: SERVFAIL
+// carries the text "server misbehaving" and the same lookup can succeed a
+// second later. It matched none of the substrings parseBasicErr looked for, so
+// it fell through to default and the raw Go error became Message -- the field
+// callers switch on to tell "retry later" from "no such user". The flags on the
+// *net.DNSError say which it is; the text does not.
+func TestParseBasicErr_ReadsResolverFailuresFromTheFlags(t *testing.T) {
+	servfail := func() *net.DNSError {
+		return &net.DNSError{Err: "server misbehaving", Name: "example.com", IsTemporary: true}
+	}
+
+	cases := []struct {
+		name string
+		err  error
+		want string
+	}{
+		{"servfail on the MX lookup", servfail(), ErrServerUnavailable},
+		{
+			// The dial resolves the MX host through the same resolver, and net
+			// wraps that failure in an *net.OpError.
+			"servfail under the dial",
+			&net.OpError{Op: "dial", Net: "tcp", Err: servfail()},
+			ErrServerUnavailable,
+		},
+		{
+			"the lookup itself timed out",
+			&net.DNSError{Err: "i/o timeout", Name: "example.com", IsTimeout: true, IsTemporary: true},
+			ErrTimeout,
+		},
+		{
+			// The not-found flag is what the old substring check happened to
+			// agree with; asserting it here keeps the two paths from drifting.
+			"nxdomain",
+			&net.DNSError{Err: "no such host", Name: "example.com", IsNotFound: true},
+			ErrNoSuchHost,
+		},
+		{
+			// No flags to read: the text fallback still has to carry these.
+			"flattened, no flags",
+			errors.New("lookup example.com on 10.0.0.1:53: no such host"),
+			ErrNoSuchHost,
+		},
+	}
+
+	for _, c := range cases {
+		test := c
+		t.Run(test.name, func(tt *testing.T) {
+			le := ParseSMTPError(test.err)
+			require.NotNil(tt, le)
+			assert.Equal(tt, test.want, le.Message)
+			// Details keeps what the resolver said, whichever branch fired.
+			assert.Contains(tt, le.Details, "example.com")
+		})
+	}
+}
+
 func TestLookupError_UnwrapNilSafe(t *testing.T) {
 	var le *LookupError
 	assert.NoError(t, le.Unwrap())

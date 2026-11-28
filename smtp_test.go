@@ -543,6 +543,29 @@ func TestNewSMTPClientMXFailureIsADNSErrorNotADialError(t *testing.T) {
 	assert.GreaterOrEqual(t, int(f.queries.Load()), 1, "expected at least one MX question")
 }
 
+// Same failure, but through the path a caller actually takes: a resolver that
+// answers SERVFAIL while we are looking up MX. The verdict has to be "we could
+// not ask", not a raw Go error that leaves every caller to string-match it.
+func TestCheckSMTP_TemporaryResolverFailureSaysUnavailable(t *testing.T) {
+	f := newFakeDNS(t, nil, dnsmessage.RCodeServerFailure)
+	timeout := 2 * time.Second
+
+	_, _, err := newSMTPClient("example.com", "", f.resolver(), timeout, timeout)
+	require.Error(t, err)
+
+	le := ParseSMTPError(err)
+	require.NotNil(t, le)
+	assert.Equal(t, ErrServerUnavailable, le.Message)
+	assert.Contains(t, le.Details, "server misbehaving")
+
+	// The cause stays reachable by type, so a caller can retry on its own terms
+	// instead of matching the message above.
+	var dnsErr *net.DNSError
+	require.ErrorAs(t, error(le), &dnsErr)
+	assert.True(t, dnsErr.IsTemporary)
+	assert.GreaterOrEqual(t, int(f.queries.Load()), 1, "expected at least one MX question")
+}
+
 // The address that gets dialled is the MX host plus smtpPort -- the constant, not
 // anything the caller supplied. This is the behaviour behind the note on
 // newSMTPClient's signature: the port is not a parameter, so injecting one at the
