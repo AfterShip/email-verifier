@@ -3,6 +3,7 @@ package emailverifier
 import (
 	"errors"
 	"fmt"
+	"net"
 	"net/textproto"
 	"regexp"
 	"strconv"
@@ -234,6 +235,26 @@ func parseSMTPError(err error) *LookupError {
 // a more understandable LookupError
 func parseBasicErr(err error) *LookupError {
 	errStr := replyText(err)
+
+	// A resolver failure is not an answer about the address: SERVFAIL arrives
+	// as "server misbehaving" and the same lookup can succeed a second later.
+	// DNS reports that structurally -- a *net.DNSError with the flags set,
+	// sometimes wrapped in a *net.OpError by the dial -- while the text matches
+	// none of the substrings below, so these used to fall through to default and
+	// the raw Go error became Message. Message is what callers switch on, so the
+	// flags are read first; the substring checks stay as the fallback for errors
+	// that reach us already flattened to a string.
+	var dnsErr *net.DNSError
+	if errors.As(err, &dnsErr) {
+		switch {
+		case dnsErr.IsTimeout:
+			return newLookupError(ErrTimeout, errStr)
+		case dnsErr.IsNotFound:
+			return newLookupError(ErrNoSuchHost, errStr)
+		case dnsErr.IsTemporary:
+			return newLookupError(ErrServerUnavailable, errStr)
+		}
+	}
 
 	// Return a more understandable error
 	switch {
